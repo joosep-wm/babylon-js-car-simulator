@@ -16,7 +16,6 @@
     <div id="app">
         <!-- Info Panel Component -->
         <info-panel
-            :debug-visible="debugVisible"
             :speed="speed"
             :position="position"
             :rotation="rotation"
@@ -26,9 +25,7 @@
             :max-speed="maxSpeed"
             :race-time="raceTime"
             :finish-time="finishTime"
-            :is-racing="isRacing"
-            @toggle-debug="toggleDebugPanels"
-            @hide-debug="hideDebugPanels">
+            :is-racing="isRacing">
         </info-panel>
 
         <!-- Canvas -->
@@ -895,7 +892,6 @@
             },
             data() {
                 return {
-                    debugVisible: false,
                     isTouchDevice: false,
                     keyStates: {
                         w: false,
@@ -967,14 +963,8 @@
                         engine.resize();
                     });
                     
-                    // Add debug toggle with F12 key
+                    // Add key state tracking for visual feedback
                     window.addEventListener('keydown', (e) => {
-                        if (e.key === 'F12' || e.key === '`') {
-                            e.preventDefault();
-                            this.debugVisible = !this.debugVisible;
-                        }
-                        
-                        // Update key states for visual feedback
                         this.updateKeyState(e.key, true);
                     });
                     
@@ -1025,16 +1015,6 @@
                     canvas.focus();
                     
                     console.log("Game reset complete!");
-                },
-                
-                toggleDebugPanels() {
-                    this.debugVisible = true;
-                    console.log("Debug panels shown");
-                },
-                
-                hideDebugPanels() {
-                    this.debugVisible = false;
-                    console.log("Debug panels hidden");
                 },
                 
                 detectTouchDevice() {

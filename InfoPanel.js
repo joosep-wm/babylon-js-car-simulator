@@ -83,7 +83,6 @@ const InfoPanel = {
         </div>
     `,
     props: {
-        debugVisible: Boolean,
         speed: Number,
         position: Object,
         rotation: Number,
@@ -95,13 +94,32 @@ const InfoPanel = {
         finishTime: [Number, String],
         isRacing: Boolean
     },
-    emits: ['toggle-debug', 'hide-debug'],
+    data() {
+        return {
+            debugVisible: false
+        };
+    },
+    mounted() {
+        // Add debug toggle with F12 key
+        window.addEventListener('keydown', this.handleGlobalKeydown);
+    },
+    beforeUnmount() {
+        window.removeEventListener('keydown', this.handleGlobalKeydown);
+    },
     methods: {
+        handleGlobalKeydown(e) {
+            if (e.key === 'F12' || e.key === '`') {
+                e.preventDefault();
+                this.debugVisible = !this.debugVisible;
+            }
+        },
         toggleDebugPanels() {
-            this.$emit('toggle-debug');
+            this.debugVisible = true;
+            console.log("Debug panels shown");
         },
         hideDebugPanels() {
-            this.$emit('hide-debug');
+            this.debugVisible = false;
+            console.log("Debug panels hidden");
         }
     }
 };
