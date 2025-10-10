@@ -13,14 +13,14 @@
         html, body {
             overflow: hidden;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             margin: 0;
             padding: 0;
             font-family: system-ui, -apple-system, sans-serif;
         }
         #renderCanvas {
             width: 100%;
-            height: 100%;
+            height: 100vh;
             touch-action: none;
         }
         .panel {
@@ -140,6 +140,7 @@
                 <div>⬇️ S - Rückwärts</div>
                 <div>⬅️ A - Links</div>
                 <div>➡️ D - Rechts</div>
+                <div>🚗 Leertaste - Bremse</div>
             </div>
         </div>
 
@@ -147,6 +148,14 @@
         <div class="panel panel-right">
             <h2>Spielstatistik</h2>
             <div>
+                <div class="stat-box">
+                    <div class="stat-label">Rennzeit</div>
+                    <div class="stat-value-large stat-value-blue">
+                        <span v-if="!isRacing && !finishTime">START</span>
+                        <span v-else-if="finishTime">{{ finishTime }}s</span>
+                        <span v-else>{{ raceTime.toFixed(2) }}s</span>
+                    </div>
+                </div>
                 <div class="stat-box">
                     <div class="stat-label">Umgeworfene Quadrate</div>
                     <div class="stat-value-large stat-value-yellow">{{ knockedBoxes }} / 5</div>
@@ -161,14 +170,10 @@
                 </div>
             </div>
             <div class="controls">
-                <h3 style="color: #a78bfa;">Quadrate Status</h3>
-                <div>
-                    <div v-for="(box, index) in boxesStatus" :key="index" 
-                         :class="box.knocked ? 'box-knocked' : 'box-standing'"
-                         class="box-status">
-                        Quadrat {{ index + 1 }}: {{ box.knocked ? '❌ Umgeworfen' : '✅ Steht' }}
-                    </div>
-                </div>
+                <h3 style="color: #a78bfa;">Info</h3>
+                <div>🏁 Drücke W zum Starten</div>
+                <div>⏱️ Zeit läuft beim ersten Gas</div>
+                <div>🎯 Fahre durch die Ziellinie</div>
             </div>
         </div>
 
@@ -194,7 +199,7 @@
         const FILTERS = { CarParts: 1, Environment: 2 };
         const trackRad = 400;
 
-        async function createScene() {
+        async function createScene(vueApp) {
             scene = new BABYLON.Scene(engine);
 
             // Initialize Havok Physics
@@ -216,7 +221,7 @@
 
             InitTyreMaterial();
 
-            const carF = CreateCar();
+            const carF = CreateCar(vueApp);
             camera.lockedTarget = carF;
 
             // Create circular race track
@@ -240,29 +245,6 @@
                 allRail.parent = track;
                 new BABYLON.PhysicsAggregate(allRail, BABYLON.PhysicsShapeType.MESH, { mass: 0, friction: 0.1 }, scene);
             }
-
-            // GUI
-            var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-            var text1 = new BABYLON.GUI.TextBlock();
-            text1.text = "Speed";
-            text1.color = "white";
-            text1.fontSize = 24;
-            text1.width = 0.2;
-            text1.height = "40px";
-            text1.verticalAlignment = 0;
-            text1.horizontalAlignment = 1;
-            advancedTexture.addControl(text1);
-
-            var text2 = new BABYLON.GUI.TextBlock();
-            text2.text = "Start";
-            text2.color = "white";
-            text2.fontSize = 24;
-            text2.width = 0.2;
-            text2.height = "40px";
-            text2.verticalAlignment = 0;
-            text2.horizontalAlignment = 0;
-            advancedTexture.addControl(text2);
 
             // Finish line
             const checkerPlane = BABYLON.MeshBuilder.CreatePlane("checkerPlane", { width: 80, height: 10 });
@@ -288,6 +270,11 @@
                                 console.log("W Triggered");
                                 raceTime = Date.now();
                                 keyTrigger = true;
+                                if (vueApp) {
+                                    vueApp.isRacing = true;
+                                    vueApp.raceTime = 0;
+                                    vueApp.finishTime = null;
+                                }
                                 break;
                         }
                         break;
@@ -301,25 +288,35 @@
                 carF.physicsBody.getLinearVelocityToRef(velocity);
                 speed = velocity.length();
                 if (speed < 1) { speed = 0; }
-                text1.text = "SPEED: " + speed.toFixed();
+
+                // Update Vue.js data
+                if (vueApp) {
+                    vueApp.speed = speed * 3.6; // Convert to km/h
+                    vueApp.position.x = carF.position.x;
+                    vueApp.position.z = carF.position.z;
+                    vueApp.rotation = (carF.rotation.y * 180 / Math.PI) % 360;
+                    vueApp.maxSpeed = Math.max(vueApp.maxSpeed, vueApp.speed);
+                    
+                    // Update race time
+                    if (vueApp.isRacing && !alreadyTriggered && fCounter < 1) {
+                        vueApp.raceTime = ((Date.now() - raceTime) / 1000);
+                    }
+                }
 
                 if (carF.intersectsMesh(finishTrigger, false)) {
                     if (!alreadyTriggered && keyTrigger) {
                         finishTime = ((Date.now() - raceTime) / 1000).toFixed(2);
                         console.log("FINISH LINE CROSSED");
-                        text2.text = "TIME: " + finishTime.toString();
+                        if (vueApp) {
+                            vueApp.finishTime = finishTime;
+                            vueApp.isRacing = false;
+                        }
                         alreadyTriggered = true;
                         fCounter++;
                         setTimeout(() => {
                             alreadyTriggered = false;
                         }, 1000);
-                    } else if (!keyTrigger) {
-                        text2.text = "START";
                     }
-                }
-
-                if (!alreadyTriggered && fCounter < 1 && keyTrigger) {
-                    text2.text = "TIME: " + ((Date.now() - raceTime) / 1000).toFixed(2).toString();
                 }
             });
 
@@ -458,7 +455,7 @@
             }
         }
 
-        function CreateCar() {
+        function CreateCar(vueApp) {
             const carFrame = BABYLON.MeshBuilder.CreateBox("Frame", { height: 1, width: 12, depth: 24, faceColors: debugColours });
             carFrame.position = new BABYLON.Vector3(0, 1, 0);
             carFrame.visibility = 0.5;
@@ -495,7 +492,7 @@
             AttachAxleToFrame(rlAxle.physicsBody, carFrameBody);
             AttachAxleToFrame(rrAxle.physicsBody, carFrameBody);
 
-            InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB);
+            InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, vueApp);
 
             return carFrame;
         }
@@ -621,7 +618,7 @@
             return joint;
         }
 
-        function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB) {
+        function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, vueApp) {
             let forwardPressed = false;
             let backPressed = false;
             let leftPressed = false;
@@ -669,6 +666,19 @@
                     currentSpeed -= 8;
                 } else if (!forwardPressed && !backPressed) {
                     currentSpeed *= 0.99;
+                }
+
+                // Update Vue.js acceleration data
+                if (vueApp) {
+                    if (brakePressed) {
+                        vueApp.acceleration = -2; // Braking
+                    } else if (forwardPressed) {
+                        vueApp.acceleration = 1; // Accelerating
+                    } else if (backPressed) {
+                        vueApp.acceleration = -1; // Reverse
+                    } else {
+                        vueApp.acceleration = 0; // Coasting
+                    }
                 }
 
                 if(brakePressed) {
@@ -747,6 +757,9 @@
                     collisions: 0,
                     knockedBoxes: 0,
                     maxSpeed: 0,
+                    raceTime: 0,
+                    finishTime: null,
+                    isRacing: false,
                     boxesStatus: [
                         { knocked: false },
                         { knocked: false },
@@ -764,7 +777,8 @@
                     const canvas = document.getElementById('renderCanvas');
                     engine = new BABYLON.Engine(canvas, true);
                     
-                    const sceneInstance = await createScene();
+                    // Pass the Vue instance to the scene creation
+                    const sceneInstance = await createScene(this);
                     
                     // Render loop
                     engine.runRenderLoop(() => {
