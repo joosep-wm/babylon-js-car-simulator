@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Babylon.js Car Game</title>
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="node_modules/babylonjs/babylon.js"></script>
+    <script src="node_modules/babylonjs-loaders/babylonjs.loaders.js"></script>
+    <script src="node_modules/cannon/build/cannon.js"></script>
+    <script src="node_modules/vue/dist/vue.global.js"></script>
     <style>
         html, body {
             overflow: hidden;
@@ -15,75 +15,156 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
         }
         #renderCanvas {
             width: 100%;
             height: 100%;
             touch-action: none;
         }
+        .panel {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 16rem;
+            background-color: rgba(17, 24, 39, 0.8);
+            color: white;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        .panel-left {
+            left: 0;
+        }
+        .panel-right {
+            right: 0;
+        }
+        .panel h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .panel-left h2 {
+            color: #4ade80;
+        }
+        .panel-right h2 {
+            color: #fbbf24;
+        }
+        .stat-box {
+            background-color: #1f2937;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.75rem;
+        }
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .stat-value-large {
+            font-size: 1.875rem;
+            font-weight: bold;
+        }
+        .stat-value-green {
+            color: #4ade80;
+        }
+        .stat-value-yellow {
+            color: #fbbf24;
+        }
+        .stat-value-red {
+            color: #f87171;
+        }
+        .stat-value-blue {
+            color: #60a5fa;
+        }
+        .controls {
+            margin-top: 1.5rem;
+        }
+        .controls h3 {
+            font-size: 1.125rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #60a5fa;
+        }
+        .controls div {
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        .box-status {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        .box-knocked {
+            background-color: #991b1b;
+        }
+        .box-standing {
+            background-color: #166534;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <!-- Left Panel -->
-        <div class="absolute left-0 top-0 h-full w-64 bg-gray-900 bg-opacity-80 text-white p-4 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 text-green-400">Fahrzeug Daten</h2>
-            <div class="space-y-3">
-                <div class="bg-gray-800 p-3 rounded">
-                    <div class="text-gray-400 text-sm">Geschwindigkeit</div>
-                    <div class="text-2xl font-bold text-green-400">{{ speed.toFixed(1) }} km/h</div>
+        <div class="panel panel-left">
+            <h2>Fahrzeug Daten</h2>
+            <div>
+                <div class="stat-box">
+                    <div class="stat-label">Geschwindigkeit</div>
+                    <div class="stat-value-large stat-value-green">{{ speed.toFixed(1) }} km/h</div>
                 </div>
-                <div class="bg-gray-800 p-3 rounded">
-                    <div class="text-gray-400 text-sm">Position X</div>
-                    <div class="text-xl font-bold">{{ position.x.toFixed(2) }}</div>
+                <div class="stat-box">
+                    <div class="stat-label">Position X</div>
+                    <div class="stat-value">{{ position.x.toFixed(2) }}</div>
                 </div>
-                <div class="bg-gray-800 p-3 rounded">
-                    <div class="text-gray-400 text-sm">Position Z</div>
-                    <div class="text-xl font-bold">{{ position.z.toFixed(2) }}</div>
+                <div class="stat-box">
+                    <div class="stat-label">Position Z</div>
+                    <div class="stat-value">{{ position.z.toFixed(2) }}</div>
                 </div>
-                <div class="bg-gray-800 p-3 rounded">
-                    <div class="text-gray-400 text-sm">Rotation</div>
-                    <div class="text-xl font-bold">{{ rotation.toFixed(1) }}°</div>
+                <div class="stat-box">
+                    <div class="stat-label">Rotation</div>
+                    <div class="stat-value">{{ rotation.toFixed(1) }}°</div>
                 </div>
-                <div class="bg-gray-800 p-3 rounded">
-                    <div class="text-gray-400 text-sm">Beschleunigung</div>
-                    <div class="text-xl font-bold">{{ acceleration > 0 ? '↑' : acceleration < 0 ? '↓' : '—' }}</div>
+                <div class="stat-box">
+                    <div class="stat-label">Beschleunigung</div>
+                    <div class="stat-value">{{ acceleration > 0 ? '↑' : acceleration < 0 ? '↓' : '—' }}</div>
                 </div>
             </div>
-            <div class="mt-6">
-                <h3 class="text-lg font-bold mb-2 text-blue-400">Steuerung</h3>
-                <div class="text-sm space-y-1">
-                    <div>⬆️ W - Vorwärts</div>
-                    <div>⬇️ S - Rückwärts</div>
-                    <div>⬅️ A - Links</div>
-                    <div>➡️ D - Rechts</div>
-                </div>
+            <div class="controls">
+                <h3>Steuerung</h3>
+                <div>⬆️ W - Vorwärts</div>
+                <div>⬇️ S - Rückwärts</div>
+                <div>⬅️ A - Links</div>
+                <div>➡️ D - Rechts</div>
             </div>
         </div>
 
         <!-- Right Panel -->
-        <div class="absolute right-0 top-0 h-full w-64 bg-gray-900 bg-opacity-80 text-white p-4 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-4 text-yellow-400">Spielstatistik</h2>
-            <div class="space-y-3">
-                <div class="bg-gray-800 p-3 rounded">
-                    <div class="text-gray-400 text-sm">Umgeworfene Quadrate</div>
-                    <div class="text-3xl font-bold text-yellow-400">{{ knockedBoxes }} / 5</div>
+        <div class="panel panel-right">
+            <h2>Spielstatistik</h2>
+            <div>
+                <div class="stat-box">
+                    <div class="stat-label">Umgeworfene Quadrate</div>
+                    <div class="stat-value-large stat-value-yellow">{{ knockedBoxes }} / 5</div>
                 </div>
-                <div class="bg-gray-800 p-3 rounded">
-                    <div class="text-gray-400 text-sm">Kollisionen</div>
-                    <div class="text-2xl font-bold text-red-400">{{ collisions }}</div>
+                <div class="stat-box">
+                    <div class="stat-label">Kollisionen</div>
+                    <div class="stat-value-large stat-value-red">{{ collisions }}</div>
                 </div>
-                <div class="bg-gray-800 p-3 rounded">
-                    <div class="text-gray-400 text-sm">Höchstgeschwindigkeit</div>
-                    <div class="text-xl font-bold text-green-400">{{ maxSpeed.toFixed(1) }} km/h</div>
+                <div class="stat-box">
+                    <div class="stat-label">Höchstgeschwindigkeit</div>
+                    <div class="stat-value stat-value-green">{{ maxSpeed.toFixed(1) }} km/h</div>
                 </div>
             </div>
-            <div class="mt-6">
-                <h3 class="text-lg font-bold mb-2 text-purple-400">Quadrate Status</h3>
-                <div class="space-y-2">
+            <div class="controls">
+                <h3 style="color: #a78bfa;">Quadrate Status</h3>
+                <div>
                     <div v-for="(box, index) in boxesStatus" :key="index" 
-                         :class="box.knocked ? 'bg-red-800' : 'bg-green-800'"
-                         class="p-2 rounded text-sm">
+                         :class="box.knocked ? 'box-knocked' : 'box-standing'"
+                         class="box-status">
                         Quadrat {{ index + 1 }}: {{ box.knocked ? '❌ Umgeworfen' : '✅ Steht' }}
                     </div>
                 </div>
@@ -143,6 +224,9 @@
                     dirLight.position = new BABYLON.Vector3(20, 40, 20);
                     dirLight.intensity = 0.5;
 
+                    // Enable physics FIRST
+                    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
+
                     // Ground
                     const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 100, height: 100 }, scene);
                     const groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
@@ -150,9 +234,6 @@
                     groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
                     ground.material = groundMaterial;
                     ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.5 }, scene);
-
-                    // Enable physics
-                    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
 
                     // Create Car
                     const car = BABYLON.MeshBuilder.CreateBox("car", { height: 1, width: 2, depth: 4 }, scene);
