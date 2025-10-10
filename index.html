@@ -135,8 +135,8 @@
                     <div class="stat-value">{{ rotation.toFixed(1) }}°</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-label">Beschleunigung</div>
-                    <div class="stat-value">{{ acceleration > 0 ? '↑' : acceleration < 0 ? '↓' : '—' }}</div>
+                    <div class="stat-label">Richtung</div>
+                    <div class="stat-value">{{ direction }}</div>
                 </div>
             </div>
             <div class="controls">
@@ -905,16 +905,20 @@
                     currentSpeed *= 0.99;
                 }
 
-                // Update Vue.js acceleration data
+                // Update Vue.js direction data
                 if (vueApp) {
-                    if (brakePressed) {
-                        vueApp.acceleration = -2; // Braking
-                    } else if (forwardPressed) {
-                        vueApp.acceleration = 1; // Accelerating
-                    } else if (backPressed) {
-                        vueApp.acceleration = -1; // Reverse
+                    let directions = [];
+                    
+                    if (forwardPressed) directions.push('↑ Vorwärts');
+                    if (backPressed) directions.push('↓ Rückwärts');
+                    if (leftPressed) directions.push('← Links');
+                    if (rightPressed) directions.push('→ Rechts');
+                    if (brakePressed) directions.push('🚗 Bremse');
+                    
+                    if (directions.length > 0) {
+                        vueApp.direction = directions.join(' + ');
                     } else {
-                        vueApp.acceleration = 0; // Coasting
+                        vueApp.direction = '—';
                     }
                 }
 
@@ -993,7 +997,7 @@
                     speed: 0,
                     position: { x: 0, y: 0, z: 0 },
                     rotation: 0,
-                    acceleration: 0,
+                    direction: '—',
                     collisions: 0,
                     knockedBoxes: 0,
                     maxSpeed: 0,
@@ -1054,7 +1058,7 @@
                     this.speed = 0;
                     this.position = { x: 0, y: 0, z: 0 };
                     this.rotation = 0;
-                    this.acceleration = 0;
+                    this.direction = '—';
                     this.collisions = 0;
                     this.knockedBoxes = 0;
                     this.maxSpeed = 0;
