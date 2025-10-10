@@ -1,0 +1,19 @@
+{
+  "name": "babylon-js-car-example",
+  "version": "1.0.0",
+  "description": "A car demo showcase with babylon.js",
+  "main": "index.js",
+  "scripts": {
+    "serve": "python3 -m http.server 8080",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["babylonjs", "vue3", "car", "game", "3d"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babylonjs": "^8.31.0",
+    "babylonjs-loaders": "^8.31.0",
+    "cannon": "^0.6.2",
+    "vue": "^3.5.22"
+  }
+}
