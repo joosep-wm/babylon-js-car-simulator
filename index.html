@@ -123,6 +123,10 @@
                     <div class="stat-value">{{ position.x.toFixed(2) }}</div>
                 </div>
                 <div class="stat-box">
+                    <div class="stat-label">Position Y</div>
+                    <div class="stat-value">{{ position.y.toFixed(2) }}</div>
+                </div>
+                <div class="stat-box">
                     <div class="stat-label">Position Z</div>
                     <div class="stat-value">{{ position.z.toFixed(2) }}</div>
                 </div>
@@ -284,8 +288,18 @@
                 if (vueApp) {
                     vueApp.speed = speed * 3.6; // Convert to km/h
                     vueApp.position.x = carF.position.x;
+                    vueApp.position.y = carF.position.y;
                     vueApp.position.z = carF.position.z;
-                    vueApp.rotation = (carF.rotation.y * 180 / Math.PI) % 360;
+                    
+                    // Fix rotation calculation - use quaternion if available, otherwise use euler
+                    let rotationY = 0;
+                    if (carF.rotationQuaternion) {
+                        rotationY = carF.rotationQuaternion.toEulerAngles().y;
+                    } else {
+                        rotationY = carF.rotation.y;
+                    }
+                    vueApp.rotation = (rotationY * 180 / Math.PI) % 360;
+                    
                     vueApp.maxSpeed = Math.max(vueApp.maxSpeed, vueApp.speed);
                     
                     // Update race time
@@ -977,7 +991,7 @@
             data() {
                 return {
                     speed: 0,
-                    position: { x: 0, z: 0 },
+                    position: { x: 0, y: 0, z: 0 },
                     rotation: 0,
                     acceleration: 0,
                     collisions: 0,
@@ -1038,7 +1052,7 @@
                     
                     // Reset Vue data
                     this.speed = 0;
-                    this.position = { x: 0, z: 0 };
+                    this.position = { x: 0, y: 0, z: 0 };
                     this.rotation = 0;
                     this.acceleration = 0;
                     this.collisions = 0;
