@@ -250,8 +250,10 @@
 
             // Finish line
             const checkerPlane = BABYLON.MeshBuilder.CreatePlane("checkerPlane", { width: 80, height: 10 });
-            const checkerPlaneMat = new BABYLON.StandardMaterial("checkerPlaneMat");
+            const checkerPlaneMat = new BABYLON.StandardMaterial("checkerPlaneMat", scene);
             checkerPlaneMat.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            checkerPlaneMat.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+            checkerPlaneMat.diffuseTexture.uScale = 10;
             checkerPlane.material = checkerPlaneMat;
             checkerPlane.position.z = -50;
 
@@ -352,6 +354,11 @@
             trackMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
             trackMaterial.emissiveColor = new BABYLON.Color3(0.21, 0.3, 0.31);
             track.material = trackMaterial;
+            
+            // Add texture from original code
+            trackMaterial.diffuseTexture = new BABYLON.Texture("textures/up.png", scene);
+            trackMaterial.diffuseTexture.uScale = 20;
+            trackMaterial.diffuseTexture.wAng = BABYLON.Tools.ToRadians(250);
 
             addTrackStripes(scene, radius, width, height, segments);
             addSideGuardrails(scene, radius, width, height, segments);
@@ -364,6 +371,7 @@
             const railThickness = 0.4;
             const railMaterial = new BABYLON.StandardMaterial("railMaterial", scene);
             railMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+            railMaterial.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
 
             const innerRailPath = [];
             const innerRailPathTop = [];
@@ -703,7 +711,10 @@
 
         function InitTyreMaterial() {
             tyreMaterial = new BABYLON.StandardMaterial("Tyre", scene);
-            tyreMaterial.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            const upTexture = new BABYLON.Texture("textures/up.png", scene);
+            upTexture.wAng = -Math.PI / 2;
+            upTexture.vScale = 0.4;
+            tyreMaterial.diffuseTexture = upTexture;
         }
 
         function AddWheelPhysics(mesh, mass, bounce, friction) {

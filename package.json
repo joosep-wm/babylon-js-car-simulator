@@ -4,7 +4,7 @@
   "description": "A car demo showcase with babylon.js",
   "main": "index.js",
   "scripts": {
-    "serve": "python3 -m http.server 8080",
+    "serve": "python -m http.server 8080",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["babylonjs", "vue3", "car", "game", "3d"],
