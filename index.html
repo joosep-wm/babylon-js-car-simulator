@@ -175,7 +175,9 @@
                 <h3 style="color: #a78bfa;">Info</h3>
                 <div>🏁 Drücke W zum Starten</div>
                 <div>⏱️ Zeit läuft beim ersten Gas</div>
-                <div>🎯 Fahre durch die Ziellinie</div>
+                <div>🎯 Fahre alle 5 Quadrate um</div>
+                <div>💥 Vermeide Kollisionen mit Türmen</div>
+                <div>🏎️ Erreiche die Höchstgeschwindigkeit</div>
             </div>
         </div>
 
@@ -235,6 +237,12 @@
             // Create walls around the track
             createTrackWalls(scene, 800, 800);
 
+            // Add collision towers
+            createCollisionTowers(scene);
+
+            // Add 5 knockable boxes
+            createKnockableBoxes(scene, vueApp);
+
             // Remove finish line creation
             // const checkerPlane = ... (removed)
             // const finishTrigger = ... (removed)
@@ -285,6 +293,23 @@
                         vueApp.raceTime = ((Date.now() - raceTime) / 1000);
                     }
                 }
+
+                // Check for collisions with towers
+                scene.meshes.forEach(mesh => {
+                    if (mesh.name.includes("tower_") && carF.intersectsMesh(mesh, false)) {
+                        // Simple collision counter (you might want to add cooldown)
+                        if (!mesh.collisionCooldown) {
+                            if (vueApp) {
+                                vueApp.collisions++;
+                            }
+                            console.log("Collision with tower!");
+                            mesh.collisionCooldown = true;
+                            setTimeout(() => {
+                                mesh.collisionCooldown = false;
+                            }, 1000);
+                        }
+                    }
+                });
             });
 
             return scene;
@@ -417,6 +442,97 @@
                 post.position.set(-trackWidth / 2 - wallThickness / 2, wallHeight / 2 - 19.5, z);
                 post.material = postMaterial;
             }
+        }
+
+        function createCollisionTowers(scene) {
+            const towerMaterial = new BABYLON.StandardMaterial("towerMaterial", scene);
+            towerMaterial.diffuseColor = new BABYLON.Color3(0.6, 0.3, 0.1); // Brown color
+            towerMaterial.emissiveColor = new BABYLON.Color3(0.1, 0.05, 0.02);
+
+            // Create several towers around the track
+            const towerPositions = [
+                { x: 200, z: 200 },
+                { x: -200, z: 200 },
+                { x: 200, z: -200 },
+                { x: -200, z: -200 },
+                { x: 0, z: 300 },
+                { x: 300, z: 0 },
+                { x: -300, z: 0 },
+                { x: 0, z: -300 }
+            ];
+
+            towerPositions.forEach((pos, index) => {
+                const tower = BABYLON.MeshBuilder.CreateBox(`tower_${index}`, {
+                    width: 15,
+                    height: 25,
+                    depth: 15
+                }, scene);
+                
+                tower.position.set(pos.x, 12.5 - 20, pos.z); // Height/2 - ground level
+                tower.material = towerMaterial;
+                
+                // Add physics for collision
+                new BABYLON.PhysicsAggregate(tower, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 0.5 }, scene);
+            });
+        }
+
+        function createKnockableBoxes(scene, vueApp) {
+            const boxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
+            boxMaterial.diffuseColor = new BABYLON.Color3(1, 0.5, 0); // Orange color
+            boxMaterial.emissiveColor = new BABYLON.Color3(0.2, 0.1, 0);
+
+            // Create 5 boxes at different positions
+            const boxPositions = [
+                { x: 100, z: 100 },
+                { x: -100, z: 100 },
+                { x: 100, z: -100 },
+                { x: -100, z: -100 },
+                { x: 150, z: 0 }  // Moved from center to avoid car spawn position
+            ];
+
+            const boxes = [];
+
+            boxPositions.forEach((pos, index) => {
+                const box = BABYLON.MeshBuilder.CreateBox(`knockableBox_${index}`, {
+                    width: 8,
+                    height: 8,
+                    depth: 8
+                }, scene);
+                
+                box.position.set(pos.x, 4 - 20, pos.z); // Height/2 - ground level
+                box.material = boxMaterial;
+                
+                // Add physics - these boxes can be knocked over
+                const boxAggregate = new BABYLON.PhysicsAggregate(box, BABYLON.PhysicsShapeType.BOX, { 
+                    mass: 50, // Light enough to be knocked over
+                    friction: 0.8,
+                    restitution: 0.3
+                }, scene);
+
+                // Store original position for reset
+                box.originalPosition = box.position.clone();
+                box.originalRotation = box.rotation.clone();
+                box.knocked = false;
+                box.boxIndex = index;
+
+                boxes.push(box);
+
+                // Check if box is knocked over
+                scene.onBeforeRenderObservable.add(() => {
+                    // Check if box has rotated significantly (knocked over)
+                    const rotationThreshold = Math.PI / 4; // 45 degrees
+                    if (!box.knocked && (Math.abs(box.rotation.x) > rotationThreshold || Math.abs(box.rotation.z) > rotationThreshold)) {
+                        box.knocked = true;
+                        if (vueApp) {
+                            vueApp.knockedBoxes++;
+                            vueApp.boxesStatus[index].knocked = true;
+                        }
+                        console.log(`Box ${index} knocked over!`);
+                    }
+                });
+            });
+
+            return boxes;
         }
 
         function createCircularRaceTrackWithSideGuardrails(scene, radius = 10, width = 3, height = 0.5, segments = 32) {
@@ -952,6 +1068,31 @@
                     canvas.focus();
                     
                     console.log("Game reset complete!");
+                },
+                
+                resetBoxes() {
+                    // Reset box status in Vue
+                    this.knockedBoxes = 0;
+                    this.boxesStatus.forEach(box => {
+                        box.knocked = false;
+                    });
+                    
+                    // Reset boxes in the scene
+                    if (scene) {
+                        scene.meshes.forEach(mesh => {
+                            if (mesh.name.includes("knockableBox")) {
+                                mesh.knocked = false;
+                                if (mesh.physicsBody) {
+                                    // Reset position and rotation
+                                    mesh.position.copyFrom(mesh.originalPosition);
+                                    mesh.rotation.copyFrom(mesh.originalRotation);
+                                    // Reset physics velocities
+                                    mesh.physicsBody.setLinearVelocity(BABYLON.Vector3.Zero());
+                                    mesh.physicsBody.setAngularVelocity(BABYLON.Vector3.Zero());
+                                }
+                            }
+                        });
+                    }
                 }
             }
         }).mount('#app');
