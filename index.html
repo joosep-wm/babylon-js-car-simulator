@@ -226,40 +226,19 @@
             const carF = CreateCar(vueApp);
             camera.lockedTarget = carF;
 
-            // Create circular race track
-            const track = createCircularRaceTrackWithSideGuardrails(scene, trackRad, 80, 0.5, 64);
-            track.position.x = trackRad;
+            // Create square race track
+            const track = createSquareRaceTrack(scene, 800, 800);
             track.position.y = -20;
 
             new BABYLON.PhysicsAggregate(track, BABYLON.PhysicsShapeType.MESH, { mass: 0, friction: 2 }, scene);
 
-            // Merge rail components
-            let tempArr = [];
-            scene.meshes.forEach((m) => {
-                if (m.name.includes("stripe") || m.name.includes("innerPost") || m.name.includes("outerPost") || 
-                    m.name.includes("innerRail") || m.name.includes("outerRail")) {
-                    tempArr.push(m);
-                }
-            });
+            // Create walls around the track
+            createTrackWalls(scene, 800, 800);
 
-            const allRail = BABYLON.Mesh.MergeMeshes(tempArr, undefined, undefined, undefined, undefined, true);
-            if (allRail) {
-                allRail.parent = track;
-                new BABYLON.PhysicsAggregate(allRail, BABYLON.PhysicsShapeType.MESH, { mass: 0, friction: 0.1 }, scene);
-            }
-
-            // Finish line
-            const checkerPlane = BABYLON.MeshBuilder.CreatePlane("checkerPlane", { width: 80, height: 10 });
-            const checkerPlaneMat = new BABYLON.StandardMaterial("checkerPlaneMat", scene);
-            checkerPlaneMat.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            checkerPlaneMat.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
-            checkerPlaneMat.diffuseTexture.uScale = 10;
-            checkerPlane.material = checkerPlaneMat;
-            checkerPlane.position.z = -50;
-
-            const finishTrigger = BABYLON.MeshBuilder.CreateBox("finish", { width: 80, height: 10, depth: 1 }, scene);
-            finishTrigger.position = new BABYLON.Vector3(0, -15, checkerPlane.position.z);
-
+            // Remove finish line creation
+            // const checkerPlane = ... (removed)
+            // const finishTrigger = ... (removed)
+            // Remove finish line logic
             let alreadyTriggered = false;
             let raceTime = 0;
             let keyTrigger = false;
@@ -306,25 +285,138 @@
                         vueApp.raceTime = ((Date.now() - raceTime) / 1000);
                     }
                 }
-
-                if (carF.intersectsMesh(finishTrigger, false)) {
-                    if (!alreadyTriggered && keyTrigger) {
-                        finishTime = ((Date.now() - raceTime) / 1000).toFixed(2);
-                        console.log("FINISH LINE CROSSED");
-                        if (vueApp) {
-                            vueApp.finishTime = finishTime;
-                            vueApp.isRacing = false;
-                        }
-                        alreadyTriggered = true;
-                        fCounter++;
-                        setTimeout(() => {
-                            alreadyTriggered = false;
-                        }, 1000);
-                    }
-                }
             });
 
             return scene;
+        }
+
+        function createSquareRaceTrack(scene, width = 800, height = 800) {
+            // Create a square ground/track
+            const track = BABYLON.MeshBuilder.CreateGround("SquareTrack", { 
+                width: width, 
+                height: height 
+            }, scene);
+
+            // Apply the same material as the original track
+            const trackMaterial = new BABYLON.StandardMaterial("trackMaterial", scene);
+            trackMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+            trackMaterial.emissiveColor = new BABYLON.Color3(0.21, 0.3, 0.31);
+            
+            // Add texture from original code
+            trackMaterial.diffuseTexture = new BABYLON.Texture("textures/up.png", scene);
+            trackMaterial.diffuseTexture.uScale = 20;
+            trackMaterial.diffuseTexture.vScale = 20;
+            trackMaterial.diffuseTexture.wAng = BABYLON.Tools.ToRadians(250);
+            
+            track.material = trackMaterial;
+
+            return track;
+        }
+
+        function createTrackWalls(scene, trackWidth = 800, trackHeight = 800) {
+            const wallHeight = 5;
+            const wallThickness = 2;
+
+            // Create wall material similar to the original rail material
+            const wallMaterial = new BABYLON.StandardMaterial("wallMaterial", scene);
+            wallMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+            wallMaterial.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+
+            // North Wall
+            const northWall = BABYLON.MeshBuilder.CreateBox("northWall", {
+                width: trackWidth + wallThickness * 2,
+                height: wallHeight,
+                depth: wallThickness
+            }, scene);
+            northWall.position.set(0, wallHeight / 2 - 20, trackHeight / 2 + wallThickness / 2);
+            northWall.material = wallMaterial;
+            new BABYLON.PhysicsAggregate(northWall, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 0.1 }, scene);
+
+            // South Wall
+            const southWall = BABYLON.MeshBuilder.CreateBox("southWall", {
+                width: trackWidth + wallThickness * 2,
+                height: wallHeight,
+                depth: wallThickness
+            }, scene);
+            southWall.position.set(0, wallHeight / 2 - 20, -trackHeight / 2 - wallThickness / 2);
+            southWall.material = wallMaterial;
+            new BABYLON.PhysicsAggregate(southWall, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 0.1 }, scene);
+
+            // East Wall
+            const eastWall = BABYLON.MeshBuilder.CreateBox("eastWall", {
+                width: wallThickness,
+                height: wallHeight,
+                depth: trackHeight
+            }, scene);
+            eastWall.position.set(trackWidth / 2 + wallThickness / 2, wallHeight / 2 - 20, 0);
+            eastWall.material = wallMaterial;
+            new BABYLON.PhysicsAggregate(eastWall, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 0.1 }, scene);
+
+            // West Wall
+            const westWall = BABYLON.MeshBuilder.CreateBox("westWall", {
+                width: wallThickness,
+                height: wallHeight,
+                depth: trackHeight
+            }, scene);
+            westWall.position.set(-trackWidth / 2 - wallThickness / 2, wallHeight / 2 - 20, 0);
+            westWall.material = wallMaterial;
+            new BABYLON.PhysicsAggregate(westWall, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 0.1 }, scene);
+
+            // Add some posts for decoration (similar to original rail posts)
+            const postMaterial = new BABYLON.StandardMaterial("postMaterial", scene);
+            postMaterial.diffuseColor = new BABYLON.Color3(0.7, 0.7, 0.7);
+            postMaterial.emissiveColor = BABYLON.Color3.Teal();
+
+            const postSpacing = 50;
+            const postCount = Math.floor(trackWidth / postSpacing);
+
+            // North posts
+            for (let i = 0; i <= postCount; i++) {
+                const x = -trackWidth / 2 + (i * postSpacing);
+                const post = BABYLON.MeshBuilder.CreateBox("northPost", {
+                    width: 1,
+                    height: wallHeight + 1,
+                    depth: 1
+                }, scene);
+                post.position.set(x, wallHeight / 2 - 19.5, trackHeight / 2 + wallThickness / 2);
+                post.material = postMaterial;
+            }
+
+            // South posts
+            for (let i = 0; i <= postCount; i++) {
+                const x = -trackWidth / 2 + (i * postSpacing);
+                const post = BABYLON.MeshBuilder.CreateBox("southPost", {
+                    width: 1,
+                    height: wallHeight + 1,
+                    depth: 1
+                }, scene);
+                post.position.set(x, wallHeight / 2 - 19.5, -trackHeight / 2 - wallThickness / 2);
+                post.material = postMaterial;
+            }
+
+            // East posts
+            for (let i = 0; i <= postCount; i++) {
+                const z = -trackHeight / 2 + (i * postSpacing);
+                const post = BABYLON.MeshBuilder.CreateBox("eastPost", {
+                    width: 1,
+                    height: wallHeight + 1,
+                    depth: 1
+                }, scene);
+                post.position.set(trackWidth / 2 + wallThickness / 2, wallHeight / 2 - 19.5, z);
+                post.material = postMaterial;
+            }
+
+            // West posts
+            for (let i = 0; i <= postCount; i++) {
+                const z = -trackHeight / 2 + (i * postSpacing);
+                const post = BABYLON.MeshBuilder.CreateBox("westPost", {
+                    width: 1,
+                    height: wallHeight + 1,
+                    depth: 1
+                }, scene);
+                post.position.set(-trackWidth / 2 - wallThickness / 2, wallHeight / 2 - 19.5, z);
+                post.material = postMaterial;
+            }
         }
 
         function createCircularRaceTrackWithSideGuardrails(scene, radius = 10, width = 3, height = 0.5, segments = 32) {
