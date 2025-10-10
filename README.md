@@ -131,6 +131,7 @@ http://localhost:8080
 babylon-js-car-example/
 ├── index.html          # Main game file
 ├── game.css           # Game styling and UI design
+├── InfoPanel.js       # Vue component for debug panels
 ├── textures/           # 3D textures
 │   ├── up.png         # Asphalt texture
 │   └── amiga.jpg      # Checkerboard texture

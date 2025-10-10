@@ -9,90 +9,27 @@
     <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="InfoPanel.js"></script>
     <link rel="stylesheet" href="game.css">
 </head>
 <body>
     <div id="app">
-        <!-- Debug Button -->
-        <button class="debug-button" @click="toggleDebugPanels" v-show="!debugVisible">
-            🐛 Debug
-        </button>
-
-        <!-- Left Panel -->
-        <div class="panel panel-left" :class="{ visible: debugVisible }">
-            <button class="hide-button" @click="hideDebugPanels">✕ Hide</button>
-            <h2>Vehicle Data</h2>
-            <div>
-                <div class="stat-box">
-                    <div class="stat-label">Speed</div>
-                    <div class="stat-value-large stat-value-green">{{ speed.toFixed(1) }} km/h</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Position X</div>
-                    <div class="stat-value">{{ position.x.toFixed(2) }}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Position Y</div>
-                    <div class="stat-value">{{ position.y.toFixed(2) }}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Position Z</div>
-                    <div class="stat-value">{{ position.z.toFixed(2) }}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Rotation</div>
-                    <div class="stat-value">{{ rotation.toFixed(1) }}°</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Direction</div>
-                    <div class="stat-value">{{ direction }}</div>
-                </div>
-            </div>
-            <div class="controls">
-                <h3>Controls</h3>
-                <div>⬆️ W - Forward</div>
-                <div>⬇️ S - Backward</div>
-                <div>⬅️ A - Left</div>
-                <div>➡️ D - Right</div>
-                <div>🚗 Space - Brake</div>
-                <div>🔄 Enter - Reset</div>
-            </div>
-        </div>
-
-        <!-- Right Panel -->
-        <div class="panel panel-right" :class="{ visible: debugVisible }">
-            <h2>Game Statistics</h2>
-            <div>
-                <div class="stat-box">
-                    <div class="stat-label">Race Time</div>
-                    <div class="stat-value-large stat-value-blue">
-                        <span v-if="!isRacing && !finishTime">START</span>
-                        <span v-else-if="finishTime">{{ finishTime }}s</span>
-                        <span v-else>{{ raceTime.toFixed(2) }}s</span>
-                    </div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Knocked Boxes</div>
-                    <div class="stat-value-large stat-value-yellow">{{ knockedBoxes }} / 5</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Collisions</div>
-                    <div class="stat-value-large stat-value-red">{{ collisions }}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Top Speed</div>
-                    <div class="stat-value stat-value-green">{{ maxSpeed.toFixed(1) }} km/h</div>
-                </div>
-            </div>
-            <div class="controls">
-                <h3 style="color: #a78bfa;">Info</h3>
-                <div>🏁 Press W to start</div>
-                <div>⏱️ Time starts with first gas</div>
-                <div>🎯 Knock down all 5 boxes</div>
-                <div>💥 Avoid collisions with towers</div>
-                <div>🏎️ Reach top speed</div>
-            </div>
-        </div>
+        <!-- Info Panel Component -->
+        <info-panel
+            :debug-visible="debugVisible"
+            :speed="speed"
+            :position="position"
+            :rotation="rotation"
+            :direction="direction"
+            :collisions="collisions"
+            :knocked-boxes="knockedBoxes"
+            :max-speed="maxSpeed"
+            :race-time="raceTime"
+            :finish-time="finishTime"
+            :is-racing="isRacing"
+            @toggle-debug="toggleDebugPanels"
+            @hide-debug="hideDebugPanels">
+        </info-panel>
 
         <!-- Canvas -->
         <canvas id="renderCanvas"></canvas>
@@ -953,6 +890,9 @@
         }
 
         createApp({
+            components: {
+                'info-panel': InfoPanel
+            },
             data() {
                 return {
                     debugVisible: false,
