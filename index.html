@@ -135,6 +135,9 @@
             // Add 5 knockable boxes
             createKnockableBoxes(scene, vueApp);
 
+            // Setup physics-based collision detection
+            setupCollisionDetection(scene, carF, vueApp);
+
             // Remove finish line creation
             // const checkerPlane = ... (removed)
             // const finishTrigger = ... (removed)
@@ -195,23 +198,6 @@
                         vueApp.raceTime = ((Date.now() - raceTime) / 1000);
                     }
                 }
-
-                // Check for collisions with towers
-                scene.meshes.forEach(mesh => {
-                    if (mesh.name.includes("tower_") && carF.intersectsMesh(mesh, false)) {
-                        // Simple collision counter (you might want to add cooldown)
-                        if (!mesh.collisionCooldown) {
-                            if (vueApp) {
-                                vueApp.collisions++;
-                            }
-                            console.log("Collision with tower!");
-                            mesh.collisionCooldown = true;
-                            setTimeout(() => {
-                                mesh.collisionCooldown = false;
-                            }, 1000);
-                        }
-                    }
-                });
             });
 
             return scene;
@@ -401,14 +387,14 @@
                     depth: 8
                 }, scene);
                 
-                box.position.set(pos.x, 4 - 20, pos.z); // Height/2 - ground level
+                box.position.set(pos.x, 4, pos.z); // Height/2 above ground level
                 box.material = boxMaterial;
                 
                 // Add physics - these boxes can be knocked over
                 const boxAggregate = new BABYLON.PhysicsAggregate(box, BABYLON.PhysicsShapeType.BOX, { 
-                    mass: 50, // Light enough to be knocked over
-                    friction: 0.8,
-                    restitution: 0.3
+                    mass: 20, // Lighter mass for easier knockdown
+                    friction: 0.4, // Less friction
+                    restitution: 0.5 // More bounce
                 }, scene);
 
                 // Store original position for reset
@@ -416,25 +402,100 @@
                 box.originalRotation = box.rotation.clone();
                 box.knocked = false;
                 box.boxIndex = index;
+                box.positionSettled = false; // Flag to track if position has settled
 
                 boxes.push(box);
-
-                // Check if box is knocked over
-                scene.onBeforeRenderObservable.add(() => {
-                    // Check if box has rotated significantly (knocked over)
-                    const rotationThreshold = Math.PI / 4; // 45 degrees
-                    if (!box.knocked && (Math.abs(box.rotation.x) > rotationThreshold || Math.abs(box.rotation.z) > rotationThreshold)) {
-                        box.knocked = true;
-                        if (vueApp) {
-                            vueApp.knockedBoxes++;
-                            vueApp.boxesStatus[index].knocked = true;
-                        }
-                        console.log(`Box ${index} knocked over!`);
-                    }
-                });
             });
 
+            // Debug: List all created boxes
+            console.log(`Created ${boxes.length} knockable boxes - position settling in 2 seconds`);
+
             return boxes;
+        }
+
+        // Physics-based collision detection system
+        function setupCollisionDetection(scene, car, vueApp) {
+            // Get car's physics body
+            const carPhysicsBody = car.physicsBody || car._physicsBody;
+            if (!carPhysicsBody) {
+                console.error("Car physics body not found!");
+                return;
+            }
+
+            // Track collision cooldowns to prevent spam
+            const collisionCooldowns = new Map();
+            let lastVelocity = { x: 0, y: 0, z: 0 };
+            let debugCounter = 0;
+            let startTime = Date.now(); // Track when system started
+
+            console.log("Collision detection system started, box detection active after 2 seconds...");
+
+            // Setup collision detection
+            scene.onBeforeRenderObservable.add(() => {
+                debugCounter++;
+                
+                // Get current velocity
+                const velocity = carPhysicsBody.getLinearVelocity();
+                const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+                
+                // Check for sudden speed changes (collisions)
+                const lastSpeed = Math.sqrt(lastVelocity.x * lastVelocity.x + lastVelocity.y * lastVelocity.y + lastVelocity.z * lastVelocity.z);
+                const speedDifference = Math.abs(speed - lastSpeed);
+                
+                // If speed drops significantly (collision), increment counter
+                if (speedDifference > 5 && speed < lastSpeed && lastSpeed > 2) {
+                    const now = Date.now();
+                    if (!collisionCooldowns.has('general') || now - collisionCooldowns.get('general') > 500) {
+                        if (vueApp) {
+                            vueApp.collisions++;
+                            console.log(`Collision detected! Speed change: ${speedDifference.toFixed(2)}, Total collisions: ${vueApp.collisions}`);
+                        }
+                        collisionCooldowns.set('general', now);
+                    }
+                }
+
+                // Debug every 300 frames (5 seconds at 60fps) - reduced spam
+                if (debugCounter % 300 === 0) {
+                    const boxCount = scene.meshes.filter(m => m.name.includes("knockableBox_")).length;
+                    console.log(`Debug: Car at (${car.position.x.toFixed(1)}, ${car.position.y.toFixed(1)}, ${car.position.z.toFixed(1)}), Found ${boxCount} boxes`);
+                }
+
+                // Only start checking box movement after 2 seconds (let physics settle)
+                if (Date.now() - startTime > 2000) {
+                    // Check for box movement (knocked boxes) - allow multiple hits per box
+                    scene.meshes.forEach(mesh => {
+                        if (mesh.name.includes("knockableBox_")) {
+                            // Update initial position if this is first check after settling
+                            if (!mesh.positionSettled) {
+                                mesh.initialPosition = mesh.position.clone();
+                                mesh.positionSettled = true;
+                                // Removed spam log - system working
+                                return; // Skip this frame for this box
+                            }
+                            
+                            // Calculate how much the box has moved from its settled position
+                            const movementDistance = BABYLON.Vector3.Distance(mesh.position, mesh.initialPosition);
+                            const now = Date.now();
+                            
+                            // If box moved more than 3 units and enough time passed since last count
+                            if (movementDistance > 3) {
+                                // Use cooldown per box to prevent rapid spam (1000ms)
+                                if (!collisionCooldowns.has(mesh.name) || now - collisionCooldowns.get(mesh.name) > 1000) {
+                                    if (vueApp) {
+                                        vueApp.knockedBoxes++;
+                                        console.log(`Box ${mesh.name} moved ${movementDistance.toFixed(2)} units from settled position! Total: ${vueApp.knockedBoxes}`);
+                                        // Update initial position to current position to track further movement
+                                        mesh.initialPosition = mesh.position.clone();
+                                    }
+                                    collisionCooldowns.set(mesh.name, now);
+                                }
+                            }
+                        }
+                    });
+                }
+
+                lastVelocity = { x: velocity.x, y: velocity.y, z: velocity.z };
+            });
         }
 
         function createCircularRaceTrackWithSideGuardrails(scene, radius = 10, width = 3, height = 0.5, segments = 32) {
@@ -1170,6 +1231,7 @@
                         scene.meshes.forEach(mesh => {
                             if (mesh.name.includes("knockableBox")) {
                                 mesh.knocked = false;
+                                mesh.positionSettled = false; // Reset settled flag
                                 if (mesh.physicsBody) {
                                     // Reset position and rotation
                                     mesh.position.copyFrom(mesh.originalPosition);

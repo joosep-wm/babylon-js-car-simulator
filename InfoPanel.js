@@ -61,7 +61,7 @@ const InfoPanel = {
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Knocked Boxes</div>
-                    <div class="stat-value-large stat-value-yellow">{{ knockedBoxes }} / 5</div>
+                    <div class="stat-value-large stat-value-yellow">{{ knockedBoxes }}</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Collisions</div>
@@ -106,6 +106,9 @@ const InfoPanel = {
     beforeUnmount() {
         window.removeEventListener('keydown', this.handleGlobalKeydown);
     },
+    watch: {
+        // Watchers removed - system working stable
+    },
     methods: {
         handleGlobalKeydown(e) {
             if (e.key === 'F12' || e.key === '`') {
@@ -115,11 +118,9 @@ const InfoPanel = {
         },
         toggleDebugPanels() {
             this.debugVisible = true;
-            console.log("Debug panels shown");
         },
         hideDebugPanels() {
             this.debugVisible = false;
-            console.log("Debug panels hidden");
         }
     }
 };
