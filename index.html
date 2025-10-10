@@ -22,6 +22,7 @@
             width: 100%;
             height: 100vh;
             touch-action: none;
+            outline: none; /* Remove focus outline */
         }
         .panel {
             position: absolute;
@@ -779,6 +780,15 @@
                     
                     // Pass the Vue instance to the scene creation
                     const sceneInstance = await createScene(this);
+                    
+                    // Auto-focus the canvas for immediate keyboard input
+                    canvas.focus();
+                    canvas.setAttribute('tabindex', '0');
+                    
+                    // Add click listener to focus canvas when clicked
+                    canvas.addEventListener('click', () => {
+                        canvas.focus();
+                    });
                     
                     // Render loop
                     engine.runRenderLoop(() => {
