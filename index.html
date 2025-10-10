@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Babylon.js Car Game</title>
-    <script src="node_modules/babylonjs/babylon.js"></script>
-    <script src="node_modules/babylonjs-loaders/babylonjs.loaders.js"></script>
-    <script src="node_modules/cannon/build/cannon.js"></script>
-    <script src="node_modules/vue/dist/vue.global.js"></script>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         html, body {
             overflow: hidden;
@@ -178,6 +179,564 @@
     <script>
         const { createApp } = Vue;
 
+        // Global variables for car physics system
+        let scene;
+        let engine;
+        let havokInstance = null;
+        let tyreMaterial;
+        const debugColours = [];
+        debugColours[0] = new BABYLON.Color3(1, 0, 1);
+        debugColours[1] = new BABYLON.Color3(1, 0, 0);
+        debugColours[2] = new BABYLON.Color3(0, 1, 0);
+        debugColours[3] = new BABYLON.Color3(1, 1, 0);
+        debugColours[4] = new BABYLON.Color3(0, 1, 1);
+        debugColours[5] = new BABYLON.Color3(0, 0, 1);
+        const FILTERS = { CarParts: 1, Environment: 2 };
+        const trackRad = 400;
+
+        async function createScene() {
+            scene = new BABYLON.Scene(engine);
+
+            // Initialize Havok Physics
+            const havokPlugin = new BABYLON.HavokPlugin(true, await HavokPhysics());
+            scene.enablePhysics(new BABYLON.Vector3(0, -150, 0), havokPlugin);
+            scene.getPhysicsEngine().setTimeStep(1 / 500);
+            scene.getPhysicsEngine().setVelocityLimits(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+            scene.getPhysicsEngine().setSubTimeStep(1.8);
+
+            const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 10, -10), scene);
+            camera.radius = 50;
+            camera.heightOffset = 20;
+            camera.rotationOffset = 180;
+            camera.cameraAcceleration = 0.035;
+            camera.maxCameraSpeed = 10;
+
+            const hemisphericLight = new BABYLON.HemisphericLight("Hemispheric Light", new BABYLON.Vector3(1, 1, 0), scene);
+            hemisphericLight.intensity = 0.7;
+
+            InitTyreMaterial();
+
+            const carF = CreateCar();
+            camera.lockedTarget = carF;
+
+            // Create circular race track
+            const track = createCircularRaceTrackWithSideGuardrails(scene, trackRad, 80, 0.5, 64);
+            track.position.x = trackRad;
+            track.position.y = -20;
+
+            new BABYLON.PhysicsAggregate(track, BABYLON.PhysicsShapeType.MESH, { mass: 0, friction: 2 }, scene);
+
+            // Merge rail components
+            let tempArr = [];
+            scene.meshes.forEach((m) => {
+                if (m.name.includes("stripe") || m.name.includes("innerPost") || m.name.includes("outerPost") || 
+                    m.name.includes("innerRail") || m.name.includes("outerRail")) {
+                    tempArr.push(m);
+                }
+            });
+
+            const allRail = BABYLON.Mesh.MergeMeshes(tempArr, undefined, undefined, undefined, undefined, true);
+            if (allRail) {
+                allRail.parent = track;
+                new BABYLON.PhysicsAggregate(allRail, BABYLON.PhysicsShapeType.MESH, { mass: 0, friction: 0.1 }, scene);
+            }
+
+            // GUI
+            var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+            var text1 = new BABYLON.GUI.TextBlock();
+            text1.text = "Speed";
+            text1.color = "white";
+            text1.fontSize = 24;
+            text1.width = 0.2;
+            text1.height = "40px";
+            text1.verticalAlignment = 0;
+            text1.horizontalAlignment = 1;
+            advancedTexture.addControl(text1);
+
+            var text2 = new BABYLON.GUI.TextBlock();
+            text2.text = "Start";
+            text2.color = "white";
+            text2.fontSize = 24;
+            text2.width = 0.2;
+            text2.height = "40px";
+            text2.verticalAlignment = 0;
+            text2.horizontalAlignment = 0;
+            advancedTexture.addControl(text2);
+
+            // Finish line
+            const checkerPlane = BABYLON.MeshBuilder.CreatePlane("checkerPlane", { width: 80, height: 10 });
+            const checkerPlaneMat = new BABYLON.StandardMaterial("checkerPlaneMat");
+            checkerPlaneMat.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            checkerPlane.material = checkerPlaneMat;
+            checkerPlane.position.z = -50;
+
+            const finishTrigger = BABYLON.MeshBuilder.CreateBox("finish", { width: 80, height: 10, depth: 1 }, scene);
+            finishTrigger.position = new BABYLON.Vector3(0, -15, checkerPlane.position.z);
+
+            let alreadyTriggered = false;
+            let raceTime = 0;
+            let keyTrigger = false;
+            let finishTime = 0;
+
+            scene.onKeyboardObservable.addOnce((kbInfo) => {
+                switch (kbInfo.type) {
+                    case BABYLON.KeyboardEventTypes.KEYDOWN:
+                        switch (kbInfo.event.key) {
+                            case "w":
+                            case "W":
+                                console.log("W Triggered");
+                                raceTime = Date.now();
+                                keyTrigger = true;
+                                break;
+                        }
+                        break;
+                }
+            });
+
+            const velocity = new BABYLON.Vector3();
+            let speed;
+            let fCounter = 0;
+            scene.onBeforeRenderObservable.add(() => {
+                carF.physicsBody.getLinearVelocityToRef(velocity);
+                speed = velocity.length();
+                if (speed < 1) { speed = 0; }
+                text1.text = "SPEED: " + speed.toFixed();
+
+                if (carF.intersectsMesh(finishTrigger, false)) {
+                    if (!alreadyTriggered && keyTrigger) {
+                        finishTime = ((Date.now() - raceTime) / 1000).toFixed(2);
+                        console.log("FINISH LINE CROSSED");
+                        text2.text = "TIME: " + finishTime.toString();
+                        alreadyTriggered = true;
+                        fCounter++;
+                        setTimeout(() => {
+                            alreadyTriggered = false;
+                        }, 1000);
+                    } else if (!keyTrigger) {
+                        text2.text = "START";
+                    }
+                }
+
+                if (!alreadyTriggered && fCounter < 1 && keyTrigger) {
+                    text2.text = "TIME: " + ((Date.now() - raceTime) / 1000).toFixed(2).toString();
+                }
+            });
+
+            return scene;
+        }
+
+        function createCircularRaceTrackWithSideGuardrails(scene, radius = 10, width = 3, height = 0.5, segments = 32) {
+            const innerPath = [];
+            const outerPath = [];
+
+            for (let i = 0; i <= segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                const innerX = (radius - width / 2) * Math.cos(angle);
+                const innerZ = (radius - width / 2) * Math.sin(angle);
+                innerPath.push(new BABYLON.Vector3(innerX, height * 0.3, innerZ));
+
+                const outerX = (radius + width / 2) * Math.cos(angle);
+                const outerZ = (radius + width / 2) * Math.sin(angle);
+                outerPath.push(new BABYLON.Vector3(outerX, height, outerZ));
+            }
+
+            const track = BABYLON.MeshBuilder.CreateRibbon("raceTrack", {
+                pathArray: [innerPath, outerPath],
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE,
+                updatable: false,
+                closeArray: false,
+                closePath: false
+            }, scene);
+
+            const trackMaterial = new BABYLON.StandardMaterial("trackMaterial", scene);
+            trackMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+            trackMaterial.emissiveColor = new BABYLON.Color3(0.21, 0.3, 0.31);
+            track.material = trackMaterial;
+
+            addTrackStripes(scene, radius, width, height, segments);
+            addSideGuardrails(scene, radius, width, height, segments);
+
+            return track;
+        }
+
+        function addSideGuardrails(scene, radius, width, height, segments) {
+            const railHeight = 2.5;
+            const railThickness = 0.4;
+            const railMaterial = new BABYLON.StandardMaterial("railMaterial", scene);
+            railMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+
+            const innerRailPath = [];
+            const innerRailPathTop = [];
+            const outerRailPath = [];
+            const outerRailPathTop = [];
+
+            for (let i = 0; i <= segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                const innerX = (radius - width / 2) * Math.cos(angle);
+                const innerZ = (radius - width / 2) * Math.sin(angle);
+
+                innerRailPath.push(new BABYLON.Vector3(innerX, height * 0.3, innerZ));
+                innerRailPathTop.push(new BABYLON.Vector3(innerX, height * 0.3 + railHeight, innerZ));
+
+                const outerX = (radius + width / 2) * Math.cos(angle);
+                const outerZ = (radius + width / 2) * Math.sin(angle);
+
+                outerRailPath.push(new BABYLON.Vector3(outerX, height, outerZ));
+                outerRailPathTop.push(new BABYLON.Vector3(outerX, height + railHeight, outerZ));
+            }
+
+            const innerRail = BABYLON.MeshBuilder.CreateRibbon("innerRail", {
+                pathArray: [innerRailPath, innerRailPathTop],
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE,
+                closeArray: false
+            }, scene);
+
+            const outerRail = BABYLON.MeshBuilder.CreateRibbon("outerRail", {
+                pathArray: [outerRailPath, outerRailPathTop],
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE,
+                closeArray: false
+            }, scene);
+
+            const postMaterial = new BABYLON.StandardMaterial("postMaterial", scene);
+            postMaterial.diffuseColor = new BABYLON.Color3(0.7, 0.7, 0.7);
+            postMaterial.emissiveColor = BABYLON.Color3.Teal();
+
+            for (let i = 0; i < segments; i += 2) {
+                const angle = (i / segments) * Math.PI * 2;
+                const innerX = (radius - width / 2) * Math.cos(angle);
+                const innerZ = (radius - width / 2) * Math.sin(angle);
+
+                const innerPost = BABYLON.MeshBuilder.CreateBox("innerPost", {
+                    height: railHeight,
+                    width: railThickness,
+                    depth: railThickness
+                }, scene);
+
+                innerPost.position.set(innerX, height * 0.3 + railHeight / 2, innerZ);
+                innerPost.material = postMaterial;
+
+                const outerX = (radius + width / 2) * Math.cos(angle);
+                const outerZ = (radius + width / 2) * Math.sin(angle);
+
+                const outerPost = BABYLON.MeshBuilder.CreateBox("outerPost", {
+                    height: railHeight,
+                    width: railThickness,
+                    depth: railThickness
+                }, scene);
+
+                outerPost.position.set(outerX, height + railHeight / 2, outerZ);
+                outerPost.material = postMaterial;
+            }
+
+            innerRail.material = railMaterial;
+            outerRail.material = railMaterial;
+        }
+
+        function addTrackStripes(scene, radius, width, height, segments) {
+            const stripeMaterial = new BABYLON.StandardMaterial("stripeMaterial", scene);
+            stripeMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1);
+
+            for (let i = 0; i < segments; i += 2) {
+                const angle = (i / segments) * Math.PI * 2;
+                const nextAngle = ((i + 1) / segments) * Math.PI * 2;
+
+                const stripeWidth = width * 0.8;
+                const stripePath = [];
+
+                stripePath.push(new BABYLON.Vector3((radius - stripeWidth / 2) * Math.cos(angle), height * 0.35, (radius - stripeWidth / 2) * Math.sin(angle)));
+                stripePath.push(new BABYLON.Vector3((radius + stripeWidth / 2) * Math.cos(angle), height * 0.35, (radius + stripeWidth / 2) * Math.sin(angle)));
+                stripePath.push(new BABYLON.Vector3((radius + stripeWidth / 2) * Math.cos(nextAngle), height * 0.35, (radius + stripeWidth / 2) * Math.sin(nextAngle)));
+                stripePath.push(new BABYLON.Vector3((radius - stripeWidth / 2) * Math.cos(nextAngle), height * 0.35, (radius - stripeWidth / 2) * Math.sin(nextAngle)));
+
+                const stripe = BABYLON.MeshBuilder.CreateRibbon("stripe", {
+                    pathArray: [stripePath],
+                    sideOrientation: BABYLON.Mesh.DOUBLESIDE
+                }, scene);
+
+                stripe.material = stripeMaterial;
+            }
+        }
+
+        function CreateCar() {
+            const carFrame = BABYLON.MeshBuilder.CreateBox("Frame", { height: 1, width: 12, depth: 24, faceColors: debugColours });
+            carFrame.position = new BABYLON.Vector3(0, 1, 0);
+            carFrame.visibility = 0.5;
+            const carFrameBody = AddDynamicPhysics(carFrame, 2000, 0, 0, new BABYLON.Vector3(0, -2.5, 1));
+            FilterMeshCollisions(carFrame);
+
+            const flWheel = CreateWheel(new BABYLON.Vector3(5, 0, 8));
+            const flAxle = CreateAxle(new BABYLON.Vector3(5, 0, 8));
+            const frWheel = CreateWheel(new BABYLON.Vector3(-5, 0, 8));
+            const frAxle = CreateAxle(new BABYLON.Vector3(-5, 0, 8));
+            const rlWheel = CreateWheel(new BABYLON.Vector3(5, 0, -10));
+            const rlAxle = CreateAxle(new BABYLON.Vector3(5, 0, -10));
+            const rrWheel = CreateWheel(new BABYLON.Vector3(-5, 0, -10));
+            const rrAxle = CreateAxle(new BABYLON.Vector3(-5, 0, -10));
+
+            for (const mesh of [flAxle, frAxle, rlAxle, rrAxle]) {
+                carFrame.addChild(mesh);
+                AddAxlePhysics(mesh, 190, 0, 0);
+                FilterMeshCollisions(mesh);
+            }
+
+            for (const mesh of [flWheel, frWheel, rlWheel, rrWheel]) {
+                AddWheelPhysics(mesh, 150, 0, 2.5);
+                FilterMeshCollisions(mesh);
+            }
+
+            const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel);
+            const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel);
+            CreateWheelJoint(rlAxle, rlWheel);
+            CreateWheelJoint(rrAxle, rrWheel);
+
+            const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrameBody, true);
+            const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrameBody, true);
+            AttachAxleToFrame(rlAxle.physicsBody, carFrameBody);
+            AttachAxleToFrame(rrAxle.physicsBody, carFrameBody);
+
+            InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB);
+
+            return carFrame;
+        }
+
+        function CreateAxle(position) {
+            const axleMesh = BABYLON.MeshBuilder.CreateBox("Axle", { height: 1, width: 2.5, depth: 1, faceColors: debugColours });
+            axleMesh.position = position;
+            return axleMesh;
+        }
+
+        function CreateWheel(position) {
+            const faceUVforArrowTexture = [
+                new BABYLON.Vector4(0, 0, 0, 0),
+                new BABYLON.Vector4(0, 1, 1, 0),
+                new BABYLON.Vector4(0, 0, 0, 0),
+            ];
+
+            const wheelMesh = BABYLON.MeshBuilder.CreateCylinder("Wheel", { height: 1.6, diameter: 4, faceUV: faceUVforArrowTexture });
+            wheelMesh.rotation = new BABYLON.Vector3(0, 0, Math.PI / 2);
+            wheelMesh.bakeCurrentTransformIntoVertices();
+            wheelMesh.position = position;
+            wheelMesh.material = tyreMaterial;
+            return wheelMesh;
+        }
+
+        function AttachAxleToFrame(axle, frame, hasSteering) {
+            const aPos = axle.transformNode.position;
+
+            const joint = new BABYLON.Physics6DoFConstraint(
+                {
+                    pivotA: new BABYLON.Vector3(0, 0, 0),
+                    pivotB: new BABYLON.Vector3(aPos.x, aPos.y, aPos.z),
+                },
+                [
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.LINEAR_X,
+                        minLimit: 0,
+                        maxLimit: 0,
+                    },
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.LINEAR_Y,
+                        minLimit: -0.15,
+                        maxLimit: 0.15,
+                        stiffness: 100000,
+                        damping: 1500
+                    },
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.LINEAR_Z,
+                        minLimit: 0,
+                        maxLimit: 0,
+                    },
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.ANGULAR_X,
+                        minLimit: -0.25,
+                        maxLimit: 0.25,
+                    },
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.ANGULAR_Y,
+                        minLimit: hasSteering ? null : 0,
+                        maxLimit: hasSteering ? null : 0,
+                    },
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.ANGULAR_Z,
+                        minLimit: -0.05,
+                        maxLimit: 0.05,
+                    },
+                ],
+                scene
+            );
+
+            axle.addConstraint(frame, joint);
+
+            if (hasSteering)
+                AttachSteering(joint);
+
+            return joint;
+        }
+
+        function CreateWheelJoint(axle, wheel) {
+            const motorJoint = new BABYLON.Physics6DoFConstraint(
+                {},
+                [
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.LINEAR_DISTANCE,
+                        minLimit: 0,
+                        maxLimit: 0,
+                    },
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.ANGULAR_Y,
+                        minLimit: 0,
+                        maxLimit: 0,
+                    },
+                    {
+                        axis: BABYLON.PhysicsConstraintAxis.ANGULAR_Z,
+                        minLimit: 0,
+                        maxLimit: 0,
+                    },
+                ],
+                scene
+            );
+
+            axle.addChild(wheel);
+            axle.physicsBody.addConstraint(wheel.physicsBody, motorJoint);
+
+            return motorJoint;
+        }
+
+        function CreatePoweredWheelJoint(axle, wheel) {
+            const motorJoint = CreateWheelJoint(axle, wheel);
+
+            motorJoint.setAxisMotorType(BABYLON.PhysicsConstraintAxis.ANGULAR_X, BABYLON.PhysicsConstraintMotorType.VELOCITY);
+            motorJoint.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
+            motorJoint.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 0);
+
+            return motorJoint;
+        }
+
+        function AttachSteering(joint) {
+            joint.setAxisMotorType(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, BABYLON.PhysicsConstraintMotorType.POSITION);
+            joint.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 60000000);
+            joint.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 0);
+
+            return joint;
+        }
+
+        function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB) {
+            let forwardPressed = false;
+            let backPressed = false;
+            let leftPressed = false;
+            let rightPressed = false;
+            let brakePressed = false;
+
+            let currentSpeed = 0;
+            let currentSteeringAngle = 0;
+            let maxSpeed = 150;
+            const maxSteeringAngle = Math.PI / 6;
+
+            scene.onKeyboardObservable.add(e => {
+                switch (e.event.key) {
+                    case "w": case "W": case "ArrowUp": forwardPressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
+                        break;
+                    case "s": case "S": case "ArrowDown": backPressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
+                        break;
+                    case "a": case "A": case "ArrowLeft": leftPressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
+                        break;
+                    case "d": case "D": case "ArrowRight": rightPressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
+                        break;
+                    case " ": brakePressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
+                        break;
+                }
+            });
+
+            scene.onBeforeRenderObservable.add(() => {
+                if (leftPressed && currentSteeringAngle < maxSteeringAngle) {
+                    currentSteeringAngle += 0.02;
+                } else if (rightPressed && currentSteeringAngle > -maxSteeringAngle) {
+                    currentSteeringAngle -= 0.02;
+                } else if (!leftPressed && !rightPressed) {
+                    currentSteeringAngle *= 0.98;
+                }
+
+                const [innerAngle, outerAngle] = CalculateWheelAngles(currentSteeringAngle);
+                steerWheelA.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, outerAngle);
+                steerWheelB.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, innerAngle);
+
+                if (brakePressed) {
+                    currentSpeed = 0;
+                } else if (forwardPressed && currentSpeed < maxSpeed) {
+                    currentSpeed += 8;
+                } else if (backPressed && currentSpeed > -maxSpeed * 0.5) {
+                    currentSpeed -= 8;
+                } else if (!forwardPressed && !backPressed) {
+                    currentSpeed *= 0.99;
+                }
+
+                if(brakePressed) {
+                    motorWheelA.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
+                    motorWheelB.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
+                } else {
+                    motorWheelA.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
+                    motorWheelB.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
+                }
+
+                motorWheelA.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, currentSpeed);
+                motorWheelB.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, currentSpeed);
+            });
+        }
+
+        function InitTyreMaterial() {
+            tyreMaterial = new BABYLON.StandardMaterial("Tyre", scene);
+            tyreMaterial.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+        }
+
+        function AddWheelPhysics(mesh, mass, bounce, friction) {
+            const physicsShape = new BABYLON.PhysicsShapeCylinder(new BABYLON.Vector3(-0.8, 0, 0), new BABYLON.Vector3(0.8, 0, 0), 2, scene);
+            const physicsBody = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.DYNAMIC, false, scene);
+            physicsBody.setMassProperties({ mass: mass });
+            physicsShape.material = { restitution: bounce, friction: friction };
+            physicsBody.shape = physicsShape;
+
+            return physicsBody;
+        }
+
+        function AddAxlePhysics(mesh, mass, bounce, friction) {
+            const physicsShape = new BABYLON.PhysicsShapeCylinder(new BABYLON.Vector3(-0.8, 0, 0), new BABYLON.Vector3(0.8, 0, 0), 1.8, scene);
+            const physicsBody = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.DYNAMIC, false, scene);
+            physicsBody.setMassProperties({ mass: mass });
+            physicsShape.material = { restitution: bounce, friction: friction };
+            physicsBody.shape = physicsShape;
+
+            return physicsBody;
+        }
+
+        function AddDynamicPhysics(mesh, mass, bounce, friction, centerOfMass) {
+            const physicsShape = new BABYLON.PhysicsShapeMesh(mesh, scene);
+            const physicsBody = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.DYNAMIC, false, scene);
+            physicsBody.setMassProperties({ mass: mass, centerOfMass: centerOfMass });
+            physicsShape.material = { restitution: bounce, friction: friction };
+            physicsBody.shape = physicsShape;
+
+            return physicsBody;
+        }
+
+        function FilterMeshCollisions(mesh) {
+            mesh.physicsBody.shape.filterMembershipMask = FILTERS.CarParts;
+            mesh.physicsBody.shape.filterCollideMask = FILTERS.Environment;
+        }
+
+        function CalculateWheelAngles(averageAngle) {
+            const wheelbase = 16;
+            const trackWidth = 11;
+
+            const avgRadius = wheelbase / Math.tan(averageAngle);
+            const innerRadius = avgRadius - trackWidth / 2;
+            const outerRadius = avgRadius + trackWidth / 2;
+            const innerAngle = Math.atan(wheelbase / innerRadius);
+            const outerAngle = Math.atan(wheelbase / outerRadius);
+
+            return [innerAngle, outerAngle];
+        }
+
         createApp({
             data() {
                 return {
@@ -201,193 +760,15 @@
                 this.initBabylonScene();
             },
             methods: {
-                initBabylonScene() {
+                async initBabylonScene() {
                     const canvas = document.getElementById('renderCanvas');
-                    const engine = new BABYLON.Engine(canvas, true);
-                    const scene = new BABYLON.Scene(engine);
-                    scene.clearColor = new BABYLON.Color3(0.5, 0.8, 0.9);
-
-                    // Camera
-                    const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 10, -10), scene);
-                    camera.radius = 15;
-                    camera.heightOffset = 8;
-                    camera.rotationOffset = 180;
-                    camera.cameraAcceleration = 0.05;
-                    camera.maxCameraSpeed = 20;
-                    scene.activeCamera = camera;
-
-                    // Light
-                    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-                    light.intensity = 0.8;
-
-                    const dirLight = new BABYLON.DirectionalLight("dirLight", new BABYLON.Vector3(-1, -2, -1), scene);
-                    dirLight.position = new BABYLON.Vector3(20, 40, 20);
-                    dirLight.intensity = 0.5;
-
-                    // Enable physics FIRST
-                    scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.CannonJSPlugin());
-
-                    // Ground
-                    const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 100, height: 100 }, scene);
-                    const groundMaterial = new BABYLON.StandardMaterial("groundMat", scene);
-                    groundMaterial.diffuseColor = new BABYLON.Color3(0.3, 0.6, 0.3);
-                    groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-                    ground.material = groundMaterial;
-                    ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.5 }, scene);
-
-                    // Create Car
-                    const car = BABYLON.MeshBuilder.CreateBox("car", { height: 1, width: 2, depth: 4 }, scene);
-                    car.position.y = 3;
-                    const carMaterial = new BABYLON.StandardMaterial("carMat", scene);
-                    carMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.1, 0.1);
-                    carMaterial.specularColor = new BABYLON.Color3(1, 1, 1);
-                    car.material = carMaterial;
-                    car.physicsImpostor = new BABYLON.PhysicsImpostor(car, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 10, friction: 0.5, restitution: 0.2 }, scene);
-
-                    // Wheels visual (decorative)
-                    const wheelMat = new BABYLON.StandardMaterial("wheelMat", scene);
-                    wheelMat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+                    engine = new BABYLON.Engine(canvas, true);
                     
-                    const wheelPositions = [
-                        [-0.8, -0.3, 1.3],
-                        [0.8, -0.3, 1.3],
-                        [-0.8, -0.3, -1.3],
-                        [0.8, -0.3, -1.3]
-                    ];
+                    const sceneInstance = await createScene();
                     
-                    wheelPositions.forEach(pos => {
-                        const wheel = BABYLON.MeshBuilder.CreateCylinder("wheel", { diameter: 0.8, height: 0.4 }, scene);
-                        wheel.rotation.z = Math.PI / 2;
-                        wheel.parent = car;
-                        wheel.position = new BABYLON.Vector3(pos[0], pos[1], pos[2]);
-                        wheel.material = wheelMat;
-                    });
-
-                    camera.lockedTarget = car;
-
-                    // Create Towers (that stop the car)
-                    const towerPositions = [
-                        { x: 10, z: 10 },
-                        { x: -15, z: 15 },
-                        { x: 20, z: -10 }
-                    ];
-
-                    const towerMaterial = new BABYLON.StandardMaterial("towerMat", scene);
-                    towerMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
-
-                    towerPositions.forEach((pos, index) => {
-                        const tower = BABYLON.MeshBuilder.CreateCylinder(`tower${index}`, { diameter: 2, height: 8 }, scene);
-                        tower.position = new BABYLON.Vector3(pos.x, 4, pos.z);
-                        tower.material = towerMaterial;
-                        tower.physicsImpostor = new BABYLON.PhysicsImpostor(tower, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 0, restitution: 0.3 }, scene);
-                        
-                        // Collision detection for towers
-                        tower.physicsImpostor.registerOnPhysicsCollide(car.physicsImpostor, () => {
-                            this.collisions++;
-                        });
-                    });
-
-                    // Create 5 small boxes that can be knocked over
-                    const boxes = [];
-                    const boxMaterial = new BABYLON.StandardMaterial("boxMat", scene);
-                    boxMaterial.diffuseColor = new BABYLON.Color3(0.9, 0.7, 0.2);
-
-                    const boxPositions = [
-                        { x: 5, z: 0 },
-                        { x: -5, z: 5 },
-                        { x: 0, z: -8 },
-                        { x: 8, z: -5 },
-                        { x: -8, z: -8 }
-                    ];
-
-                    boxPositions.forEach((pos, index) => {
-                        const box = BABYLON.MeshBuilder.CreateBox(`box${index}`, { size: 1.5 }, scene);
-                        box.position = new BABYLON.Vector3(pos.x, 0.75, pos.z);
-                        box.material = boxMaterial;
-                        box.physicsImpostor = new BABYLON.PhysicsImpostor(box, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 1, friction: 0.5, restitution: 0.3 }, scene);
-                        boxes.push(box);
-                        box.userData = { index: index, wasKnockedOver: false };
-                    });
-
-                    // Car controls
-                    const keyState = {};
-                    window.addEventListener('keydown', (e) => {
-                        keyState[e.key.toLowerCase()] = true;
-                    });
-                    window.addEventListener('keyup', (e) => {
-                        keyState[e.key.toLowerCase()] = false;
-                    });
-
-                    // Movement variables
-                    let speed = 0;
-                    const maxSpeed = 30;
-                    const acceleration = 0.5;
-                    const deceleration = 0.3;
-                    const turnSpeed = 0.03;
-
-                    // Update loop
-                    scene.registerBeforeRender(() => {
-                        // Movement
-                        if (keyState['w']) {
-                            speed = Math.min(speed + acceleration, maxSpeed);
-                            this.acceleration = 1;
-                        } else if (keyState['s']) {
-                            speed = Math.max(speed - acceleration, -maxSpeed / 2);
-                            this.acceleration = -1;
-                        } else {
-                            // Natural deceleration
-                            if (speed > 0) {
-                                speed = Math.max(0, speed - deceleration);
-                            } else if (speed < 0) {
-                                speed = Math.min(0, speed + deceleration);
-                            }
-                            this.acceleration = 0;
-                        }
-
-                        // Turning
-                        if (keyState['a']) {
-                            car.rotation.y += turnSpeed * (speed / maxSpeed);
-                        }
-                        if (keyState['d']) {
-                            car.rotation.y -= turnSpeed * (speed / maxSpeed);
-                        }
-
-                        // Apply movement
-                        if (speed !== 0) {
-                            const forward = new BABYLON.Vector3(
-                                Math.sin(car.rotation.y),
-                                0,
-                                Math.cos(car.rotation.y)
-                            );
-                            car.physicsImpostor.setLinearVelocity(forward.scale(speed * 0.5));
-                        }
-
-                        // Update UI data
-                        this.speed = Math.abs(speed * 3.6); // Convert to km/h
-                        this.position.x = car.position.x;
-                        this.position.z = car.position.z;
-                        this.rotation = (car.rotation.y * 180 / Math.PI) % 360;
-                        this.maxSpeed = Math.max(this.maxSpeed, this.speed);
-
-                        // Check if boxes are knocked over
-                        boxes.forEach((box, index) => {
-                            if (!box.userData.wasKnockedOver) {
-                                // Check if box is tipped over (rotation changed significantly)
-                                const rotX = Math.abs(box.rotation.x);
-                                const rotZ = Math.abs(box.rotation.z);
-                                
-                                if (rotX > 0.3 || rotZ > 0.3) {
-                                    box.userData.wasKnockedOver = true;
-                                    this.boxesStatus[index].knocked = true;
-                                    this.knockedBoxes++;
-                                }
-                            }
-                        });
-                    });
-
                     // Render loop
                     engine.runRenderLoop(() => {
-                        scene.render();
+                        sceneInstance.render();
                     });
 
                     // Resize
