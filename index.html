@@ -142,6 +142,7 @@
                 <div>⬅️ A - Links</div>
                 <div>➡️ D - Rechts</div>
                 <div>🚗 Leertaste - Bremse</div>
+                <div>🔄 Enter - Reset</div>
             </div>
         </div>
 
@@ -643,6 +644,11 @@
                         break;
                     case " ": brakePressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
                         break;
+                    case "Enter":
+                        if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN && vueApp) {
+                            vueApp.resetGame();
+                        }
+                        break;
                 }
             });
 
@@ -799,6 +805,50 @@
                     window.addEventListener('resize', () => {
                         engine.resize();
                     });
+                },
+                async resetGame() {
+                    console.log("Resetting game using Babylon.js...");
+                    
+                    // Stop the render loop
+                    engine.stopRenderLoop();
+                    
+                    // Dispose the current scene completely
+                    if (scene) {
+                        scene.dispose();
+                    }
+                    
+                    // Reset Vue data
+                    this.speed = 0;
+                    this.position = { x: 0, z: 0 };
+                    this.rotation = 0;
+                    this.acceleration = 0;
+                    this.collisions = 0;
+                    this.knockedBoxes = 0;
+                    this.maxSpeed = 0;
+                    this.raceTime = 0;
+                    this.finishTime = null;
+                    this.isRacing = false;
+                    this.boxesStatus = [
+                        { knocked: false },
+                        { knocked: false },
+                        { knocked: false },
+                        { knocked: false },
+                        { knocked: false }
+                    ];
+                    
+                    // Create a fresh scene
+                    const newScene = await createScene(this);
+                    
+                    // Restart the render loop with the new scene
+                    engine.runRenderLoop(() => {
+                        newScene.render();
+                    });
+                    
+                    // Re-focus canvas for immediate input
+                    const canvas = document.getElementById('renderCanvas');
+                    canvas.focus();
+                    
+                    console.log("Game reset complete!");
                 }
             }
         }).mount('#app');
