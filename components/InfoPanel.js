@@ -1,5 +1,5 @@
 // InfoPanel.js - Vue Component for Debug Panels and Controls
-const InfoPanel = {
+export const InfoPanel = {
     template: `
         <!-- Debug Button -->
         <button class="debug-button" @click="toggleDebugPanels" v-show="!debugVisible">
@@ -141,9 +141,4 @@ const InfoPanel = {
     }
 };
 
-// Export for use in main application
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = InfoPanel;
-} else if (typeof window !== 'undefined') {
-    window.InfoPanel = InfoPanel;
-}
+// ES6 Module Export (replaces the old export logic)
