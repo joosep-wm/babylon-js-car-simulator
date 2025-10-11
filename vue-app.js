@@ -1,6 +1,6 @@
 // vue-app.js - Vue Application Logic and Components
 
-import { resetGame, resetBoxes } from './babylon-game.js';
+import { resetGame, resetBoxes } from './game/babylon-game.js';
 
 /**
  * Create and mount the Vue application

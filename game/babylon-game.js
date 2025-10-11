@@ -232,7 +232,7 @@ export function resetBoxes(vueApp) {
             trackMaterial.emissiveColor = new BABYLON.Color3(0.21, 0.3, 0.31);
             
             // Add texture from original code
-            trackMaterial.diffuseTexture = new BABYLON.Texture("textures/up.png", scene);
+            trackMaterial.diffuseTexture = new BABYLON.Texture("game/textures/up.png", scene);
             trackMaterial.diffuseTexture.uScale = 20;
             trackMaterial.diffuseTexture.vScale = 20;
             trackMaterial.diffuseTexture.wAng = BABYLON.Tools.ToRadians(250);
@@ -249,7 +249,7 @@ export function resetBoxes(vueApp) {
             // Create wall material similar to the original rail material
             const wallMaterial = new BABYLON.StandardMaterial("wallMaterial", scene);
             wallMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-            wallMaterial.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+            wallMaterial.diffuseTexture = new BABYLON.Texture("game/textures/amiga.jpg", scene);
 
             // North Wall
             const northWall = BABYLON.MeshBuilder.CreateBox("northWall", {
@@ -543,7 +543,7 @@ export function resetBoxes(vueApp) {
             track.material = trackMaterial;
             
             // Add texture from original code
-            trackMaterial.diffuseTexture = new BABYLON.Texture("textures/up.png", scene);
+            trackMaterial.diffuseTexture = new BABYLON.Texture("game/textures/up.png", scene);
             trackMaterial.diffuseTexture.uScale = 20;
             trackMaterial.diffuseTexture.wAng = BABYLON.Tools.ToRadians(250);
 
@@ -558,7 +558,7 @@ export function resetBoxes(vueApp) {
             const railThickness = 0.4;
             const railMaterial = new BABYLON.StandardMaterial("railMaterial", scene);
             railMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-            railMaterial.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+            railMaterial.diffuseTexture = new BABYLON.Texture("game/textures/amiga.jpg", scene);
 
             const innerRailPath = [];
             const innerRailPathTop = [];
@@ -909,7 +909,7 @@ export function resetBoxes(vueApp) {
 
         function InitTyreMaterial() {
             tyreMaterial = new BABYLON.StandardMaterial("Tyre", scene);
-            const upTexture = new BABYLON.Texture("textures/up.png", scene);
+            const upTexture = new BABYLON.Texture("game/textures/up.png", scene);
             upTexture.wAng = -Math.PI / 2;
             upTexture.vScale = 0.4;
             tyreMaterial.diffuseTexture = upTexture;

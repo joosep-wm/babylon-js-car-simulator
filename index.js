@@ -1,5 +1,5 @@
 // index.js - Main Entry Point
-import { initializeGame } from './babylon-game.js';
+import { initializeGame } from './game/babylon-game.js';
 import { createVueApp } from './vue-app.js';
 
 // Initialize the application
