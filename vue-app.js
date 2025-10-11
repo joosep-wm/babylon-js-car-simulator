@@ -1,7 +1,7 @@
 // vue-app.js - Vue Application Logic and Components
 
 import { resetGame, resetBoxes } from './game/babylon-game.js';
-import { InfoPanel } from './components/InfoPanel.js';
+import { InfoPanel } from './components/info-panel.js';
 
 /**
  * Create and mount the Vue application
