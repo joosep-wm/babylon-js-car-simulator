@@ -77,6 +77,8 @@ export async function resetGame(vueApp) {
     // Re-focus canvas for immediate input
     const canvas = document.getElementById('renderCanvas');
     canvas.focus();
+
+
     
     console.log("✅ Game reset complete!");
 }
@@ -160,26 +162,7 @@ export function resetBoxes(vueApp) {
             // Remove finish line logic
             let alreadyTriggered = false;
             let raceTime = 0;
-            let keyTrigger = false;
-
-            scene.onKeyboardObservable.addOnce((kbInfo) => {
-                switch (kbInfo.type) {
-                    case BABYLON.KeyboardEventTypes.KEYDOWN:
-                        switch (kbInfo.event.key) {
-                            case "w":
-                            case "W":
-                                console.log("W Triggered");
-                                raceTime = Date.now();
-                                keyTrigger = true;
-                                if (vueApp) {
-                                    vueApp.isRacing = true;
-                                    vueApp.raceTime = 0;
-                                }
-                                break;
-                        }
-                        break;
-                }
-            });
+            let raceStarted = false;
 
             const velocity = new BABYLON.Vector3();
             let speed;
@@ -188,6 +171,15 @@ export function resetBoxes(vueApp) {
                 carF.physicsBody.getLinearVelocityToRef(velocity);
                 speed = velocity.length();
                 if (speed < 1) { speed = 0; }
+
+                // Auto-start race when car starts moving
+                if (!raceStarted && speed > 2 && vueApp) {
+                    console.log("Race started automatically - car is moving!");
+                    raceTime = Date.now();
+                    raceStarted = true;
+                    vueApp.isRacing = true;
+                    vueApp.raceTime = 0;
+                }
 
                 // Update Vue.js data
                 if (vueApp) {
@@ -208,7 +200,7 @@ export function resetBoxes(vueApp) {
                     vueApp.maxSpeed = Math.max(vueApp.maxSpeed, vueApp.speed);
                     
                     // Update race time
-                    if (vueApp.isRacing && !alreadyTriggered && fCounter < 1) {
+                    if (vueApp.isRacing && raceStarted && !alreadyTriggered && fCounter < 1) {
                         vueApp.raceTime = ((Date.now() - raceTime) / 1000);
                     }
                 }
