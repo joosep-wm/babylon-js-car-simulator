@@ -39,25 +39,12 @@
             :is-touch-device="isTouchDevice">
         </desktop-controls>
 
-        <!-- Mobile Touch Controls -->
-        <div class="mobile-controls" :class="{ visible: isTouchDevice }">
-            <!-- Virtual Joystick -->
-            <div class="virtual-joystick" ref="joystick">
-                <div class="joystick-outer">
-                    <div class="joystick-inner" ref="joystickInner"></div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <div class="action-button brake" @touchstart="onBrakeStart" @touchend="onBrakeEnd">
-                    🚗
-                </div>
-                <div class="action-button reset" @touchstart="onResetTouch">
-                    🔄
-                </div>
-            </div>
-        </div>
+        <!-- Mobile Controls Component -->
+        <mobile-controls
+            :is-touch-device="isTouchDevice"
+            @update-touch-controls="onTouchControlsUpdate"
+            @reset-game="onMobileReset">
+        </mobile-controls>
     </div>
 </body>
 </html>
