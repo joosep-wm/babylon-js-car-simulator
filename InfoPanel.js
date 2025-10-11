@@ -7,7 +7,7 @@ const InfoPanel = {
         </button>
 
         <!-- Left Panel -->
-        <div class="panel panel-left" :class="{ visible: debugVisible }">
+        <div class="panel panel-left" :class="{ visible: debugVisible, hidden: isHidden }">
             <button class="hide-button" @click="hideDebugPanels">✕ Hide</button>
             <h2>Vehicle Data</h2>
             <div>
@@ -48,7 +48,7 @@ const InfoPanel = {
         </div>
 
         <!-- Right Panel -->
-        <div class="panel panel-right" :class="{ visible: debugVisible }">
+        <div class="panel panel-right" :class="{ visible: debugVisible, hidden: isHidden }">
             <h2>Game Statistics</h2>
             <div>
                 <div class="stat-box">
@@ -96,7 +96,8 @@ const InfoPanel = {
     },
     data() {
         return {
-            debugVisible: false
+            debugVisible: false,
+            isHidden: true // Start hidden with display: none
         };
     },
     mounted() {
@@ -113,14 +114,29 @@ const InfoPanel = {
         handleGlobalKeydown(e) {
             if (e.key === 'F12' || e.key === '`') {
                 e.preventDefault();
-                this.debugVisible = !this.debugVisible;
+                if (this.debugVisible) {
+                    this.hideDebugPanels();
+                } else {
+                    this.toggleDebugPanels();
+                }
             }
         },
         toggleDebugPanels() {
-            this.debugVisible = true;
+            // Remove display: none first, then start slide animation
+            this.isHidden = false;
+            this.$nextTick(() => {
+                this.debugVisible = true;
+            });
         },
         hideDebugPanels() {
+            // Start slide-out animation first
             this.debugVisible = false;
+            // Add display: none after animation completes (400ms)
+            setTimeout(() => {
+                if (!this.debugVisible) { // Only hide if still closed
+                    this.isHidden = true;
+                }
+            }, 400);
         }
     }
 };

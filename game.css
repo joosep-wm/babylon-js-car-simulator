@@ -50,6 +50,11 @@ html, body {
     transform: translateX(0);
 }
 
+.panel-left.hidden,
+.panel-right.hidden {
+    display: none !important;
+}
+
 .debug-button {
     position: absolute;
     top: 20px;
