@@ -26,15 +26,6 @@ export function initializeGame(vueApp) {
     const canvas = document.getElementById('renderCanvas');
     engine = new BABYLON.Engine(canvas, true);
     
-    // Auto-focus the canvas for immediate keyboard input
-    canvas.focus();
-    canvas.setAttribute('tabindex', '0');
-    
-    // Add click listener to focus canvas when clicked
-    canvas.addEventListener('click', () => {
-        canvas.focus();
-    });
-    
     // Create the scene
     createScene(vueApp).then(sceneInstance => {
         // Render loop
@@ -46,6 +37,17 @@ export function initializeGame(vueApp) {
         window.addEventListener('resize', () => {
             engine.resize();
         });
+        
+        // Auto-focus the canvas after scene is ready
+        setTimeout(() => {
+            canvas.focus();
+            canvas.setAttribute('tabindex', '0');
+            
+            // Add click listener to focus canvas when clicked
+            canvas.addEventListener('click', () => {
+                canvas.focus();
+            });
+        }, 100);
         
         console.log('🎮 Babylon.js scene created and render loop started');
     });
@@ -74,9 +76,11 @@ export async function resetGame(vueApp) {
         newScene.render();
     });
     
-    // Re-focus canvas for immediate input
-    const canvas = document.getElementById('renderCanvas');
-    canvas.focus();
+    // Re-focus canvas for immediate input with delay
+    setTimeout(() => {
+        const canvas = document.getElementById('renderCanvas');
+        canvas.focus();
+    }, 100);
 
 
     
