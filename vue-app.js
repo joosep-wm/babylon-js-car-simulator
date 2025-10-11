@@ -2,6 +2,7 @@
 
 import { resetGame, resetBoxes } from './game/babylon-game.js';
 import { InfoPanel } from './components/info-panel.js';
+import { DesktopControls } from './components/desktop-controls.js';
 
 /**
  * Create and mount the Vue application
@@ -12,19 +13,12 @@ export function createVueApp() {
     
     const app = createApp({
         components: {
-            'info-panel': InfoPanel
+            'info-panel': InfoPanel,
+            'desktop-controls': DesktopControls
         },
         data() {
             return {
                 isTouchDevice: false,
-                keyStates: {
-                    w: false,
-                    a: false,
-                    s: false,
-                    d: false,
-                    space: false,
-                    enter: false
-                },
                 joystickActive: false,
                 joystickPosition: { x: 0, y: 0 },
                 touchControls: {
@@ -54,7 +48,6 @@ export function createVueApp() {
         },
         mounted() {
             this.detectTouchDevice();
-            this.setupKeyboardListeners();
             if (this.isTouchDevice) {
                 this.initTouchControls();
             }
@@ -85,17 +78,6 @@ export function createVueApp() {
             
             resetBoxes() {
                 resetBoxes(this);
-            },
-            
-            setupKeyboardListeners() {
-                // Add key state tracking for visual feedback
-                window.addEventListener('keydown', (e) => {
-                    this.updateKeyState(e.key, true);
-                });
-                
-                window.addEventListener('keyup', (e) => {
-                    this.updateKeyState(e.key, false);
-                });
             },
             
             detectTouchDevice() {
@@ -206,39 +188,6 @@ export function createVueApp() {
             onResetTouch(e) {
                 e.preventDefault();
                 this.resetGame();
-            },
-
-            updateKeyState(key, isPressed) {
-                switch(key.toLowerCase()) {
-                    case 'w':
-                    case 'arrowup':
-                        this.keyStates.w = isPressed;
-                        break;
-                    case 'a':
-                    case 'arrowleft':
-                        this.keyStates.a = isPressed;
-                        break;
-                    case 's':
-                    case 'arrowdown':
-                        this.keyStates.s = isPressed;
-                        break;
-                    case 'd':
-                    case 'arrowright':
-                        this.keyStates.d = isPressed;
-                        break;
-                    case ' ':
-                        this.keyStates.space = isPressed;
-                        break;
-                    case 'enter':
-                        this.keyStates.enter = isPressed;
-                        // Reset after short delay for visual feedback
-                        if (isPressed) {
-                            setTimeout(() => {
-                                this.keyStates.enter = false;
-                            }, 200);
-                        }
-                        break;
-                }
             }
         }
     });

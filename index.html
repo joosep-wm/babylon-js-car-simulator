@@ -34,30 +34,10 @@
         <!-- Canvas -->
         <canvas id="renderCanvas"></canvas>
 
-        <!-- Desktop Controls Display -->
-        <div class="desktop-controls" :class="{ visible: !isTouchDevice }">
-            <div class="control-group">
-                <div class="key-display wasd" :class="{ active: keyStates.w }">W</div>
-                <div class="key-display wasd" :class="{ active: keyStates.a }">A</div>
-                <div class="key-display wasd" :class="{ active: keyStates.s }">S</div>
-                <div class="key-display wasd" :class="{ active: keyStates.d }">D</div>
-                <span class="control-label">Move</span>
-            </div>
-            
-            <div class="control-separator"></div>
-            
-            <div class="control-group">
-                <div class="key-display space" :class="{ active: keyStates.space }">SPACE</div>
-                <span class="control-label">Brake</span>
-            </div>
-            
-            <div class="control-separator"></div>
-            
-            <div class="control-group">
-                <div class="key-display enter" :class="{ active: keyStates.enter }">ENTER</div>
-                <span class="control-label">Reset</span>
-            </div>
-        </div>
+        <!-- Desktop Controls Component -->
+        <desktop-controls
+            :is-touch-device="isTouchDevice">
+        </desktop-controls>
 
         <!-- Mobile Touch Controls -->
         <div class="mobile-controls" :class="{ visible: isTouchDevice }">
