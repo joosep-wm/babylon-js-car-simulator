@@ -54,8 +54,7 @@ export const InfoPanel = {
                 <div class="stat-box">
                     <div class="stat-label">Race Time</div>
                     <div class="stat-value-large stat-value-blue">
-                        <span v-if="!isRacing && !finishTime">START</span>
-                        <span v-else-if="finishTime">{{ finishTime }}s</span>
+                        <span v-if="!isRacing">START</span>
                         <span v-else>{{ raceTime.toFixed(2) }}s</span>
                     </div>
                 </div>
@@ -91,7 +90,6 @@ export const InfoPanel = {
         knockedBoxes: Number,
         maxSpeed: Number,
         raceTime: Number,
-        finishTime: [Number, String],
         isRacing: Boolean,
         isTouchDevice: Boolean
     },

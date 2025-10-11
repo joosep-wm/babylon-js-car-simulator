@@ -42,7 +42,6 @@ export function createVueApp() {
                 knockedBoxes: 0,
                 maxSpeed: 0,
                 raceTime: 0,
-                finishTime: null,
                 isRacing: false,
                 boxesStatus: [
                     { knocked: false },
@@ -71,7 +70,6 @@ export function createVueApp() {
                 this.knockedBoxes = 0;
                 this.maxSpeed = 0;
                 this.raceTime = 0;
-                this.finishTime = null;
                 this.isRacing = false;
                 this.boxesStatus = [
                     { knocked: false },

@@ -161,7 +161,6 @@ export function resetBoxes(vueApp) {
             let alreadyTriggered = false;
             let raceTime = 0;
             let keyTrigger = false;
-            let finishTime = 0;
 
             scene.onKeyboardObservable.addOnce((kbInfo) => {
                 switch (kbInfo.type) {
@@ -175,7 +174,6 @@ export function resetBoxes(vueApp) {
                                 if (vueApp) {
                                     vueApp.isRacing = true;
                                     vueApp.raceTime = 0;
-                                    vueApp.finishTime = null;
                                 }
                                 break;
                         }
