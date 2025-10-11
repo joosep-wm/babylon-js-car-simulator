@@ -15,7 +15,8 @@ export const DesktopControls = {
                 a: false,
                 s: false,
                 d: false,
-                space: false,
+                space: false, // Now for jumping
+                b: false,     // New brake key
                 enter: false
             }
         }
@@ -72,7 +73,10 @@ export const DesktopControls = {
                     this.keyStates.d = isPressed;
                     break;
                 case ' ':
-                    this.keyStates.space = isPressed;
+                    this.keyStates.space = isPressed; // Space for jumping
+                    break;
+                case 'b':
+                    this.keyStates.b = isPressed; // B for braking
                     break;
                 case 'enter':
                     this.keyStates.enter = isPressed;
@@ -101,6 +105,13 @@ export const DesktopControls = {
             
             <div class="control-group">
                 <div class="key-display space" :class="{ active: keyStates.space }">SPACE</div>
+                <span class="control-label">Jump</span>
+            </div>
+            
+            <div class="control-separator"></div>
+            
+            <div class="control-group">
+                <div class="key-display b" :class="{ active: keyStates.b }">B</div>
                 <span class="control-label">Brake</span>
             </div>
             

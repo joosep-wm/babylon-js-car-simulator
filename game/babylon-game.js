@@ -137,6 +137,27 @@ export function resetBoxes(vueApp) {
             camera.cameraAcceleration = 0.035;
             camera.maxCameraSpeed = 10;
 
+            // Add mouse control for camera rotation (from playground)
+            let isMouseDown = false;
+            scene.onPointerObservable.add((pointerInfo) => {
+                switch (pointerInfo.type) {
+                    case BABYLON.PointerEventTypes.POINTERDOWN:
+                        isMouseDown = true;
+                        break;
+
+                    case BABYLON.PointerEventTypes.POINTERUP:
+                        isMouseDown = false;
+                        break;
+
+                    case BABYLON.PointerEventTypes.POINTERMOVE:
+                        if (isMouseDown) {
+                            // Rotate camera around the car using mouse movement
+                            camera.rotationOffset += pointerInfo.event.movementX * 0.5;
+                        }
+                        break;
+                }
+            });
+
             const hemisphericLight = new BABYLON.HemisphericLight("Hemispheric Light", new BABYLON.Vector3(1, 1, 0), scene);
             hemisphericLight.intensity = 0.7;
 
@@ -630,7 +651,7 @@ export function resetBoxes(vueApp) {
             AttachAxleToFrame(rlAxle.physicsBody, carFrameBody);
             AttachAxleToFrame(rrAxle.physicsBody, carFrameBody);
 
-            InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, vueApp);
+            InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
 
             return carFrame;
         }
@@ -756,17 +777,19 @@ export function resetBoxes(vueApp) {
             return joint;
         }
 
-        function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, vueApp) {
+        function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp) {
             let forwardPressed = false;
             let backPressed = false;
             let leftPressed = false;
             let rightPressed = false;
             let brakePressed = false;
+            let jumpPressed = false; // New jump state
 
             let currentSpeed = 0;
             let currentSteeringAngle = 0;
-            let maxSpeed = 150;
-            const maxSteeringAngle = Math.PI / 6;
+            let maxSpeed = 80; // Reduced from 150 to 80 for better control
+            const maxSteeringAngle = Math.PI / 4; // Increased from PI/6 to PI/4 for sharper turns
+            const jumpForce = 800; // Jump force for the car
 
             scene.onKeyboardObservable.add(e => {
                 switch (e.event.key) {
@@ -778,7 +801,16 @@ export function resetBoxes(vueApp) {
                         break;
                     case "d": case "D": case "ArrowRight": rightPressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
                         break;
-                    case " ": brakePressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
+                    case "b": case "B": brakePressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false; // Changed from Space to B
+                        break;
+                    case " ": // Space is now jump
+                        if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN) {
+                            jumpPressed = true;
+                            // Apply upward impulse to make the car jump
+                            carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce, 0), carFrame.position);
+                        } else {
+                            jumpPressed = false;
+                        }
                         break;
                     case "Enter":
                         if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN && vueApp) {
@@ -797,11 +829,11 @@ export function resetBoxes(vueApp) {
                 const isBrake = brakePressed || (vueApp && vueApp.touchControls.brake);
 
                 if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-                    currentSteeringAngle += 0.02;
+                    currentSteeringAngle += 0.05; // Increased from 0.02 to 0.08 (4x faster)
                 } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-                    currentSteeringAngle -= 0.02;
+                    currentSteeringAngle -= 0.05; // Increased from 0.02 to 0.08 (4x faster)
                 } else if (!isLeft && !isRight) {
-                    currentSteeringAngle *= 0.98;
+                    currentSteeringAngle *= 0.85; // Increased from 0.98 to 0.85 (much faster centering)
                 }
 
                 const [innerAngle, outerAngle] = CalculateWheelAngles(currentSteeringAngle);
@@ -811,11 +843,11 @@ export function resetBoxes(vueApp) {
                 if (isBrake) {
                     currentSpeed = 0;
                 } else if (isForward && currentSpeed < maxSpeed) {
-                    currentSpeed += 8;
+                    currentSpeed += 1; // Reduced from 8 to 2 for smoother acceleration
                 } else if (isBackward && currentSpeed > -maxSpeed * 0.5) {
-                    currentSpeed -= 8;
+                    currentSpeed -= 1; // Reduced from 8 to 2 for smoother deceleration
                 } else if (!isForward && !isBackward) {
-                    currentSpeed *= 0.99;
+                    currentSpeed *= 0.92; // Increased from 0.99 to 0.92 for faster slowdown
                 }
 
                 // Update Vue.js direction data

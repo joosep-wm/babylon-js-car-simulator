@@ -60,13 +60,26 @@
 }
 
 .key-display.space {
-    background: linear-gradient(135deg, #ef4444, #f87171);
-    border-color: rgba(248, 113, 113, 0.4);
-    color: #7f1d1d;
+    background: linear-gradient(135deg, #10b981, #34d399);
+    border-color: rgba(52, 211, 153, 0.4);
+    color: #064e3b;
     width: 80px;
 }
 
 .key-display.space.active {
+    background: linear-gradient(135deg, #059669, #10b981);
+    border-color: rgba(16, 185, 129, 0.6);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+.key-display.b {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    border-color: rgba(248, 113, 113, 0.4);
+    color: #7f1d1d;
+    width: 40px;
+}
+
+.key-display.b.active {
     background: linear-gradient(135deg, #dc2626, #ef4444);
     border-color: rgba(239, 68, 68, 0.6);
     box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
