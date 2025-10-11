@@ -120,6 +120,9 @@ export function resetBoxes(vueApp) {
      async function createScene(vueApp) {
             scene = new BABYLON.Scene(engine);
 
+            // Set white background like in the image
+            scene.clearColor = new BABYLON.Color3(0.95, 0.95, 0.95); // Light white/gray background
+
             // Initialize Havok Physics
             const havokPlugin = new BABYLON.HavokPlugin(true, await HavokPhysics());
             scene.enablePhysics(new BABYLON.Vector3(0, -150, 0), havokPlugin);
@@ -237,13 +240,13 @@ export function resetBoxes(vueApp) {
         }
 
         function createTrackWalls(scene, trackWidth = 800, trackHeight = 800) {
-            const wallHeight = 5;
-            const wallThickness = 2;
+            const wallHeight = 20; 
+            const wallThickness = 2; // Keep the thickness for visibility
 
-            // Create wall material similar to the original rail material
+            // Create white wall material like in the image
             const wallMaterial = new BABYLON.StandardMaterial("wallMaterial", scene);
-            wallMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-            wallMaterial.diffuseTexture = new BABYLON.Texture("game/textures/amiga.jpg", scene);
+            wallMaterial.diffuseColor = new BABYLON.Color3(0.95, 0.95, 0.95); // White color like in image
+            wallMaterial.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Low specular for matte look
 
             // North Wall
             const northWall = BABYLON.MeshBuilder.CreateBox("northWall", {
@@ -284,62 +287,6 @@ export function resetBoxes(vueApp) {
             westWall.position.set(-trackWidth / 2 - wallThickness / 2, wallHeight / 2 - 20, 0);
             westWall.material = wallMaterial;
             new BABYLON.PhysicsAggregate(westWall, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 0.1 }, scene);
-
-            // Add some posts for decoration (similar to original rail posts)
-            const postMaterial = new BABYLON.StandardMaterial("postMaterial", scene);
-            postMaterial.diffuseColor = new BABYLON.Color3(0.7, 0.7, 0.7);
-            postMaterial.emissiveColor = BABYLON.Color3.Teal();
-
-            const postSpacing = 50;
-            const postCount = Math.floor(trackWidth / postSpacing);
-
-            // North posts
-            for (let i = 0; i <= postCount; i++) {
-                const x = -trackWidth / 2 + (i * postSpacing);
-                const post = BABYLON.MeshBuilder.CreateBox("northPost", {
-                    width: 1,
-                    height: wallHeight + 1,
-                    depth: 1
-                }, scene);
-                post.position.set(x, wallHeight / 2 - 19.5, trackHeight / 2 + wallThickness / 2);
-                post.material = postMaterial;
-            }
-
-            // South posts
-            for (let i = 0; i <= postCount; i++) {
-                const x = -trackWidth / 2 + (i * postSpacing);
-                const post = BABYLON.MeshBuilder.CreateBox("southPost", {
-                    width: 1,
-                    height: wallHeight + 1,
-                    depth: 1
-                }, scene);
-                post.position.set(x, wallHeight / 2 - 19.5, -trackHeight / 2 - wallThickness / 2);
-                post.material = postMaterial;
-            }
-
-            // East posts
-            for (let i = 0; i <= postCount; i++) {
-                const z = -trackHeight / 2 + (i * postSpacing);
-                const post = BABYLON.MeshBuilder.CreateBox("eastPost", {
-                    width: 1,
-                    height: wallHeight + 1,
-                    depth: 1
-                }, scene);
-                post.position.set(trackWidth / 2 + wallThickness / 2, wallHeight / 2 - 19.5, z);
-                post.material = postMaterial;
-            }
-
-            // West posts
-            for (let i = 0; i <= postCount; i++) {
-                const z = -trackHeight / 2 + (i * postSpacing);
-                const post = BABYLON.MeshBuilder.CreateBox("westPost", {
-                    width: 1,
-                    height: wallHeight + 1,
-                    depth: 1
-                }, scene);
-                post.position.set(-trackWidth / 2 - wallThickness / 2, wallHeight / 2 - 19.5, z);
-                post.material = postMaterial;
-            }
         }
 
         function createCollisionTowers(scene) {
