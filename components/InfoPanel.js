@@ -2,7 +2,7 @@
 export const InfoPanel = {
     template: `
         <!-- Debug Button -->
-        <button class="debug-button" @click="toggleDebugPanels" v-show="!debugVisible">
+        <button class="debug-button" @click="toggleDebugPanels" v-show="!debugVisible && !isTouchDevice">
             🐛 Debug
         </button>
 
@@ -92,7 +92,8 @@ export const InfoPanel = {
         maxSpeed: Number,
         raceTime: Number,
         finishTime: [Number, String],
-        isRacing: Boolean
+        isRacing: Boolean,
+        isTouchDevice: Boolean
     },
     data() {
         return {

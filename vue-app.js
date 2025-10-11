@@ -101,9 +101,11 @@ export function createVueApp() {
             },
             
             detectTouchDevice() {
-                this.isTouchDevice = ('ontouchstart' in window) || 
-                                   (navigator.maxTouchPoints > 0) || 
-                                   (navigator.msMaxTouchPoints > 0);
+                // Simple and elegant: true touch-only devices
+                const touchOnly = window.matchMedia('(pointer: coarse)').matches &&
+                                !window.matchMedia('(any-pointer: fine)').matches;
+                
+                this.isTouchDevice = touchOnly;
                 console.log('📱 Touch device detected:', this.isTouchDevice);
             },
 
