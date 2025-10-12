@@ -886,11 +886,11 @@ export function resetBoxes(vueApp) {
 
             InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
 
-            // Add red taillights to the car
-            createTaillights(carFrame, scene);
+            // // Add red taillights to the car
+            // createTaillights(carFrame, scene);
 
-            // Add warm white headlights to the car
-            createHeadlights(carFrame, scene);
+            // // Add warm white headlights to the car
+            // createHeadlights(carFrame, scene);
 
             return carFrame;
         }
