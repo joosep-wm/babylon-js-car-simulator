@@ -188,8 +188,8 @@ export function resetBoxes(vueApp) {
             // Add 5 knockable boxes
             createKnockableBoxes(scene, vueApp);
 
-            // Add ramp bridge for driving over
-            createRampBridge(scene);
+            // Add bridge
+            createBridge(scene);
 
             // Setup physics-based collision detection after car is fully created
             // Add a small delay to ensure physics body is properly initialized
@@ -224,7 +224,7 @@ export function resetBoxes(vueApp) {
 
                 // Update Vue.js data
                 if (vueApp) {
-                    vueApp.speed = speed * 3.6; // Convert to km/h
+                    vueApp.speed = speed; // Convert to km/h
                     vueApp.position.x = carF.position.x;
                     vueApp.position.y = carF.position.y;
                     vueApp.position.z = carF.position.z;
@@ -507,146 +507,8 @@ export function resetBoxes(vueApp) {
             });
         }
 
-        function createCircularRaceTrackWithSideGuardrails(scene, radius = 10, width = 3, height = 0.5, segments = 32) {
-            const innerPath = [];
-            const outerPath = [];
-
-            for (let i = 0; i <= segments; i++) {
-                const angle = (i / segments) * Math.PI * 2;
-                const innerX = (radius - width / 2) * Math.cos(angle);
-                const innerZ = (radius - width / 2) * Math.sin(angle);
-                innerPath.push(new BABYLON.Vector3(innerX, height * 0.3, innerZ));
-
-                const outerX = (radius + width / 2) * Math.cos(angle);
-                const outerZ = (radius + width / 2) * Math.sin(angle);
-                outerPath.push(new BABYLON.Vector3(outerX, height, outerZ));
-            }
-
-            const track = BABYLON.MeshBuilder.CreateRibbon("raceTrack", {
-                pathArray: [innerPath, outerPath],
-                sideOrientation: BABYLON.Mesh.DOUBLESIDE,
-                updatable: false,
-                closeArray: false,
-                closePath: false
-            }, scene);
-
-            const trackMaterial = new BABYLON.StandardMaterial("trackMaterial", scene);
-            trackMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-            trackMaterial.emissiveColor = new BABYLON.Color3(0.21, 0.3, 0.31);
-            track.material = trackMaterial;
-            
-            // Add texture from original code
-            trackMaterial.diffuseTexture = new BABYLON.Texture("game/textures/up.png", scene);
-            trackMaterial.diffuseTexture.uScale = 20;
-            trackMaterial.diffuseTexture.wAng = BABYLON.Tools.ToRadians(250);
-
-            addTrackStripes(scene, radius, width, height, segments);
-            addSideGuardrails(scene, radius, width, height, segments);
-
-            return track;
-        }
-
-        function addSideGuardrails(scene, radius, width, height, segments) {
-            const railHeight = 2.5;
-            const railThickness = 0.4;
-            const railMaterial = new BABYLON.StandardMaterial("railMaterial", scene);
-            railMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-            railMaterial.diffuseTexture = new BABYLON.Texture("game/textures/amiga.jpg", scene);
-
-            const innerRailPath = [];
-            const innerRailPathTop = [];
-            const outerRailPath = [];
-            const outerRailPathTop = [];
-
-            for (let i = 0; i <= segments; i++) {
-                const angle = (i / segments) * Math.PI * 2;
-                const innerX = (radius - width / 2) * Math.cos(angle);
-                const innerZ = (radius - width / 2) * Math.sin(angle);
-
-                innerRailPath.push(new BABYLON.Vector3(innerX, height * 0.3, innerZ));
-                innerRailPathTop.push(new BABYLON.Vector3(innerX, height * 0.3 + railHeight, innerZ));
-
-                const outerX = (radius + width / 2) * Math.cos(angle);
-                const outerZ = (radius + width / 2) * Math.sin(angle);
-
-                outerRailPath.push(new BABYLON.Vector3(outerX, height, outerZ));
-                outerRailPathTop.push(new BABYLON.Vector3(outerX, height + railHeight, outerZ));
-            }
-
-            const innerRail = BABYLON.MeshBuilder.CreateRibbon("innerRail", {
-                pathArray: [innerRailPath, innerRailPathTop],
-                sideOrientation: BABYLON.Mesh.DOUBLESIDE,
-                closeArray: false
-            }, scene);
-
-            const outerRail = BABYLON.MeshBuilder.CreateRibbon("outerRail", {
-                pathArray: [outerRailPath, outerRailPathTop],
-                sideOrientation: BABYLON.Mesh.DOUBLESIDE,
-                closeArray: false
-            }, scene);
-
-            const postMaterial = new BABYLON.StandardMaterial("postMaterial", scene);
-            postMaterial.diffuseColor = new BABYLON.Color3(0.7, 0.7, 0.7);
-            postMaterial.emissiveColor = BABYLON.Color3.Teal();
-
-            for (let i = 0; i < segments; i += 2) {
-                const angle = (i / segments) * Math.PI * 2;
-                const innerX = (radius - width / 2) * Math.cos(angle);
-                const innerZ = (radius - width / 2) * Math.sin(angle);
-
-                const innerPost = BABYLON.MeshBuilder.CreateBox("innerPost", {
-                    height: railHeight,
-                    width: railThickness,
-                    depth: railThickness
-                }, scene);
-
-                innerPost.position.set(innerX, height * 0.3 + railHeight / 2, innerZ);
-                innerPost.material = postMaterial;
-
-                const outerX = (radius + width / 2) * Math.cos(angle);
-                const outerZ = (radius + width / 2) * Math.sin(angle);
-
-                const outerPost = BABYLON.MeshBuilder.CreateBox("outerPost", {
-                    height: railHeight,
-                    width: railThickness,
-                    depth: railThickness
-                }, scene);
-
-                outerPost.position.set(outerX, height + railHeight / 2, outerZ);
-                outerPost.material = postMaterial;
-            }
-
-            innerRail.material = railMaterial;
-            outerRail.material = railMaterial;
-        }
-
-        function addTrackStripes(scene, radius, width, height, segments) {
-            const stripeMaterial = new BABYLON.StandardMaterial("stripeMaterial", scene);
-            stripeMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1);
-
-            for (let i = 0; i < segments; i += 2) {
-                const angle = (i / segments) * Math.PI * 2;
-                const nextAngle = ((i + 1) / segments) * Math.PI * 2;
-
-                const stripeWidth = width * 0.8;
-                const stripePath = [];
-
-                stripePath.push(new BABYLON.Vector3((radius - stripeWidth / 2) * Math.cos(angle), height * 0.35, (radius - stripeWidth / 2) * Math.sin(angle)));
-                stripePath.push(new BABYLON.Vector3((radius + stripeWidth / 2) * Math.cos(angle), height * 0.35, (radius + stripeWidth / 2) * Math.sin(angle)));
-                stripePath.push(new BABYLON.Vector3((radius + stripeWidth / 2) * Math.cos(nextAngle), height * 0.35, (radius + stripeWidth / 2) * Math.sin(nextAngle)));
-                stripePath.push(new BABYLON.Vector3((radius - stripeWidth / 2) * Math.cos(nextAngle), height * 0.35, (radius - stripeWidth / 2) * Math.sin(nextAngle)));
-
-                const stripe = BABYLON.MeshBuilder.CreateRibbon("stripe", {
-                    pathArray: [stripePath],
-                    sideOrientation: BABYLON.Mesh.DOUBLESIDE
-                }, scene);
-
-                stripe.material = stripeMaterial;
-            }
-        }
-
         // Create a ramp bridge for driving over (like in the image)
-        function createRampBridge(scene) {
+        function createBridge(scene) {
             // Bridge spans from X=185 to X=-75 (total width: 260 units)
             const bridgeStartX = 185;
             const bridgeEndX = -75;
@@ -716,6 +578,7 @@ export function resetBoxes(vueApp) {
         }
 
         // Create red taillights for the car
+        // currently disabled due to performance issues on some devices
         function createTaillights(carFrame, scene) {
             // Create left taillight (half size)
             const leftTaillight = BABYLON.MeshBuilder.CreateSphere("leftTaillight", {diameter: 1}, scene);
@@ -801,6 +664,7 @@ export function resetBoxes(vueApp) {
         }
 
         // Create front headlights for the car
+        // currently disabled due to performance issues on some devices
         function createHeadlights(carFrame, scene) {
             // Create left headlight as cylinder (like a cake - round with depth)
             const leftHeadlight = BABYLON.MeshBuilder.CreateCylinder("leftHeadlight", {

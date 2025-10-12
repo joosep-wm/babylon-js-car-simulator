@@ -1,6 +1,6 @@
 {
   "name": "babylon-js-car-example",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Modern 3D car racing game with Babylon.js, Vue.js, and intelligent device detection. Features component-based architecture, realistic physics, and cross-platform controls.",
   "main": "index.js",
   "type": "module",
@@ -48,15 +48,5 @@
   "bugs": {
     "url": "https://github.com/manuelhintermayr/babylon-js-car-example/issues"
   },
-  "homepage": "https://github.com/manuelhintermayr/babylon-js-car-example#readme",
-  "files": [
-    "index.html",
-    "index.js",
-    "vue-app.js",
-    "components/",
-    "css/",
-    "game/",
-    "README.md",
-    "LICENSE"
-  ]
+  "homepage": "https://github.com/manuelhintermayr/babylon-js-car-example#readme"
 }

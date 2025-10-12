@@ -38,7 +38,7 @@ This project showcases **advanced game development** using:
 
 ### 🏁 Core Gameplay
 - **Realistic car physics** powered by Havok Physics Engine (based on [Babylon.js Playground demo](https://www.babylonjs-playground.com/#ANV5OM#139))
-- **Custom 3D car model** support with GLB/GLTF loading
+- **Custom 3D car model** support with GLB/GLTF loading (model created with [ImgTo3D.ai](https://www.imgto3d.ai/), textures with [Meshy.ai](https://www.meshy.ai/))
 - **ConvexHull physics** for complex 3D model collision detection
 - **Dynamic camera system** with mouse controls and smooth following (based on [Babylon.js mouse control demo](https://playground.babylonjs.com/#FMQX86#1))
 - **Jump mechanics** with Space key for aerial stunts
@@ -257,6 +257,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Vue.js Team** - For the reactive framework
 - **Havok Physics** - For realistic physics simulation
 - **Modern Web Standards** - For enabling advanced browser capabilities
+- **AI Tools** - For 3D model and texture creation:
+  - Car 3D model created with [ImgTo3D.ai](https://www.imgto3d.ai/)
+  - Car textures created with [Meshy.ai](https://www.meshy.ai/)
 - **Babylon.js Community** - For providing excellent demos and examples:
   - Car physics implementation based on [Babylon.js Playground #ANV5OM#139](https://www.babylonjs-playground.com/#ANV5OM#139)
   - Mouse camera controls based on [Babylon.js Playground #FMQX86#1](https://playground.babylonjs.com/#FMQX86#1)
