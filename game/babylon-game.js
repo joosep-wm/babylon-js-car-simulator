@@ -163,8 +163,15 @@ export function resetBoxes(vueApp) {
 
             InitTyreMaterial();
 
-            const carF = CreateCar(vueApp);
-            camera.lockedTarget = carF;
+            const carF = await CreateCar(vueApp);
+            
+            // Ensure camera setup waits for car to be fully initialized
+            if (carF && carF.position) {
+                camera.lockedTarget = carF;
+                console.log("✅ Camera locked to car:", carF.name);
+            } else {
+                console.error("❌ Car not properly created for camera targeting");
+            }
 
             // Create square race track
             const track = createSquareRaceTrack(scene, 800, 800);
@@ -181,8 +188,11 @@ export function resetBoxes(vueApp) {
             // Add 5 knockable boxes
             createKnockableBoxes(scene, vueApp);
 
-            // Setup physics-based collision detection
-            setupCollisionDetection(scene, carF, vueApp);
+            // Setup physics-based collision detection after car is fully created
+            // Add a small delay to ensure physics body is properly initialized
+            setTimeout(() => {
+                setupCollisionDetection(scene, carF, vueApp);
+            }, 200);
 
             // Remove finish line creation
             // const checkerPlane = ... (removed)
@@ -393,12 +403,28 @@ export function resetBoxes(vueApp) {
 
         // Physics-based collision detection system
         function setupCollisionDetection(scene, car, vueApp) {
-            // Get car's physics body
-            const carPhysicsBody = car.physicsBody || car._physicsBody;
+            // Get car's physics body with multiple fallback options
+            let carPhysicsBody = null;
+            
+            if (car) {
+                carPhysicsBody = car.physicsBody || car._physicsBody;
+                
+                // If still not found, try to wait a bit more for physics to initialize
+                if (!carPhysicsBody) {
+                    console.log("⏳ Physics body not ready, retrying in 100ms...");
+                    setTimeout(() => {
+                        setupCollisionDetection(scene, car, vueApp);
+                    }, 100);
+                    return;
+                }
+            }
+            
             if (!carPhysicsBody) {
-                console.error("Car physics body not found!");
+                console.error("❌ Car physics body not found after retries!");
                 return;
             }
+            
+            console.log("✅ Car physics body found, setting up collision detection");
 
             // Track collision cooldowns to prevent spam
             const collisionCooldowns = new Map();
@@ -614,11 +640,54 @@ export function resetBoxes(vueApp) {
             }
         }
 
-        function CreateCar(vueApp) {
-            const carFrame = BABYLON.MeshBuilder.CreateBox("Frame", { height: 1, width: 12, depth: 24, faceColors: debugColours });
-            carFrame.position = new BABYLON.Vector3(0, 1, 0);
-            carFrame.visibility = 0.5;
-            const carFrameBody = AddDynamicPhysics(carFrame, 2000, 0, 0, new BABYLON.Vector3(0, -2.5, 1));
+        async function CreateCar(vueApp) {
+            // Import the custom car model
+            const customCarBody = await importCustomCar();
+
+            // Use the imported car body instead of creating a box
+            let carFrame;
+            if (customCarBody) {
+                carFrame = customCarBody;
+            } else {
+                console.error("Custom car loading failed! Using fallback box.");
+                // Fallback to original box if model loading fails
+                carFrame = BABYLON.MeshBuilder.CreateBox("CarBody", { height: 1, width: 12, depth: 24, faceColors: debugColours });
+                carFrame.position = new BABYLON.Vector3(0, 1, 0);
+                carFrame.visibility = 0.5;
+                const carFrameBody = AddDynamicPhysics(carFrame, 2000, 0, 0, new BABYLON.Vector3(0, -2.5, 1));
+                FilterMeshCollisions(carFrame);
+                
+                // Continue with wheel creation for fallback
+                const flWheel = CreateWheel(new BABYLON.Vector3(5, 0, 8));
+                const flAxle = CreateAxle(new BABYLON.Vector3(5, 0, 8));
+                const frWheel = CreateWheel(new BABYLON.Vector3(-5, 0, 8));
+                const frAxle = CreateAxle(new BABYLON.Vector3(-5, 0, 8));
+                const rlWheel = CreateWheel(new BABYLON.Vector3(5, 0, -10));
+                const rlAxle = CreateAxle(new BABYLON.Vector3(5, 0, -10));
+                const rrWheel = CreateWheel(new BABYLON.Vector3(-5, 0, -10));
+                const rrAxle = CreateAxle(new BABYLON.Vector3(-5, 0, -10));
+
+                const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel);
+                const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel);
+                CreateWheelJoint(rlAxle, rlWheel);
+                CreateWheelJoint(rrAxle, rrWheel);
+
+                const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrame.physicsBody, true);
+                const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrame.physicsBody, true);
+                AttachAxleToFrame(rlAxle.physicsBody, carFrame.physicsBody);
+                AttachAxleToFrame(rrAxle.physicsBody, carFrame.physicsBody);
+
+                InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
+
+                return carFrame;
+            }
+
+            carFrame.position = new BABYLON.Vector3(0, 5, 0); // Higher position for larger car
+            // Remove visibility setting to show the actual car model
+            // carFrame.visibility = 0.5; 
+            
+            // Use ConvexHull physics for better performance with complex meshes
+            const carFrameBody = AddDynamicPhysicsConvex(carFrame, 5000, 0, 0.8, new BABYLON.Vector3(0, -2.5, 1));
             FilterMeshCollisions(carFrame);
 
             const flWheel = CreateWheel(new BABYLON.Vector3(5, 0, 8));
@@ -930,6 +999,16 @@ export function resetBoxes(vueApp) {
             return physicsBody;
         }
 
+        function AddDynamicPhysicsConvex(mesh, mass, bounce, friction, centerOfMass) {
+            const physicsShape = new BABYLON.PhysicsShapeConvexHull(mesh, scene);
+            const physicsBody = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.DYNAMIC, false, scene);
+            physicsBody.setMassProperties({ mass: mass, centerOfMass: centerOfMass });
+            physicsShape.material = { restitution: bounce, friction: friction };
+            physicsBody.shape = physicsShape;
+
+            return physicsBody;
+        }
+
         function FilterMeshCollisions(mesh) {
             mesh.physicsBody.shape.filterMembershipMask = FILTERS.CarParts;
             mesh.physicsBody.shape.filterCollideMask = FILTERS.Environment;
@@ -946,4 +1025,74 @@ export function resetBoxes(vueApp) {
             const outerAngle = Math.atan(wheelbase / outerRadius);
 
             return [innerAngle, outerAngle];
+        }
+
+        async function importCustomCar() {
+            try {
+                console.log("🚗 Loading custom car model...");
+                
+                // Import your custom car.glb model
+                const importResult = await BABYLON.SceneLoader.ImportMeshAsync("", "game/models/", "car.glb", scene);
+                
+                console.log("📦 Car model loaded successfully:", importResult);
+                
+                // Get the root node of the imported model
+                const importRoot = importResult.meshes[0];
+                
+                if (importRoot) {
+                    // Scale up the car model significantly to match the wheel size
+                    importRoot.scaling = new BABYLON.Vector3(10, 10, 10); // Much larger scale
+                    
+                    // Rotate the car by 90 degrees around Y-axis
+                    if (importRoot.rotationQuaternion) {
+                        importRoot.rotationQuaternion = BABYLON.Quaternion.Identity();
+                    }
+                    importRoot.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0); // 90° rotation
+                    
+                    // Position the car
+                    importRoot.position = new BABYLON.Vector3(0, 0, 0);
+                    
+                    // Ensure position is properly accessible for camera
+                    if (!importRoot.position) {
+                        importRoot.position = new BABYLON.Vector3(0, 0, 0);
+                    }
+                    
+                    // Bake transformations into vertices for better performance
+                    importRoot.bakeCurrentTransformIntoVertices();
+                    
+                    // Find all meshes that should be merged into the car body
+                    const meshesToMerge = importResult.meshes.filter(mesh => 
+                        mesh.getClassName() === "Mesh" && mesh !== importRoot
+                    );
+                    
+                    // Merge all car body meshes into one
+                    let carBody;
+                    if (meshesToMerge.length > 0) {
+                        carBody = BABYLON.Mesh.MergeMeshes(meshesToMerge, true, true, undefined, false, true);
+                        carBody.name = "CarBody";
+                    } else {
+                        // If no meshes to merge, use the root as car body
+                        importRoot.name = "CarBody";
+                        carBody = importRoot;
+                    }
+                    
+                    console.log("✅ Car body created:", carBody.name);
+                    
+                    // Ensure position is accessible for camera targeting
+                    if (!carBody.position) {
+                        carBody.position = new BABYLON.Vector3(0, 0, 0);
+                    }
+                    
+                    return carBody;
+                    
+                } else {
+                    console.error("❌ No root mesh found in car model");
+                    return null;
+                }
+                
+            } catch (error) {
+                console.error("❌ Error loading car model:", error);
+                console.log("💡 Make sure the car.glb file exists in game/models/ folder");
+                return null;
+            }
         }
