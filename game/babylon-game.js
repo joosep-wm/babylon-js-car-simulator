@@ -727,6 +727,83 @@ export function resetBoxes(vueApp) {
             console.log("🔴 Enhanced red taillights with ESM shadows and focused beams created");
         }
 
+        // Create front headlights for the car
+        function createHeadlights(carFrame, scene) {
+            // Create left headlight as cylinder (like a cake - round with depth)
+            const leftHeadlight = BABYLON.MeshBuilder.CreateCylinder("leftHeadlight", {
+                diameter: 2.1, 
+                height: 0.8 // The "length/depth" of the headlight
+            }, scene);
+            leftHeadlight.position = new BABYLON.Vector3(5.1, 1.65, 13.5); // Left front of car
+            leftHeadlight.rotation.x = Math.PI / 2; // Rotate 90° to lie flat against car front
+            leftHeadlight.parent = carFrame;
+            
+            // Create right headlight as cylinder (like a cake - round with depth)
+            const rightHeadlight = BABYLON.MeshBuilder.CreateCylinder("rightHeadlight", {
+                diameter: 2.1, 
+                height: 0.8 // The "length/depth" of the headlight
+            }, scene);
+            rightHeadlight.position = new BABYLON.Vector3(-5.1, 1.65, 13.5); // Right front of car
+            rightHeadlight.rotation.x = Math.PI / 2; // Rotate 90° to lie flat against car front
+            rightHeadlight.parent = carFrame;
+            
+            // Create warm white glowing material for headlights (color #ddc584)
+            const headlightMaterial = new BABYLON.StandardMaterial("headlightMaterial", scene);
+            headlightMaterial.diffuseColor = new BABYLON.Color3(0.867, 0.773, 0.518); // #ddc584 converted to RGB
+            headlightMaterial.emissiveColor = new BABYLON.Color3(0.867, 0.773, 0.518); // Warm glow
+            headlightMaterial.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+            
+            // Apply material to both headlights
+            leftHeadlight.material = headlightMaterial;
+            rightHeadlight.material = headlightMaterial;
+            
+            // Create warm white POINT LIGHTS for the headlights
+            const leftHeadlightPoint = new BABYLON.PointLight("leftHeadlightPoint", 
+                leftHeadlight.position.clone(), // EXACT same position as headlight sphere
+                scene);
+            leftHeadlightPoint.diffuse = new BABYLON.Color3(0.867, 0.773, 0.518); // #ddc584 warm light
+            leftHeadlightPoint.specular = new BABYLON.Color3(0.3, 0.3, 0.2); // Reduced specular 
+            leftHeadlightPoint.intensity = 1.2; // Brighter than taillights for headlights
+            leftHeadlightPoint.range = 50; // Longer range for headlights
+            leftHeadlightPoint.parent = carFrame;
+            
+            const rightHeadlightPoint = new BABYLON.PointLight("rightHeadlightPoint", 
+                rightHeadlight.position.clone(), // EXACT same position as headlight sphere
+                scene);
+            rightHeadlightPoint.diffuse = new BABYLON.Color3(0.867, 0.773, 0.518); // #ddc584 warm light
+            rightHeadlightPoint.specular = new BABYLON.Color3(0.3, 0.3, 0.2); // Reduced specular
+            rightHeadlightPoint.intensity = 1.2; // Brighter than taillights for headlights
+            rightHeadlightPoint.range = 50; // Longer range for headlights
+            rightHeadlightPoint.parent = carFrame;
+            
+            // Create shadow generators for the headlights
+            const leftHeadlightShadowGenerator = new BABYLON.ShadowGenerator(2048, leftHeadlightPoint);
+            leftHeadlightShadowGenerator.useBlurExponentialShadowMap = true;
+            leftHeadlightShadowGenerator.blurBoxOffset = 2.0;
+            leftHeadlightShadowGenerator.bias = 0.00001;
+            
+            const rightHeadlightShadowGenerator = new BABYLON.ShadowGenerator(2048, rightHeadlightPoint);
+            rightHeadlightShadowGenerator.useBlurExponentialShadowMap = true;
+            rightHeadlightShadowGenerator.blurBoxOffset = 2.0;
+            rightHeadlightShadowGenerator.bias = 0.00001;
+            
+            // Enable shadow receiving and add meshes to shadow rendering
+            const groundMesh = scene.getMeshByName("SquareTrack");
+            if (groundMesh) {
+                leftHeadlightShadowGenerator.getShadowMap().renderList.push(carFrame);
+                rightHeadlightShadowGenerator.getShadowMap().renderList.push(carFrame);
+                
+                // Also add wheels to shadow casting if they exist
+                const wheels = scene.meshes.filter(mesh => mesh.name.includes("Wheel"));
+                wheels.forEach(wheel => {
+                    leftHeadlightShadowGenerator.getShadowMap().renderList.push(wheel);
+                    rightHeadlightShadowGenerator.getShadowMap().renderList.push(wheel);
+                });
+            }
+            
+            console.log("💡 Warm white headlights (#ddc584) with shadows created");
+        }
+
         async function CreateCar(vueApp) {
             // Import the custom car model
             const customCarBody = await importCustomCar();
@@ -811,6 +888,9 @@ export function resetBoxes(vueApp) {
 
             // Add red taillights to the car
             createTaillights(carFrame, scene);
+
+            // Add warm white headlights to the car
+            createHeadlights(carFrame, scene);
 
             return carFrame;
         }
