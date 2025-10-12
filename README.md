@@ -61,11 +61,13 @@ This project showcases **advanced game development** using:
 - **Progress tracking** (knocked boxes counter with physics detection)
 - **Interactive debug panels** with F12 toggle and auto-hide on mobile
 
-## 🖥️ Cross-Platform Controls
+## 🖥️ Enhanced Cross-Platform Controls
 
 ### **Desktop Experience**
 - **WASD/Arrow Keys** for movement with real-time visual feedback
-- **Space Bar** for braking with force indication
+- **Space Bar** for jumping mechanics and aerial stunts
+- **B Key** for precision braking with force indication
+- **Mouse Controls** for 360° camera rotation around vehicle
 - **Enter Key** for instant game reset
 - **F12/Backtick** for debug panel toggle
 - **Key state visualization** with active/inactive indicators
@@ -73,6 +75,7 @@ This project showcases **advanced game development** using:
 ### **Mobile Experience**
 - **Virtual joystick** for precise movement control with visual feedback
 - **Touch brake button** (🚗) for braking actions
+- **Touch jump button** for aerial maneuvers
 - **Touch reset button** (🔄) for game restart
 - **Responsive touch areas** optimized for finger interaction
 - **Auto-hiding desktop controls** on touch devices
@@ -84,7 +87,7 @@ This project showcases **advanced game development** using:
 - **Touch-first design** for mobile devices
 - **Glassmorphism UI** with modern gaming aesthetics
 
-## 🏗️ Project Structure
+## 🏗️ Enhanced Project Structure
 
 ```
 📦 babylon-js-car-example/
@@ -94,33 +97,43 @@ This project showcases **advanced game development** using:
 │
 ├── 📁 components/            # 🔧 Modular Vue Components
 │   ├── 📄 info-panel.js      # Debug panel with glassmorphism UI
-│   ├── 📄 desktop-controls.js # Keyboard controls with visual feedback
-│   └── 📄 mobile-controls.js  # Touch controls with joystick
+│   ├── 📄 desktop-controls.js # Enhanced keyboard controls with jump/brake
+│   └── 📄 mobile-controls.js  # Touch controls with joystick & jump
 │
 ├── 📁 css/                   # 🎨 Modular Stylesheets
 │   ├── 📄 main.css           # Core styles, HTML, body, canvas
 │   ├── 📄 info-panel.css     # Debug panel glassmorphism styling
-│   ├── 📄 mobile-controls.css # Virtual joystick & touch buttons
-│   └── 📄 desktop-controls.css # Key displays with active states
+│   ├── 📄 mobile-controls.css # Virtual joystick & enhanced touch buttons
+│   └── 📄 desktop-controls.css # Key displays with jump/brake indicators
 │
-└── 📁 game/                  # 🎮 Game Engine & Assets
-    ├── 📄 babylon-game.js    # Complete Babylon.js game logic
+└── 📁 game/                  # 🎮 Advanced Game Engine & Assets
+    ├── 📄 babylon-game.js    # Complete Babylon.js game with lighting & 3D models
+    ├── 📁 models/            # 3D Model Assets
+    │   └── 📄 car.glb        # Custom 3D car model (GLB format)
     └── 📁 textures/          # 3D texture assets
         ├── 📄 up.png         # Track and wheel textures
         └── 📄 amiga.jpg      # Wall and post textures
 ```
 
-## 🛠️ Technology Stack
+## 🛠️ Advanced Technology Stack
 
 ### **Frontend Architecture**
 - **Vue.js 3** - Reactive UI framework with Composition API and ES6 modules
 - **Component-Based Design** - Separated concerns with reusable components
 - **Event-Driven Architecture** - Clean component communication via Vue events
 
-### **3D Graphics & Physics**
+### **3D Graphics & Advanced Physics**
 - **Babylon.js v8.31.0** - Professional 3D rendering engine with WebGL2
 - **Havok Physics** - Realistic car dynamics and collision detection
-- **Real-time Rendering** - 60fps smooth gameplay with dynamic objects
+- **ConvexHull Physics** - Complex 3D model collision for custom car shapes
+- **GLB/GLTF Model Loading** - Support for custom 3D car models
+- **Real-time Rendering** - 60fps smooth gameplay with dynamic lighting
+
+### **Advanced Lighting & Visual Effects**
+- **Point Light System** - Realistic car headlights and taillights
+- **ESM Shadow Mapping** - Exponential Shadow Maps for soft realistic shadows
+- **Dynamic Material Reflections** - Light interaction with car and environment surfaces
+- **Atmospheric Lighting** - Reduced ambient lighting for dramatic racing environment
 
 ### **Device Detection & Adaptation**
 - **CSS Media Queries** - Intelligent touch device detection
@@ -130,6 +143,7 @@ This project showcases **advanced game development** using:
 ### **Styling & Design**
 - **Modular CSS** - Component-specific stylesheets for maintainability
 - **Glassmorphism Effects** - Modern frosted glass UI aesthetics
+- **Studio Environment** - Professional white-walled racing environment
 - **Responsive Design** - Optimized layouts for all screen sizes
 
 ## 🚀 Getting Started
@@ -138,6 +152,7 @@ This project showcases **advanced game development** using:
 - Modern web browser with ES6 module support
 - Local web server (required for ES6 modules)  
 - WebGL2 compatible graphics (most modern devices)
+- GLB/GLTF support for custom 3D car models
 
 ### **Quick Start**
 
@@ -164,6 +179,11 @@ This project showcases **advanced game development** using:
    http://localhost:8000
    ```
 
+4. **Optional: Add Custom Car Model**
+   - Place your car.glb file in `game/models/`
+   - The game will automatically load your custom model
+   - Fallback to default box car if model loading fails
+
 ### **Development**
 The project uses **ES6 modules** which require a web server (not `file://` protocol) for proper functionality.
 
@@ -171,21 +191,30 @@ The project uses **ES6 modules** which require a web server (not `file://` proto
 
 1. **🏁 Start the Game**
    - Open the game in your browser
+   - Watch your custom 3D car model load automatically
    - Use `F12` or `` ` `` to open debug panels (optional)
 
-2. **🚗 Control Your Vehicle**
-   - **Desktop**: Use WASD keys for movement
-   - **Mobile**: Use the virtual joystick
+2. **🚗 Master the Controls**
+   - **Desktop**: Use WASD keys for movement, Space for jumping, B for braking
+   - **Mobile**: Use the virtual joystick with touch jump and brake buttons
+   - **Camera**: Use mouse to rotate camera view around your car
 
 3. **🎯 Complete Objectives**
-   - Drive around and find the 5 orange boxes
+   - Drive around and find the 5 orange boxes scattered across the track
    - Hit them to increase your "Knocked Boxes" counter
    - Avoid brown collision towers to minimize collisions
+   - Try jumping over the elevated bridge platform
 
-4. **🏆 Master the Physics**
-   - Experiment with realistic car physics and momentum
-   - Learn to control the vehicle through corners and obstacles
-   - Try to knock all boxes with minimal collisions for the perfect run
+4. **🏆 Master Advanced Features**
+   - Experiment with realistic car physics and aerial jumps
+   - Use the dynamic lighting to navigate in low-light conditions
+   - Learn to control the vehicle through corners using optimized steering
+   - Challenge yourself to knock all boxes with minimal collisions
+
+5. **💡 Experience the Atmosphere**
+   - Enjoy realistic headlight and taillight illumination
+   - Watch dynamic shadows cast by your car's lights
+   - Race in the professional studio environment with white walls
 
 ## 🤝 Contributing
 
