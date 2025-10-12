@@ -159,7 +159,7 @@ export function resetBoxes(vueApp) {
             });
 
             const hemisphericLight = new BABYLON.HemisphericLight("Hemispheric Light", new BABYLON.Vector3(1, 1, 0), scene);
-            hemisphericLight.intensity = 0.7;
+            hemisphericLight.intensity = 0.5; // Much darker ambient lighting
 
             InitTyreMaterial();
 
@@ -254,10 +254,11 @@ export function resetBoxes(vueApp) {
                 height: height 
             }, scene);
 
-            // Apply the same material as the original track
+            // Apply the same material as the original track with better light reflection
             const trackMaterial = new BABYLON.StandardMaterial("trackMaterial", scene);
-            trackMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-            trackMaterial.emissiveColor = new BABYLON.Color3(0.21, 0.3, 0.31);
+            trackMaterial.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Darker for better contrast
+            trackMaterial.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3); // More reflective
+            trackMaterial.specularPower = 32; // Sharp reflections
             
             // Add texture from original code
             trackMaterial.diffuseTexture = new BABYLON.Texture("game/textures/up.png", scene);
@@ -266,6 +267,7 @@ export function resetBoxes(vueApp) {
             trackMaterial.diffuseTexture.wAng = BABYLON.Tools.ToRadians(250);
             
             track.material = trackMaterial;
+            track.receiveShadows = true; // Enable shadow receiving
 
             return track;
         }
@@ -640,6 +642,91 @@ export function resetBoxes(vueApp) {
             }
         }
 
+        // Create red taillights for the car
+        function createTaillights(carFrame, scene) {
+            // Create left taillight (half size)
+            const leftTaillight = BABYLON.MeshBuilder.CreateSphere("leftTaillight", {diameter: 1}, scene);
+            leftTaillight.position = new BABYLON.Vector3(5.2, 1.65, -13.5); // Left rear of car
+            leftTaillight.parent = carFrame;
+            
+            // Create right taillight (half size)
+            const rightTaillight = BABYLON.MeshBuilder.CreateSphere("rightTaillight", {diameter: 1}, scene);
+            rightTaillight.position = new BABYLON.Vector3(-5.2, 1.65, -13.5); // Right rear of car
+            rightTaillight.parent = carFrame;
+            
+            // Create red glowing material for taillights
+            const taillightMaterial = new BABYLON.StandardMaterial("taillightMaterial", scene);
+            taillightMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red color
+            taillightMaterial.emissiveColor = new BABYLON.Color3(0.8, 0, 0); // Red glow
+            taillightMaterial.specularColor = new BABYLON.Color3(0.2, 0, 0);
+            
+            // Apply material to both taillights
+            leftTaillight.material = taillightMaterial;
+            rightTaillight.material = taillightMaterial;
+            
+            // Create red POINT LIGHTS (like in your example) instead of spot lights
+            const leftTaillightPoint = new BABYLON.PointLight("leftTaillightPoint", 
+                leftTaillight.position.clone(), // EXACT same position as red light sphere
+                scene);
+            leftTaillightPoint.diffuse = new BABYLON.Color3(1, 0, 0); // Red diffuse light
+            leftTaillightPoint.specular = new BABYLON.Color3(0.3, 0, 0); // Reduced specular to avoid bright reflections
+            leftTaillightPoint.intensity = 1.0; // Reduced intensity for more balanced lighting
+            leftTaillightPoint.range = 20; // Longer range for more even distribution
+            leftTaillightPoint.parent = carFrame;
+            
+            const rightTaillightPoint = new BABYLON.PointLight("rightTaillightPoint", 
+                rightTaillight.position.clone(), // EXACT same position as red light sphere
+                scene);
+            rightTaillightPoint.diffuse = new BABYLON.Color3(1, 0, 0); // Red diffuse light
+            rightTaillightPoint.specular = new BABYLON.Color3(0.3, 0, 0); // Reduced specular to avoid bright reflections
+            rightTaillightPoint.intensity = 1.0; // Reduced intensity for more balanced lighting
+            rightTaillightPoint.range = 20; // Longer range for more even distribution
+            rightTaillightPoint.parent = carFrame;
+            
+            // Create shadow generators with ESM for realistic light casting (like in your example)
+            const leftShadowGenerator = new BABYLON.ShadowGenerator(2048, leftTaillightPoint);
+            leftShadowGenerator.useBlurExponentialShadowMap = true; // ESM like in your example
+            leftShadowGenerator.blurBoxOffset = 30.0;
+            leftShadowGenerator.bias = 0.00001;
+            
+            const rightShadowGenerator = new BABYLON.ShadowGenerator(2048, rightTaillightPoint);
+            rightShadowGenerator.useBlurExponentialShadowMap = true; // ESM like in your example
+            rightShadowGenerator.blurBoxOffset = 2.0;
+            rightShadowGenerator.bias = 0.00001;
+            
+            // Enable shadow receiving for all car parts and ground
+            carFrame.receiveShadows = true;
+            
+            // Make sure ground receives shadows and light
+            const groundMesh = scene.getMeshByName("SquareTrack");
+            if (groundMesh) {
+                groundMesh.receiveShadows = true;
+            }
+            
+            // Let the lights illuminate EVERYTHING (remove includedOnlyMeshes restriction)
+            // This allows the red light to spread naturally across all objects
+            
+            // Add meshes to shadow rendering for realistic shadows
+            leftShadowGenerator.getShadowMap().renderList.push(carFrame);
+            rightShadowGenerator.getShadowMap().renderList.push(carFrame);
+            
+            // Also add wheels to shadow casting if they exist
+            const wheels = scene.meshes.filter(mesh => mesh.name.includes("Wheel"));
+            wheels.forEach(wheel => {
+                wheel.receiveShadows = true;
+                leftShadowGenerator.getShadowMap().renderList.push(wheel);
+                rightShadowGenerator.getShadowMap().renderList.push(wheel);
+            });
+            
+            // Improve car material for better light reflection
+            if (carFrame.material) {
+                carFrame.material.specularColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+                carFrame.material.specularPower = 16;
+            }
+            
+            console.log("🔴 Enhanced red taillights with ESM shadows and focused beams created");
+        }
+
         async function CreateCar(vueApp) {
             // Import the custom car model
             const customCarBody = await importCustomCar();
@@ -721,6 +808,9 @@ export function resetBoxes(vueApp) {
             AttachAxleToFrame(rrAxle.physicsBody, carFrameBody);
 
             InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
+
+            // Add red taillights to the car
+            createTaillights(carFrame, scene);
 
             return carFrame;
         }
