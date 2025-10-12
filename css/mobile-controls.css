@@ -90,10 +90,18 @@
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.5), rgba(248, 113, 113, 0.3));
 }
 
-.action-button.reset {
+.action-button.jump {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(74, 222, 128, 0.2));
 }
 
-.action-button.reset:active {
+.action-button.jump:active {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.5), rgba(74, 222, 128, 0.3));
+}
+
+.action-button.reset {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(167, 139, 250, 0.2));
+}
+
+.action-button.reset:active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(167, 139, 250, 0.3));
 }

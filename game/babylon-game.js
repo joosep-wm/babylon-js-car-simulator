@@ -1151,6 +1151,22 @@ export function resetBoxes(vueApp) {
                 const isLeft = leftPressed || (vueApp && vueApp.touchControls.left);
                 const isRight = rightPressed || (vueApp && vueApp.touchControls.right);
                 const isBrake = brakePressed || (vueApp && vueApp.touchControls.brake);
+                const isJump = jumpPressed || (vueApp && vueApp.touchControls.jump);
+
+                // Handle jump from both keyboard and touch
+                if (isJump) {
+                    console.log("🚀 Jump (keyboard or touch) activated!");
+                    
+                    // Apply jump force continuously while button/touch is held
+                    if (carFrame.physicsBody) {
+                        // Apply continuous upward force for as long as jump is held
+                        carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce / 2, 0), carFrame.getAbsolutePosition());
+                        
+                        // Also add slight upward velocity for sustained effect
+                        const currentVel = carFrame.physicsBody.getLinearVelocity();
+                        carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, Math.min(currentVel.y + jumpForce / 200, jumpForce / 50), currentVel.z));
+                    }
+                }
 
                 if (isLeft && currentSteeringAngle < maxSteeringAngle) {
                     currentSteeringAngle += 0.05; // Increased from 0.02 to 0.08 (4x faster)
@@ -1183,6 +1199,7 @@ export function resetBoxes(vueApp) {
                     if (isLeft) directions.push('← Left');
                     if (isRight) directions.push('→ Right');
                     if (isBrake) directions.push('🚗 Brake');
+                    if (isJump) directions.push('🚀 Jump');
                     
                     if (directions.length > 0) {
                         vueApp.direction = directions.join(' + ');

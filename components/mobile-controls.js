@@ -18,8 +18,10 @@ export const MobileControls = {
                 backward: false,
                 left: false,
                 right: false,
-                brake: false
-            }
+                brake: false,
+                jump: false
+            },
+            jumpInterval: null
         }
     },
     mounted() {
@@ -138,6 +140,37 @@ export const MobileControls = {
         onResetTouch(e) {
             e.preventDefault();
             this.$emit('reset-game');
+        },
+
+        onJumpStart(e) {
+            e.preventDefault();
+            this.touchControls.jump = true;
+            
+            // Kontinuierlich jump senden wie bei Leertaste - alle 50ms
+            this.jumpInterval = setInterval(() => {
+                // Jump signal wird kontinuierlich gesendet solange Button gedrückt
+                this.touchControls.jump = true;
+                // Force emit to make sure game receives the signal
+                this.$emit('update-touch-controls', {...this.touchControls});
+            }, 50);
+        },
+
+        onJumpEnd(e) {
+            e.preventDefault();
+            this.touchControls.jump = false;
+            
+            // Stop kontinuierliches Senden
+            if (this.jumpInterval) {
+                clearInterval(this.jumpInterval);
+                this.jumpInterval = null;
+            }
+        }
+    },
+    beforeUnmount() {
+        // Cleanup interval wenn Component destroyed wird
+        if (this.jumpInterval) {
+            clearInterval(this.jumpInterval);
+            this.jumpInterval = null;
         }
     },
     template: `
@@ -154,6 +187,9 @@ export const MobileControls = {
             <div class="action-buttons">
                 <div class="action-button brake" @touchstart="onBrakeStart" @touchend="onBrakeEnd">
                     🚗
+                </div>
+                <div class="action-button jump" @touchstart="onJumpStart" @touchend="onJumpEnd">
+                    🚀
                 </div>
                 <div class="action-button reset" @touchstart="onResetTouch">
                     🔄
