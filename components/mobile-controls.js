@@ -146,9 +146,9 @@ export const MobileControls = {
             e.preventDefault();
             this.touchControls.jump = true;
             
-            // Kontinuierlich jump senden wie bei Leertaste - alle 50ms
+            // Continuously send jump like spacebar - every 50ms
             this.jumpInterval = setInterval(() => {
-                // Jump signal wird kontinuierlich gesendet solange Button gedrückt
+                // Jump signal is sent continuously while button is pressed
                 this.touchControls.jump = true;
                 // Force emit to make sure game receives the signal
                 this.$emit('update-touch-controls', {...this.touchControls});
@@ -159,7 +159,7 @@ export const MobileControls = {
             e.preventDefault();
             this.touchControls.jump = false;
             
-            // Stop kontinuierliches Senden
+            // Stop continuous sending
             if (this.jumpInterval) {
                 clearInterval(this.jumpInterval);
                 this.jumpInterval = null;
@@ -167,7 +167,7 @@ export const MobileControls = {
         }
     },
     beforeUnmount() {
-        // Cleanup interval wenn Component destroyed wird
+        // Cleanup interval when component is destroyed
         if (this.jumpInterval) {
             clearInterval(this.jumpInterval);
             this.jumpInterval = null;

@@ -53,7 +53,7 @@ export function createVueApp() {
             this.detectTouchOnly();
         },
         beforeUnmount() {
-            // Aufräumen
+            // Cleanup
             this._mqCoarseNoHover?.removeEventListener?.('change', this._updateTouchOnly);
             this._mqAnyHover?.removeEventListener?.('change', this._updateTouchOnly);
         },
@@ -86,19 +86,19 @@ export function createVueApp() {
             },
             
             detectTouchOnly() {
-                // Primär: Touch-only = (hover: none) & (pointer: coarse) und KEIN beliebiges Input, das hover kann (Maus/Trackpad)
+                // Primary: Touch-only = (hover: none) & (pointer: coarse) and NO any input that can hover (Mouse/Trackpad)
                 this._mqCoarseNoHover = window.matchMedia('(hover: none) and (pointer: coarse)');
                 this._mqAnyHover = window.matchMedia('(any-hover: hover)');
 
                 this._updateTouchOnly = () => {
                     this.isTouchDevice = this._mqCoarseNoHover.matches && !this._mqAnyHover.matches;
-                    console.log('📱 Touch-only erkannt:', this.isTouchDevice);
+                    console.log('📱 Touch-only detected:', this.isTouchDevice);
                 };
 
                 // Initial
                 this._updateTouchOnly();
 
-                // Live-Updates (z.B. Maus an-/abstecken)
+                // Live-Updates (e.g. mouse connect/disconnect)
                 this._mqCoarseNoHover.addEventListener?.('change', this._updateTouchOnly);
                 this._mqAnyHover.addEventListener?.('change', this._updateTouchOnly);
                 
@@ -126,7 +126,7 @@ export function createVueApp() {
                 window.addEventListener('mousedown', handleMouse, { passive: true, once: false });
                 window.addEventListener('mousemove', handleMouse, { passive: true, once: false });
                 
-                // Fallback für sehr alte Browser (optional)
+                // Fallback for very old browsers (optional)
                 if (!('matchMedia' in window)) {
                     this.isTouchDevice =
                         ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);

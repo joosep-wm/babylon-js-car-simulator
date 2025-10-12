@@ -2,6 +2,12 @@
 
 A modern 3D car racing game built with cutting-edge web technologies (babylon.js), featuring realistic physics, intelligent device detection, custom 3D car models, dynamic lighting, and modular component architecture.
 
+## 🎮 Live Demo
+
+**Play now:** [https://projects.manuelhintermayr.com/babylon-js-car-example](https://projects.manuelhintermayr.com/babylon-js-car-example)
+
+![Game Preview](preview.jpg)
+
 ## 🚀 Modern Architecture
 
 This project showcases **advanced game development** using:
@@ -87,7 +93,13 @@ This project showcases **advanced game development** using:
 - **Touch-first design** for mobile devices
 - **Glassmorphism UI** with modern gaming aesthetics
 
-## 🏗️ Enhanced Project Structure
+## � Gameplay Demo
+
+![Gameplay Demo](preview.gif)
+
+*Experience realistic car physics, dynamic lighting, and cross-platform controls in action*
+
+## �🏗️ Enhanced Project Structure
 
 ```
 📦 babylon-js-car-example/
@@ -148,13 +160,18 @@ This project showcases **advanced game development** using:
 
 ## 🚀 Getting Started
 
+### **🎮 Try It Now**
+**Live Demo:** [https://projects.manuelhintermayr.com/babylon-js-car-example](https://projects.manuelhintermayr.com/babylon-js-car-example)
+
+*No installation required - play directly in your browser!*
+
 ### **Prerequisites**
 - Modern web browser with ES6 module support
 - Local web server (required for ES6 modules)  
 - WebGL2 compatible graphics (most modern devices)
 - GLB/GLTF support for custom 3D car models
 
-### **Quick Start**
+### **Local Development Setup**
 
 1. **Clone the repository**
    ```bash
