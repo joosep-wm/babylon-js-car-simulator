@@ -1101,7 +1101,7 @@ export function resetBoxes(vueApp) {
             let currentSteeringAngle = 0;
             let maxSpeed = 80; // Reduced from 150 to 80 for better control
             const maxSteeringAngle = Math.PI / 4; // Increased from PI/6 to PI/4 for sharper turns
-            const jumpForce = 3000; // Increased jump force for better visibility
+            const jumpForce = 800; // Jump force for the car
 
             scene.onKeyboardObservable.add(e => {
                 switch (e.event.key) {
@@ -1118,20 +1118,8 @@ export function resetBoxes(vueApp) {
                     case " ": // Space is now jump
                         if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN) {
                             jumpPressed = true;
-                            console.log("🚀 Jump button pressed!");
-                            
-                            // Try different methods to apply jump force
-                            if (carFrame.physicsBody) {
-                                console.log("📦 Physics body found, applying impulse...");
-                                // Method 1: applyImpulse
-                                carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce, 0), carFrame.getAbsolutePosition());
-                                
-                                // Method 2: setLinearVelocity (backup)
-                                const currentVel = carFrame.physicsBody.getLinearVelocity();
-                                carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, jumpForce / 100, currentVel.z));
-                            } else {
-                                console.error("❌ No physics body found on car frame!");
-                            }
+                            // Apply upward impulse to make the car jump
+                            carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce, 0), carFrame.position);
                         } else {
                             jumpPressed = false;
                         }
