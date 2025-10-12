@@ -1,10 +1,10 @@
 # 🏎️ Babylon.js Car Racing Game
 
-A modern 3D car racing game built with cutting-edge web technologies (babylon.js), featuring realistic physics, intelligent device detection, and modular component architecture.
+A modern 3D car racing game built with cutting-edge web technologies (babylon.js), featuring realistic physics, intelligent device detection, custom 3D car models, dynamic lighting, and modular component architecture.
 
 ## 🚀 Modern Architecture
 
-This project showcases **game development** using:
+This project showcases **advanced game development** using:
 
 ### **ES6 Module System**
 - **Clean imports/exports** for maintainable code structure
@@ -28,23 +28,36 @@ This project showcases **game development** using:
 - **Automatic UI adaptation** based on input capabilities
 - **Cross-platform compatibility** (Desktop + Mobile + Tablets)
 
-## 🎮 Game Features
+## 🎮 Advanced Game Features
 
 ### 🏁 Core Gameplay
 - **Realistic car physics** powered by Havok Physics Engine
-- **Dynamic collision detection** with physics-based box interactions
-- **Automatic race timing** - starts when car moves, no manual triggers
-- **Instant reset functionality** with Enter key or touch button
-- **Free-roam driving** on expansive square track with walls
+- **Custom 3D car model** support with GLB/GLTF loading
+- **ConvexHull physics** for complex 3D model collision detection
+- **Dynamic camera system** with mouse controls and smooth following
+- **Jump mechanics** with Space key for aerial stunts
+- **Advanced braking system** with B key for precision control
+- **Enhanced steering** with optimized responsiveness (4x faster turning)
 
-### 🎯 Game Objectives
+### 🎯 Game Objectives & Environment
 - 🎯 **Knock down boxes** - Hit all 5 orange physics-enabled targets
-- 💥 **Minimize collisions** - Navigate around brown obstacle towers
-- 🏎️ **Achieve top speed** - Test vehicle performance limits
+- 💥 **Navigate obstacles** - Avoid brown collision towers strategically placed around track
+- � **Bridge challenges** - Drive over elevated bridge platforms for bonus points
+- 🏎️ **Speed challenges** - Test vehicle performance on varied terrain
+- 🎨 **Studio environment** - Race in professional white-walled studio setting
 
-### 📊 Real-time Data Tracking
+### � Dynamic Lighting System
+- **Realistic car lighting** with front headlights and rear taillights
+- **Warm white headlights** (#ddc584) with cylindrical lens design
+- **Red taillights** with Point Light technology for authentic illumination
+- **ESM shadow mapping** for realistic light casting and ground reflections
+- **Dark ambient lighting** for dramatic racing atmosphere
+- **Dynamic light-surface interaction** with proper material reflections
+
+### 📊 Advanced Telemetry
 - **Vehicle telemetry** (speed in km/h, 3D position, rotation)
 - **Performance metrics** (total collisions, race time, maximum speed)
+- **Physics monitoring** (wheel physics, suspension dynamics)
 - **Progress tracking** (knocked boxes counter with physics detection)
 - **Interactive debug panels** with F12 toggle and auto-hide on mobile
 
