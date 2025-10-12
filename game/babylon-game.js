@@ -963,10 +963,10 @@ export function resetBoxes(vueApp) {
 
         function InitTyreMaterial() {
             tyreMaterial = new BABYLON.StandardMaterial("Tyre", scene);
-            const upTexture = new BABYLON.Texture("game/textures/up.png", scene);
-            upTexture.wAng = -Math.PI / 2;
-            upTexture.vScale = 0.4;
-            tyreMaterial.diffuseTexture = upTexture;
+            const tireTexture = new BABYLON.Texture("game/textures/tire.png", scene);
+            tireTexture.wAng = -Math.PI / 2;
+            tireTexture.vScale = 0.4;
+            tyreMaterial.diffuseTexture = tireTexture;
         }
 
         function AddWheelPhysics(mesh, mass, bounce, friction) {
