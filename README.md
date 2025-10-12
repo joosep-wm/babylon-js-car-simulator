@@ -48,11 +48,11 @@ This project showcases **advanced game development** using:
 ### 🎯 Game Objectives & Environment
 - 🎯 **Knock down boxes** - Hit all 5 orange physics-enabled targets
 - 💥 **Navigate obstacles** - Avoid brown collision towers strategically placed around track
-- � **Bridge challenges** - Drive over elevated bridge platforms for bonus points
+- 🌉 **Bridge challenges** - Drive over elevated bridge platforms for bonus points
 - 🏎️ **Speed challenges** - Test vehicle performance on varied terrain
 - 🎨 **Studio environment** - Race in professional white-walled studio setting
 
-### � Dynamic Lighting System
+### 💡 Dynamic Lighting System
 - **Realistic car lighting** with front headlights and rear taillights
 - **Warm white headlights** (#ddc584) with cylindrical lens design
 - **Red taillights** with Point Light technology for authentic illumination
@@ -93,13 +93,13 @@ This project showcases **advanced game development** using:
 - **Touch-first design** for mobile devices
 - **Glassmorphism UI** with modern gaming aesthetics
 
-## � Gameplay Demo
+## 🎬 Gameplay Demo
 
 ![Gameplay Demo](preview.gif)
 
 *Experience realistic car physics, dynamic lighting, and cross-platform controls in action*
 
-## �🏗️ Enhanced Project Structure
+## 🏗️ Enhanced Project Structure
 
 ```
 📦 babylon-js-car-example/
