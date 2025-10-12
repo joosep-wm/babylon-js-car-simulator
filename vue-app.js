@@ -21,6 +21,9 @@ export function createVueApp() {
         data() {
             return {
                 isTouchDevice: false,
+                _mqCoarseNoHover: null,
+                _mqAnyHover: null,
+                _updateTouchOnly: null,
                 touchControls: {
                     forward: false,
                     backward: false,
@@ -47,7 +50,12 @@ export function createVueApp() {
             }
         },
         mounted() {
-            this.detectTouchDevice();
+            this.detectTouchOnly();
+        },
+        beforeUnmount() {
+            // Aufräumen
+            this._mqCoarseNoHover?.removeEventListener?.('change', this._updateTouchOnly);
+            this._mqAnyHover?.removeEventListener?.('change', this._updateTouchOnly);
         },
         methods: {
             async resetGame() {
@@ -77,13 +85,52 @@ export function createVueApp() {
                 resetBoxes(this);
             },
             
-            detectTouchDevice() {
-                // Simple and elegant: true touch-only devices
-                const touchOnly = window.matchMedia('(pointer: coarse)').matches &&
-                                !window.matchMedia('(any-pointer: fine)').matches;
+            detectTouchOnly() {
+                // Primär: Touch-only = (hover: none) & (pointer: coarse) und KEIN beliebiges Input, das hover kann (Maus/Trackpad)
+                this._mqCoarseNoHover = window.matchMedia('(hover: none) and (pointer: coarse)');
+                this._mqAnyHover = window.matchMedia('(any-hover: hover)');
+
+                this._updateTouchOnly = () => {
+                    this.isTouchDevice = this._mqCoarseNoHover.matches && !this._mqAnyHover.matches;
+                    console.log('📱 Touch-only erkannt:', this.isTouchDevice);
+                };
+
+                // Initial
+                this._updateTouchOnly();
+
+                // Live-Updates (z.B. Maus an-/abstecken)
+                this._mqCoarseNoHover.addEventListener?.('change', this._updateTouchOnly);
+                this._mqAnyHover.addEventListener?.('change', this._updateTouchOnly);
                 
-                this.isTouchDevice = touchOnly;
-                console.log('📱 Touch device detected:', this.isTouchDevice);
+                // Listen for first touch event - set to touch device
+                const handleTouch = () => {
+                    if (!this.isTouchDevice) {
+                        this.isTouchDevice = true;
+                        console.log('📱 Touch detected - switching to touch mode');
+                    }
+                };
+                
+                // Listen for first mouse event - set to non-touch device  
+                const handleMouse = () => {
+                    if (this.isTouchDevice) {
+                        this.isTouchDevice = false;
+                        console.log('�️ Mouse detected - switching to desktop mode');
+                    }
+                };
+                
+                // Add event listeners for touch events
+                window.addEventListener('touchstart', handleTouch, { passive: true, once: false });
+                window.addEventListener('touchmove', handleTouch, { passive: true, once: false });
+                
+                // Add event listeners for mouse events
+                window.addEventListener('mousedown', handleMouse, { passive: true, once: false });
+                window.addEventListener('mousemove', handleMouse, { passive: true, once: false });
+                
+                // Fallback für sehr alte Browser (optional)
+                if (!('matchMedia' in window)) {
+                    this.isTouchDevice =
+                        ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+                }
             },
 
             onTouchControlsUpdate(newTouchControls) {
