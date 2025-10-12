@@ -1,6 +1,6 @@
 # 🏎️ Babylon.js Car Racing Game
 
-A modern 3D car racing game built with cutting-edge web technologies (babylon.js), featuring realistic physics, intelligent device detection, custom 3D car models, dynamic lighting, and modular component architecture.
+A 3D car racing game built with web technologies (babylon.js), featuring realistic physics, intelligent device detection, custom 3D car models, dynamic lighting, and modular component architecture.
 
 ## 🎮 Live Demo
 
@@ -37,10 +37,10 @@ This project showcases **advanced game development** using:
 ## 🎮 Advanced Game Features
 
 ### 🏁 Core Gameplay
-- **Realistic car physics** powered by Havok Physics Engine
+- **Realistic car physics** powered by Havok Physics Engine (based on [Babylon.js Playground demo](https://www.babylonjs-playground.com/#ANV5OM#139))
 - **Custom 3D car model** support with GLB/GLTF loading
 - **ConvexHull physics** for complex 3D model collision detection
-- **Dynamic camera system** with mouse controls and smooth following
+- **Dynamic camera system** with mouse controls and smooth following (based on [Babylon.js mouse control demo](https://playground.babylonjs.com/#FMQX86#1))
 - **Jump mechanics** with Space key for aerial stunts
 - **Advanced braking system** with B key for precision control
 - **Enhanced steering** with optimized responsiveness (4x faster turning)
@@ -52,7 +52,7 @@ This project showcases **advanced game development** using:
 - 🏎️ **Speed challenges** - Test vehicle performance on varied terrain
 - 🎨 **Studio environment** - Race in professional white-walled studio setting
 
-### 💡 Dynamic Lighting System
+### 💡 Dynamic Lighting System (currently disabled)
 - **Realistic car lighting** with front headlights and rear taillights
 - **Warm white headlights** (#ddc584) with cylindrical lens design
 - **Red taillights** with Point Light technology for authentic illumination
@@ -97,15 +97,21 @@ This project showcases **advanced game development** using:
 
 ![Gameplay Demo](preview.gif)
 
-*Experience realistic car physics, dynamic lighting, and cross-platform controls in action*
+*Experience realistic car physics and cross-platform controls in action*
 
 ## 🏗️ Enhanced Project Structure
 
 ```
 📦 babylon-js-car-example/
-├── 📄 index.html              # Clean HTML template with module imports
+├── 📄 .gitignore             # Git ignore patterns
+├── 📄 index.html             # Clean HTML template with module imports
 ├── 📄 index.js               # 🎯 Application entry point
 ├── 📄 vue-app.js             # 🎨 Main Vue app with device detection
+├── 📄 package.json           # Project dependencies and scripts
+├── 📄 LICENSE                # MIT License
+├── 📄 README.md              # Project documentation
+├── 🖼️ preview.jpg            # Game preview screenshot
+├── 🎬 preview.gif            # Gameplay demo animation
 │
 ├── 📁 components/            # 🔧 Modular Vue Components
 │   ├── 📄 info-panel.js      # Debug panel with glassmorphism UI
@@ -119,12 +125,12 @@ This project showcases **advanced game development** using:
 │   └── 📄 desktop-controls.css # Key displays with jump/brake indicators
 │
 └── 📁 game/                  # 🎮 Advanced Game Engine & Assets
-    ├── 📄 babylon-game.js    # Complete Babylon.js game with lighting & 3D models
+    ├── 📄 babylon-game.js    # Complete Babylon.js game with physics & 3D models
     ├── 📁 models/            # 3D Model Assets
     │   └── 📄 car.glb        # Custom 3D car model (GLB format)
-    └── 📁 textures/          # 3D texture assets
-        ├── 📄 up.png         # Track and wheel textures
-        └── 📄 amiga.jpg      # Wall and post textures
+    └── 📁 textures/          # Game texture assets
+        ├── 📄 tire.png       # Car tire texture
+        └── 📄 up.png         # Track/environment textures
 ```
 
 ## 🛠️ Advanced Technology Stack
@@ -251,6 +257,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Vue.js Team** - For the reactive framework
 - **Havok Physics** - For realistic physics simulation
 - **Modern Web Standards** - For enabling advanced browser capabilities
+- **Babylon.js Community** - For providing excellent demos and examples:
+  - Car physics implementation based on [Babylon.js Playground #ANV5OM#139](https://www.babylonjs-playground.com/#ANV5OM#139)
+  - Mouse camera controls based on [Babylon.js Playground #FMQX86#1](https://playground.babylonjs.com/#FMQX86#1)
 
 ---
 
