@@ -1,13 +1,13 @@
 // InfoPanel.js - Vue Component for Debug Panels and Controls
-const InfoPanel = {
+export const InfoPanel = {
     template: `
         <!-- Debug Button -->
-        <button class="debug-button" @click="toggleDebugPanels" v-show="!debugVisible">
+        <button class="debug-button" @click="toggleDebugPanels" v-show="!debugVisible && !isTouchDevice">
             🐛 Debug
         </button>
 
         <!-- Left Panel -->
-        <div class="panel panel-left" :class="{ visible: debugVisible }">
+        <div class="panel panel-left" :class="{ visible: debugVisible, hidden: isHidden }">
             <button class="hide-button" @click="hideDebugPanels">✕ Hide</button>
             <h2>Vehicle Data</h2>
             <div>
@@ -48,20 +48,19 @@ const InfoPanel = {
         </div>
 
         <!-- Right Panel -->
-        <div class="panel panel-right" :class="{ visible: debugVisible }">
+        <div class="panel panel-right" :class="{ visible: debugVisible, hidden: isHidden }">
             <h2>Game Statistics</h2>
             <div>
                 <div class="stat-box">
                     <div class="stat-label">Race Time</div>
                     <div class="stat-value-large stat-value-blue">
-                        <span v-if="!isRacing && !finishTime">START</span>
-                        <span v-else-if="finishTime">{{ finishTime }}s</span>
+                        <span v-if="!isRacing">START</span>
                         <span v-else>{{ raceTime.toFixed(2) }}s</span>
                     </div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Knocked Boxes</div>
-                    <div class="stat-value-large stat-value-yellow">{{ knockedBoxes }} / 5</div>
+                    <div class="stat-value-large stat-value-yellow">{{ knockedBoxes }}</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">Collisions</div>
@@ -83,7 +82,6 @@ const InfoPanel = {
         </div>
     `,
     props: {
-        debugVisible: Boolean,
         speed: Number,
         position: Object,
         rotation: Number,
@@ -92,23 +90,54 @@ const InfoPanel = {
         knockedBoxes: Number,
         maxSpeed: Number,
         raceTime: Number,
-        finishTime: [Number, String],
-        isRacing: Boolean
+        isRacing: Boolean,
+        isTouchDevice: Boolean
     },
-    emits: ['toggle-debug', 'hide-debug'],
+    data() {
+        return {
+            debugVisible: false,
+            isHidden: true // Start hidden with display: none
+        };
+    },
+    mounted() {
+        // Add debug toggle with F12 key
+        window.addEventListener('keydown', this.handleGlobalKeydown);
+    },
+    beforeUnmount() {
+        window.removeEventListener('keydown', this.handleGlobalKeydown);
+    },
+    watch: {
+        // Watchers removed - system working stable
+    },
     methods: {
+        handleGlobalKeydown(e) {
+            if (e.key === 'F12' || e.key === '`') {
+                e.preventDefault();
+                if (this.debugVisible) {
+                    this.hideDebugPanels();
+                } else {
+                    this.toggleDebugPanels();
+                }
+            }
+        },
         toggleDebugPanels() {
-            this.$emit('toggle-debug');
+            // Remove display: none first, then start slide animation
+            this.isHidden = false;
+            this.$nextTick(() => {
+                this.debugVisible = true;
+            });
         },
         hideDebugPanels() {
-            this.$emit('hide-debug');
+            // Start slide-out animation first
+            this.debugVisible = false;
+            // Add display: none after animation completes (400ms)
+            setTimeout(() => {
+                if (!this.debugVisible) { // Only hide if still closed
+                    this.isHidden = true;
+                }
+            }, 400);
         }
     }
 };
 
-// Export for use in main application
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = InfoPanel;
-} else if (typeof window !== 'undefined') {
-    window.InfoPanel = InfoPanel;
-}
+// ES6 Module Export (replaces the old export logic)
