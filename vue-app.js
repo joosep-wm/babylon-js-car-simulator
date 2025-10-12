@@ -11,7 +11,7 @@ import { MobileControls } from './components/mobile-controls.js';
  */
 export function createVueApp() {
     const { createApp } = Vue;
-    
+
     const app = createApp({
         components: {
             'info-panel': InfoPanel,
@@ -76,15 +76,15 @@ export function createVueApp() {
                     { knocked: false },
                     { knocked: false }
                 ];
-                
+
                 // Reset Babylon.js scene
                 await resetGame(this);
             },
-            
+
             resetBoxes() {
                 resetBoxes(this);
             },
-            
+
             detectTouchOnly() {
                 // Primary: Touch-only = (hover: none) & (pointer: coarse) and NO any input that can hover (Mouse/Trackpad)
                 this._mqCoarseNoHover = window.matchMedia('(hover: none) and (pointer: coarse)');
@@ -101,7 +101,7 @@ export function createVueApp() {
                 // Live-Updates (e.g. mouse connect/disconnect)
                 this._mqCoarseNoHover.addEventListener?.('change', this._updateTouchOnly);
                 this._mqAnyHover.addEventListener?.('change', this._updateTouchOnly);
-                
+
                 // Listen for first touch event - set to touch device
                 const handleTouch = () => {
                     if (!this.isTouchDevice) {
@@ -109,7 +109,7 @@ export function createVueApp() {
                         console.log('📱 Touch detected - switching to touch mode');
                     }
                 };
-                
+
                 // Listen for first mouse event - set to non-touch device  
                 const handleMouse = () => {
                     if (this.isTouchDevice) {
@@ -117,15 +117,15 @@ export function createVueApp() {
                         console.log('�️ Mouse detected - switching to desktop mode');
                     }
                 };
-                
+
                 // Add event listeners for touch events
                 window.addEventListener('touchstart', handleTouch, { passive: true, once: false });
                 window.addEventListener('touchmove', handleTouch, { passive: true, once: false });
-                
+
                 // Add event listeners for mouse events
                 window.addEventListener('mousedown', handleMouse, { passive: true, once: false });
                 window.addEventListener('mousemove', handleMouse, { passive: true, once: false });
-                
+
                 // Fallback for very old browsers (optional)
                 if (!('matchMedia' in window)) {
                     this.isTouchDevice =
@@ -142,10 +142,10 @@ export function createVueApp() {
             }
         }
     });
-    
+
     // Mount the app and return the instance
     const mountedApp = app.mount('#app');
     console.log('🎨 Vue app mounted successfully');
-    
+
     return mountedApp;
 }

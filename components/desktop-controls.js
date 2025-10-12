@@ -36,15 +36,15 @@ export const DesktopControls = {
             this.handleKeyDown = (e) => {
                 this.updateKeyState(e.key, true);
             };
-            
+
             this.handleKeyUp = (e) => {
                 this.updateKeyState(e.key, false);
             };
-            
+
             window.addEventListener('keydown', this.handleKeyDown);
             window.addEventListener('keyup', this.handleKeyUp);
         },
-        
+
         removeKeyboardListeners() {
             if (this.handleKeyDown) {
                 window.removeEventListener('keydown', this.handleKeyDown);
@@ -53,9 +53,9 @@ export const DesktopControls = {
                 window.removeEventListener('keyup', this.handleKeyUp);
             }
         },
-        
+
         updateKeyState(key, isPressed) {
-            switch(key.toLowerCase()) {
+            switch (key.toLowerCase()) {
                 case 'w':
                 case 'arrowup':
                     this.keyStates.w = isPressed;

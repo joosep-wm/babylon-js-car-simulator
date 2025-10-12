@@ -42,7 +42,7 @@ export const MobileControls = {
         initTouchControls() {
             const joystick = this.$refs.joystick;
             const joystickInner = this.$refs.joystickInner;
-            
+
             if (!joystick || !joystickInner) {
                 return;
             }
@@ -63,7 +63,7 @@ export const MobileControls = {
                 e.preventDefault();
                 isDragging = true;
                 updateJoystickCenter();
-                
+
                 const touch = e.touches ? e.touches[0] : e;
                 startPos = { x: touch.clientX, y: touch.clientY };
                 this.joystickActive = true;
@@ -104,15 +104,15 @@ export const MobileControls = {
                 e.preventDefault();
                 isDragging = false;
                 this.joystickActive = false;
-                
+
                 joystickInner.style.transform = 'translate(-50%, -50%)';
-                
+
                 // Reset all directional controls
                 this.touchControls.forward = false;
                 this.touchControls.backward = false;
                 this.touchControls.left = false;
                 this.touchControls.right = false;
-                
+
                 this.joystickPosition = { x: 0, y: 0 };
             };
 
@@ -145,20 +145,20 @@ export const MobileControls = {
         onJumpStart(e) {
             e.preventDefault();
             this.touchControls.jump = true;
-            
+
             // Continuously send jump like spacebar - every 50ms
             this.jumpInterval = setInterval(() => {
                 // Jump signal is sent continuously while button is pressed
                 this.touchControls.jump = true;
                 // Force emit to make sure game receives the signal
-                this.$emit('update-touch-controls', {...this.touchControls});
+                this.$emit('update-touch-controls', { ...this.touchControls });
             }, 50);
         },
 
         onJumpEnd(e) {
             e.preventDefault();
             this.touchControls.jump = false;
-            
+
             // Stop continuous sending
             if (this.jumpInterval) {
                 clearInterval(this.jumpInterval);
