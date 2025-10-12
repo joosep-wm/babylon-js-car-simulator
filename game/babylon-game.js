@@ -694,10 +694,10 @@ export function resetBoxes(vueApp) {
             const flAxle = CreateAxle(new BABYLON.Vector3(5, 0, 8));
             const frWheel = CreateWheel(new BABYLON.Vector3(-5, 0, 8));
             const frAxle = CreateAxle(new BABYLON.Vector3(-5, 0, 8));
-            const rlWheel = CreateWheel(new BABYLON.Vector3(5, 0, -10));
-            const rlAxle = CreateAxle(new BABYLON.Vector3(5, 0, -10));
-            const rrWheel = CreateWheel(new BABYLON.Vector3(-5, 0, -10));
-            const rrAxle = CreateAxle(new BABYLON.Vector3(-5, 0, -10));
+            const rlWheel = CreateWheel(new BABYLON.Vector3(5, 0, -8)); // Moved forward
+            const rlAxle = CreateAxle(new BABYLON.Vector3(5, 0, -8)); // Moved forward
+            const rrWheel = CreateWheel(new BABYLON.Vector3(-5, 0, -8)); // Moved forward
+            const rrAxle = CreateAxle(new BABYLON.Vector3(-5, 0, -8)); // Moved forward
 
             for (const mesh of [flAxle, frAxle, rlAxle, rrAxle]) {
                 carFrame.addChild(mesh);
@@ -1040,8 +1040,8 @@ export function resetBoxes(vueApp) {
                 const importRoot = importResult.meshes[0];
                 
                 if (importRoot) {
-                    // Scale up the car model significantly to match the wheel size
-                    importRoot.scaling = new BABYLON.Vector3(10, 10, 10); // Much larger scale
+                    // Scale up the car model even more to extend over the wheels
+                    importRoot.scaling = new BABYLON.Vector3(14, 14, 14); // Larger scale for better proportions
                     
                     // Rotate the car by 90 degrees around Y-axis
                     if (importRoot.rotationQuaternion) {
@@ -1049,12 +1049,12 @@ export function resetBoxes(vueApp) {
                     }
                     importRoot.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0); // 90° rotation
                     
-                    // Position the car
-                    importRoot.position = new BABYLON.Vector3(0, 0, 0);
+                    // Position the car higher above the wheels
+                    importRoot.position = new BABYLON.Vector3(0, 2.3, 0); // Raised position
                     
                     // Ensure position is properly accessible for camera
                     if (!importRoot.position) {
-                        importRoot.position = new BABYLON.Vector3(0, 0, 0);
+                        importRoot.position = new BABYLON.Vector3(0, 2, 0);
                     }
                     
                     // Bake transformations into vertices for better performance
