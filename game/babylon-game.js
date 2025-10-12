@@ -188,6 +188,9 @@ export function resetBoxes(vueApp) {
             // Add 5 knockable boxes
             createKnockableBoxes(scene, vueApp);
 
+            // Add ramp bridge for driving over
+            createRampBridge(scene);
+
             // Setup physics-based collision detection after car is fully created
             // Add a small delay to ensure physics body is properly initialized
             setTimeout(() => {
@@ -359,13 +362,13 @@ export function resetBoxes(vueApp) {
             boxMaterial.diffuseColor = new BABYLON.Color3(1, 0.5, 0); // Orange color
             boxMaterial.emissiveColor = new BABYLON.Color3(0.2, 0.1, 0);
 
-            // Create 5 boxes at different positions
+            // Create 5 boxes at different positions (moved away from bridge area X=185 to X=-75)
             const boxPositions = [
-                { x: 100, z: 100 },
-                { x: -100, z: 100 },
-                { x: 100, z: -100 },
-                { x: -100, z: -100 },
-                { x: 150, z: 0 }  // Moved from center to avoid car spawn position
+                { x: 250, z: 100 },  // Moved further right
+                { x: -200, z: 100 }, // Moved further left  
+                { x: 250, z: -250 }, // Moved further right and back
+                { x: -200, z: -250 }, // Moved further left and back
+                { x: 300, z: 0 }     // Moved much further right from center
             ];
 
             const boxes = [];
@@ -640,6 +643,76 @@ export function resetBoxes(vueApp) {
 
                 stripe.material = stripeMaterial;
             }
+        }
+
+        // Create a ramp bridge for driving over (like in the image)
+        function createRampBridge(scene) {
+            // Bridge spans from X=185 to X=-75 (total width: 260 units)
+            const bridgeStartX = 185;
+            const bridgeEndX = -75;
+            const bridgeWidth = bridgeStartX - bridgeEndX; // 260 units
+            const bridgeCenterX = (bridgeStartX + bridgeEndX) / 2; // 55
+            const bridgeZ = 0; // Center on Z axis
+            const bridgeHeight = 25; // Higher off the ground
+            
+            // Create bridge material - white/gray like in image
+            const bridgeMaterial = new BABYLON.StandardMaterial("bridgeMaterial", scene);
+            bridgeMaterial.diffuseColor = new BABYLON.Color3(0.9, 0.9, 0.9);
+            bridgeMaterial.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+            
+            // Define step parameters first
+            const stepCount = 12; // More steps for gradual incline
+            const stepWidth = 12; // Wider steps
+            const stepHeight = 2;
+            const stepDepth = 30; // Same depth as bridge
+            
+            // Create the main bridge platform (flat part on top) - much bigger
+            // Position it to connect with the top of the highest steps
+            const maxStepHeight = stepHeight * stepCount; // 24 units high
+            const bridgePlatformWidth = 80;
+            const bridgePlatform = BABYLON.MeshBuilder.CreateBox("bridgePlatform", {
+                width: bridgePlatformWidth, // Much wider for easier driving
+                height: 4,
+                depth: 30 // Much deeper
+            }, scene);
+            bridgePlatform.position = new BABYLON.Vector3(bridgeCenterX, maxStepHeight - 20 + 2, bridgeZ); // Connect to top of steps
+            bridgePlatform.material = bridgeMaterial;
+            
+            // Calculate where bridge starts and ends (bridge edges)
+            const bridgeLeftEdge = bridgeCenterX - (bridgePlatformWidth / 2); // 55 - 40 = 15
+            const bridgeRightEdge = bridgeCenterX + (bridgePlatformWidth / 2); // 55 + 40 = 95
+            
+            // Add physics to bridge platform
+            new BABYLON.PhysicsAggregate(bridgePlatform, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 2 }, scene);
+            bridgePlatform.receiveShadows = true;
+            
+            // Left side removed - no stairs for going up
+            // No ramp - just the bridge platform
+            
+            // Create support pillars under the bridge
+            const pillarHeight = bridgeHeight;
+            const pillarPositions = [
+                { x: bridgeCenterX - 30, z: bridgeZ - 10 },
+                { x: bridgeCenterX - 30, z: bridgeZ + 10 },
+                { x: bridgeCenterX, z: bridgeZ - 10 },
+                { x: bridgeCenterX, z: bridgeZ + 10 },
+                { x: bridgeCenterX + 30, z: bridgeZ - 10 },
+                { x: bridgeCenterX + 30, z: bridgeZ + 10 }
+            ];
+            
+            pillarPositions.forEach((pos, index) => {
+                const pillar = BABYLON.MeshBuilder.CreateBox(`bridgePillar${index}`, {
+                    width: 6,
+                    height: pillarHeight,
+                    depth: 6
+                }, scene);
+                pillar.position = new BABYLON.Vector3(pos.x, pillarHeight/2 - 20, pos.z);
+                pillar.material = bridgeMaterial;
+                new BABYLON.PhysicsAggregate(pillar, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 1 }, scene);
+                pillar.receiveShadows = true;
+            });
+            
+            console.log(`🌉 Large ramp bridge created from X=${bridgeStartX} to X=${bridgeEndX} at height ${bridgeHeight}`);
         }
 
         // Create red taillights for the car
