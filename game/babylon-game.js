@@ -120,7 +120,7 @@ export function resetBoxes(vueApp) {
 async function createScene(vueApp) {
     scene = new BABYLON.Scene(engine);
 
-    // Set white background like in the image
+    // Set white studio background
     scene.clearColor = new BABYLON.Color3(0.95, 0.95, 0.95); // Light white/gray background
 
     // Initialize Havok Physics
@@ -197,10 +197,6 @@ async function createScene(vueApp) {
         setupCollisionDetection(scene, carF, vueApp);
     }, 200);
 
-    // Remove finish line creation
-    // const checkerPlane = ... (removed)
-    // const finishTrigger = ... (removed)
-    // Remove finish line logic
     let alreadyTriggered = false;
     let raceTime = 0;
     let raceStarted = false;
@@ -257,17 +253,10 @@ function createSquareRaceTrack(scene, width = 800, height = 800) {
         height: height
     }, scene);
 
-    // Apply the same material as the original track with better light reflection
+    // Apply gray racing track material with same lighting properties as walls
     const trackMaterial = new BABYLON.StandardMaterial("trackMaterial", scene);
-    trackMaterial.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Darker for better contrast
-    trackMaterial.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3); // More reflective
-    trackMaterial.specularPower = 32; // Sharp reflections
-
-    // Add texture from original code
-    trackMaterial.diffuseTexture = new BABYLON.Texture("game/textures/up.png", scene);
-    trackMaterial.diffuseTexture.uScale = 20;
-    trackMaterial.diffuseTexture.vScale = 20;
-    trackMaterial.diffuseTexture.wAng = BABYLON.Tools.ToRadians(250);
+    trackMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); // Medium gray racing track color
+    trackMaterial.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Same specular as walls for consistent lighting
 
     track.material = trackMaterial;
     track.receiveShadows = true; // Enable shadow receiving
@@ -279,9 +268,9 @@ function createTrackWalls(scene, trackWidth = 800, trackHeight = 800) {
     const wallHeight = 20;
     const wallThickness = 2; // Keep the thickness for visibility
 
-    // Create white wall material like in the image
+    // Create white wall material for studio environment
     const wallMaterial = new BABYLON.StandardMaterial("wallMaterial", scene);
-    wallMaterial.diffuseColor = new BABYLON.Color3(0.95, 0.95, 0.95); // White color like in image
+    wallMaterial.diffuseColor = new BABYLON.Color3(0.95, 0.95, 0.95); // Clean white color
     wallMaterial.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1); // Low specular for matte look
 
     // North Wall
@@ -478,7 +467,6 @@ function setupCollisionDetection(scene, car, vueApp) {
                     if (!mesh.positionSettled) {
                         mesh.initialPosition = mesh.position.clone();
                         mesh.positionSettled = true;
-                        // Removed spam log - system working
                         return; // Skip this frame for this box
                     }
 
@@ -507,7 +495,7 @@ function setupCollisionDetection(scene, car, vueApp) {
     });
 }
 
-// Create a ramp bridge for driving over (like in the image)
+// Create a ramp bridge for driving over
 function createBridge(scene) {
     // Bridge spans from X=185 to X=-75 (total width: 260 units)
     const bridgeStartX = 185;
@@ -517,7 +505,7 @@ function createBridge(scene) {
     const bridgeZ = 0; // Center on Z axis
     const bridgeHeight = 25; // Higher off the ground
 
-    // Create bridge material - white/gray like in image
+    // Create bridge material - clean white/gray
     const bridgeMaterial = new BABYLON.StandardMaterial("bridgeMaterial", scene);
     bridgeMaterial.diffuseColor = new BABYLON.Color3(0.9, 0.9, 0.9);
     bridgeMaterial.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3);
@@ -548,9 +536,6 @@ function createBridge(scene) {
     new BABYLON.PhysicsAggregate(bridgePlatform, BABYLON.PhysicsShapeType.BOX, { mass: 0, friction: 2 }, scene);
     bridgePlatform.receiveShadows = true;
 
-    // Left side removed - no stairs for going up
-    // No ramp - just the bridge platform
-
     // Create support pillars under the bridge
     const pillarHeight = bridgeHeight;
     const pillarPositions = [
@@ -578,7 +563,6 @@ function createBridge(scene) {
 }
 
 // Create red taillights for the car
-// currently disabled due to performance issues on some devices
 function createTaillights(carFrame, scene) {
     // Create left taillight (half size)
     const leftTaillight = BABYLON.MeshBuilder.CreateSphere("leftTaillight", { diameter: 1 }, scene);
@@ -600,35 +584,19 @@ function createTaillights(carFrame, scene) {
     leftTaillight.material = taillightMaterial;
     rightTaillight.material = taillightMaterial;
 
-    // Create red POINT LIGHTS (like in your example) instead of spot lights
-    const leftTaillightPoint = new BABYLON.PointLight("leftTaillightPoint",
-        leftTaillight.position.clone(), // EXACT same position as red light sphere
+    // Create one CENTRAL red spot light for both taillights (more efficient)
+    const centralTaillightPosition = new BABYLON.Vector3(0, 1.65, -13.5); // Center between taillights
+    const taillightSpot = new BABYLON.SpotLight("taillightSpot",
+        centralTaillightPosition,
+        new BABYLON.Vector3(0, 0, -1), // Direction pointing backward
+        Math.PI / 1.2, // Wider angle to cover both taillight areas
+        2, // Exponent for light falloff
         scene);
-    leftTaillightPoint.diffuse = new BABYLON.Color3(1, 0, 0); // Red diffuse light
-    leftTaillightPoint.specular = new BABYLON.Color3(0.3, 0, 0); // Reduced specular to avoid bright reflections
-    leftTaillightPoint.intensity = 1.0; // Reduced intensity for more balanced lighting
-    leftTaillightPoint.range = 20; // Longer range for more even distribution
-    leftTaillightPoint.parent = carFrame;
-
-    const rightTaillightPoint = new BABYLON.PointLight("rightTaillightPoint",
-        rightTaillight.position.clone(), // EXACT same position as red light sphere
-        scene);
-    rightTaillightPoint.diffuse = new BABYLON.Color3(1, 0, 0); // Red diffuse light
-    rightTaillightPoint.specular = new BABYLON.Color3(0.3, 0, 0); // Reduced specular to avoid bright reflections
-    rightTaillightPoint.intensity = 1.0; // Reduced intensity for more balanced lighting
-    rightTaillightPoint.range = 20; // Longer range for more even distribution
-    rightTaillightPoint.parent = carFrame;
-
-    // Create shadow generators with ESM for realistic light casting (like in your example)
-    const leftShadowGenerator = new BABYLON.ShadowGenerator(2048, leftTaillightPoint);
-    leftShadowGenerator.useBlurExponentialShadowMap = true; // ESM like in your example
-    leftShadowGenerator.blurBoxOffset = 30.0;
-    leftShadowGenerator.bias = 0.00001;
-
-    const rightShadowGenerator = new BABYLON.ShadowGenerator(2048, rightTaillightPoint);
-    rightShadowGenerator.useBlurExponentialShadowMap = true; // ESM like in your example
-    rightShadowGenerator.blurBoxOffset = 2.0;
-    rightShadowGenerator.bias = 0.00001;
+    taillightSpot.diffuse = new BABYLON.Color3(1, 0, 0); // Red diffuse light
+    taillightSpot.specular = new BABYLON.Color3(0.3, 0, 0); // Red specular
+    taillightSpot.intensity = 1.5; // Higher intensity to compensate for single light
+    taillightSpot.range = 25; // Range for light distribution
+    taillightSpot.parent = carFrame;
 
     // Enable shadow receiving for all car parts and ground
     carFrame.receiveShadows = true;
@@ -638,21 +606,6 @@ function createTaillights(carFrame, scene) {
     if (groundMesh) {
         groundMesh.receiveShadows = true;
     }
-
-    // Let the lights illuminate EVERYTHING (remove includedOnlyMeshes restriction)
-    // This allows the red light to spread naturally across all objects
-
-    // Add meshes to shadow rendering for realistic shadows
-    leftShadowGenerator.getShadowMap().renderList.push(carFrame);
-    rightShadowGenerator.getShadowMap().renderList.push(carFrame);
-
-    // Also add wheels to shadow casting if they exist
-    const wheels = scene.meshes.filter(mesh => mesh.name.includes("Wheel"));
-    wheels.forEach(wheel => {
-        wheel.receiveShadows = true;
-        leftShadowGenerator.getShadowMap().renderList.push(wheel);
-        rightShadowGenerator.getShadowMap().renderList.push(wheel);
-    });
 
     // Improve car material for better light reflection
     if (carFrame.material) {
@@ -664,7 +617,6 @@ function createTaillights(carFrame, scene) {
 }
 
 // Create front headlights for the car
-// currently disabled due to performance issues on some devices
 function createHeadlights(carFrame, scene) {
     // Create left headlight as cylinder (like a cake - round with depth)
     const leftHeadlight = BABYLON.MeshBuilder.CreateCylinder("leftHeadlight", {
@@ -694,47 +646,35 @@ function createHeadlights(carFrame, scene) {
     leftHeadlight.material = headlightMaterial;
     rightHeadlight.material = headlightMaterial;
 
-    // Create warm white POINT LIGHTS for the headlights
-    const leftHeadlightPoint = new BABYLON.PointLight("leftHeadlightPoint",
-        leftHeadlight.position.clone(), // EXACT same position as headlight sphere
+    // Create one CENTRAL headlight for both headlight areas (more efficient)
+    const centralHeadlightPosition = new BABYLON.Vector3(0, 1.65, 13.5); // Center between headlights
+    const headlightSpot = new BABYLON.SpotLight("headlightSpot",
+        centralHeadlightPosition,
+        new BABYLON.Vector3(0, -0.3, 1), // Direction pointing forward and down
+        Math.PI / 2, // Wider angle to cover both headlight areas
+        2, // Exponent for light falloff
         scene);
-    leftHeadlightPoint.diffuse = new BABYLON.Color3(0.867, 0.773, 0.518); // #ddc584 warm light
-    leftHeadlightPoint.specular = new BABYLON.Color3(0.3, 0.3, 0.2); // Reduced specular 
-    leftHeadlightPoint.intensity = 1.2; // Brighter than taillights for headlights
-    leftHeadlightPoint.range = 50; // Longer range for headlights
-    leftHeadlightPoint.parent = carFrame;
+    headlightSpot.diffuse = new BABYLON.Color3(0.867, 0.773, 0.518); // #ddc584 warm light
+    headlightSpot.specular = new BABYLON.Color3(0.8, 0.7, 0.5); // Higher specular to match ground reflectivity
+    headlightSpot.intensity = 3.0; // Higher intensity to compensate for single light
+    headlightSpot.range = 60; // Longer range for headlights
+    headlightSpot.parent = carFrame;
 
-    const rightHeadlightPoint = new BABYLON.PointLight("rightHeadlightPoint",
-        rightHeadlight.position.clone(), // EXACT same position as headlight sphere
-        scene);
-    rightHeadlightPoint.diffuse = new BABYLON.Color3(0.867, 0.773, 0.518); // #ddc584 warm light
-    rightHeadlightPoint.specular = new BABYLON.Color3(0.3, 0.3, 0.2); // Reduced specular
-    rightHeadlightPoint.intensity = 1.2; // Brighter than taillights for headlights
-    rightHeadlightPoint.range = 50; // Longer range for headlights
-    rightHeadlightPoint.parent = carFrame;
-
-    // Create shadow generators for the headlights
-    const leftHeadlightShadowGenerator = new BABYLON.ShadowGenerator(2048, leftHeadlightPoint);
-    leftHeadlightShadowGenerator.useBlurExponentialShadowMap = true;
-    leftHeadlightShadowGenerator.blurBoxOffset = 2.0;
-    leftHeadlightShadowGenerator.bias = 0.00001;
-
-    const rightHeadlightShadowGenerator = new BABYLON.ShadowGenerator(2048, rightHeadlightPoint);
-    rightHeadlightShadowGenerator.useBlurExponentialShadowMap = true;
-    rightHeadlightShadowGenerator.blurBoxOffset = 2.0;
-    rightHeadlightShadowGenerator.bias = 0.00001;
+    // Create shadow generator for the central headlight
+    const headlightShadowGenerator = new BABYLON.ShadowGenerator(1024, headlightSpot);
+    headlightShadowGenerator.useBlurExponentialShadowMap = true;
+    headlightShadowGenerator.blurBoxOffset = 2.0;
+    headlightShadowGenerator.bias = 0.00001;
 
     // Enable shadow receiving and add meshes to shadow rendering
     const groundMesh = scene.getMeshByName("SquareTrack");
     if (groundMesh) {
-        leftHeadlightShadowGenerator.getShadowMap().renderList.push(carFrame);
-        rightHeadlightShadowGenerator.getShadowMap().renderList.push(carFrame);
+        headlightShadowGenerator.getShadowMap().renderList.push(carFrame);
 
         // Also add wheels to shadow casting if they exist
         const wheels = scene.meshes.filter(mesh => mesh.name.includes("Wheel"));
         wheels.forEach(wheel => {
-            leftHeadlightShadowGenerator.getShadowMap().renderList.push(wheel);
-            rightHeadlightShadowGenerator.getShadowMap().renderList.push(wheel);
+            headlightShadowGenerator.getShadowMap().renderList.push(wheel);
         });
     }
 
@@ -823,11 +763,11 @@ async function CreateCar(vueApp) {
 
     InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
 
-    // // Add red taillights to the car
-    // createTaillights(carFrame, scene);
+    // Add red taillights to the car
+    createTaillights(carFrame, scene);
 
-    // // Add warm white headlights to the car
-    // createHeadlights(carFrame, scene);
+    // Add warm white headlights to the car
+    createHeadlights(carFrame, scene);
 
     return carFrame;
 }
@@ -963,7 +903,7 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
 
     let currentSpeed = 0;
     let currentSteeringAngle = 0;
-    let maxSpeed = 80; // Reduced from 150 to 80 for better control
+    let maxSpeed = 80; // Optimized for good control
     const maxSteeringAngle = Math.PI / 4; // Increased from PI/6 to PI/4 for sharper turns
     const jumpForce = 3000; // Increased jump force for better visibility
 
@@ -984,13 +924,12 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
                     jumpPressed = true;
                     console.log("🚀 Jump button pressed!");
 
-                    // Try different methods to apply jump force
+                    // Apply jump force using multiple methods for reliability
                     if (carFrame.physicsBody) {
-                        console.log("📦 Physics body found, applying impulse...");
-                        // Method 1: applyImpulse
+                        // Primary method: Direct impulse
                         carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce, 0), carFrame.getAbsolutePosition());
 
-                        // Method 2: setLinearVelocity (backup)
+                        // Secondary method: Velocity adjustment
                         const currentVel = carFrame.physicsBody.getLinearVelocity();
                         carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, jumpForce / 100, currentVel.z));
                     } else {
@@ -1047,11 +986,11 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
         if (isBrake) {
             currentSpeed = 0;
         } else if (isForward && currentSpeed < maxSpeed) {
-            currentSpeed += 1; // Reduced from 8 to 2 for smoother acceleration
+            currentSpeed += 1; // Smooth acceleration
         } else if (isBackward && currentSpeed > -maxSpeed * 0.5) {
-            currentSpeed -= 1; // Reduced from 8 to 2 for smoother deceleration
+            currentSpeed -= 1; // Smooth deceleration
         } else if (!isForward && !isBackward) {
-            currentSpeed *= 0.92; // Increased from 0.99 to 0.92 for faster slowdown
+            currentSpeed *= 0.92; // Natural slowdown
         }
 
         // Update Vue.js direction data
