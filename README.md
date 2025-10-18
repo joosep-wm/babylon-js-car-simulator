@@ -52,7 +52,7 @@ This project showcases **advanced game development** using:
 - 🏎️ **Speed challenges** - Test vehicle performance on varied terrain
 - 🎨 **Studio environment** - Race in professional white-walled studio setting
 
-### 💡 Dynamic Lighting System (currently disabled)
+### 💡 Dynamic Lighting System
 - **Realistic car lighting** with front headlights and rear taillights
 - **Warm white headlights** (#ddc584) with cylindrical lens design
 - **Red taillights** with Point Light technology for authentic illumination
