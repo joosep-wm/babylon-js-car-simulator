@@ -344,7 +344,7 @@ function createTrackWalls(scene, trackWidth = 800, trackHeight = 800) {
 function createCollisionTowers(scene) {
     const towerMaterial = new BABYLON.StandardMaterial("towerMaterial", scene);
     towerMaterial.diffuseColor = new BABYLON.Color3(0.6, 0.3, 0.1); // Brown color
-    towerMaterial.emissiveColor = new BABYLON.Color3(0.1, 0.05, 0.02);
+    // No emissiveColor - no lightning effect
 
     // Create several towers around the track
     const towerPositions = [
