@@ -116,7 +116,7 @@ export class GamepadManager {
 
 ---
 
-### Task 1.6: Implement GamepadManager - Event System
+### Task 1.6: Implement GamepadManager - Event System ✅
 **Deliverable:** Custom events for button/axis changes
 
 **Implementation:**
@@ -124,7 +124,7 @@ export class GamepadManager {
 - Emit events: 'buttonpress', 'buttonrelease', 'axischange'
 - Include relevant data in event
 
-**Test:**
+**Test:** ✅
 1. Register event listener for 'buttonpress'
 2. Press X button
 3. Verify callback fires with correct button index
@@ -1011,10 +1011,10 @@ After each task, run relevant tests:
 ## CURRENT STATUS
 
 **Active Tasks:**
-- [ ] Task 1.6: Implement GamepadManager - Event System
+- [ ] Task 1.7: Create Console Test Display
 
 **Next Tasks:**
-- [ ] Task 1.7: Create Console Test Display
+- [ ] Task 1.8: Integrate GamepadManager into babylon-game.js
 
 **Blocked:** None
 
@@ -1024,6 +1024,7 @@ After each task, run relevant tests:
 - Task 1.3 completed: GamepadManager polling with state change logging implemented
 - Task 1.4 completed: Button state tracking (justPressed/justReleased/heldDuration)
 - Task 1.5 completed: Axis state tracking with dead zone (0.05 threshold)
+- Task 1.6 completed: Event system (addEventListener, buttonpress/buttonrelease/axischange events)
 - GamepadManager integrated into babylon-game.js render loop
 - All modules have proper ES6 exports and are ready for implementation
 - test-imports.html available for validating module imports
