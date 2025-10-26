@@ -64,13 +64,6 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                     vueApp.resetGame();
                 }
                 break;
-            case "m": case "M":
-                if (e.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
-                    cycleSteerMode();
-                    currentSteeringAngle = 0;
-                    console.log('Mode:', getCurrentModeName());
-                }
-                break;
         }
     });
 

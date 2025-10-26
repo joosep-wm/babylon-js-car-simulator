@@ -16,8 +16,7 @@ export const DesktopControls = {
                 s: false,
                 d: false,
                 space: false, // Now for jumping
-                b: false,     // New brake key
-                m: false,     // Mode switch key
+                b: false,
                 enter: false
             }
         }
@@ -77,16 +76,7 @@ export const DesktopControls = {
                     this.keyStates.space = isPressed; // Space for jumping
                     break;
                 case 'b':
-                    this.keyStates.b = isPressed; // B for braking
-                    break;
-                case 'm':
-                    this.keyStates.m = isPressed; // M for mode switch
-                    // Reset after short delay for visual feedback
-                    if (isPressed) {
-                        setTimeout(() => {
-                            this.keyStates.m = false;
-                        }, 200);
-                    }
+                    this.keyStates.b = isPressed;
                     break;
                 case 'enter':
                     this.keyStates.enter = isPressed;
@@ -125,13 +115,6 @@ export const DesktopControls = {
                 <span class="control-label">Brake</span>
             </div>
             
-            <div class="control-separator"></div>
-
-            <div class="control-group">
-                <div class="key-display m" :class="{ active: keyStates.m }">M</div>
-                <span class="control-label">Mode</span>
-            </div>
-
             <div class="control-separator"></div>
 
             <div class="control-group">
