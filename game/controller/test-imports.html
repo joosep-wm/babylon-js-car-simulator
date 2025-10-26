@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Controller Module Import Test</title>
+</head>
+<body>
+  <h1>Testing Controller Module Imports...</h1>
+  <div id="results"></div>
+
+  <script type="module">
+    const results = document.getElementById('results');
+
+    async function testImports() {
+      const tests = [
+        { name: 'gamepad-manager.js', path: './gamepad-manager.js' },
+        { name: 'mode-manager.js', path: './mode-manager.js' },
+        { name: 'control-mapper.js', path: './control-mapper.js' },
+        { name: 'analog-processor.js', path: './analog-processor.js' },
+        { name: 'default-modes.js', path: './default-modes.js' },
+        { name: 'storage-manager.js', path: './storage-manager.js' },
+        { name: '../testing/virtual-gamepad.js', path: '../testing/virtual-gamepad.js' },
+        { name: '../testing/test-harness.js', path: '../testing/test-harness.js' },
+        { name: '../testing/test-scenarios.js', path: '../testing/test-scenarios.js' }
+      ];
+
+      for (const test of tests) {
+        try {
+          await import(test.path);
+          results.innerHTML += `<p style="color: green;">✅ ${test.name} imported successfully</p>`;
+        } catch (error) {
+          results.innerHTML += `<p style="color: red;">❌ ${test.name} failed: ${error.message}</p>`;
+        }
+      }
+
+      results.innerHTML += '<h2>All tests complete!</h2>';
+    }
+
+    testImports();
+  </script>
+</body>
+</html>
