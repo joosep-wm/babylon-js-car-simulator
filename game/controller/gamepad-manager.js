@@ -157,7 +157,7 @@ export class GamepadManager {
         connected: false,
         gamepadId: null,
         buttons: {},
-        axes: {}
+        axes: []
       };
     }
 
@@ -169,7 +169,7 @@ export class GamepadManager {
         connected: false,
         gamepadId: null,
         buttons: {},
-        axes: {}
+        axes: []
       };
     }
 
@@ -204,13 +204,10 @@ export class GamepadManager {
       };
     }
 
-    const axes = {};
+    const axes = [];
 
     for (let i = 0; i < gamepad.axes.length; i++) {
-      const axisName = GamepadManager.AXIS_NAMES[i] || `Axis-${i}`;
-      if (axisName) {
-        axes[axisName] = parseFloat(gamepad.axes[i].toFixed(3));
-      }
+      axes[i] = parseFloat(gamepad.axes[i].toFixed(3));
     }
 
     return {

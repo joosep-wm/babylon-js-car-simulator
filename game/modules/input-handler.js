@@ -73,8 +73,8 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         let controllerActions = [];
         let controllerConnected = false;
 
-        if (gamepadManager && controlMapper && gamepadManager.getState()) {
-            const gamepadState = gamepadManager.getState();
+        if (gamepadManager && controlMapper) {
+            const gamepadState = gamepadManager.getGamepadState();
             if (gamepadState.connected) {
                 controllerConnected = true;
                 const mappedOutput = controlMapper.processFrame(gamepadState);
