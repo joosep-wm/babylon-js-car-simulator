@@ -179,9 +179,16 @@ export class GamepadManager {
     for (let i = 0; i < gamepad.buttons.length; i++) {
       const button = gamepad.buttons[i];
       const buttonName = GamepadManager.BUTTON_NAMES[i] || `Button-${i}`;
+
+      // Compute justPressed/justReleased for current frame
+      const wasPressed = this.previousButtonState[i]?.pressed || false;
+      const isPressed = button.pressed;
+
       const buttonState = {
         pressed: button.pressed,
-        value: button.value
+        value: button.value,
+        justPressed: isPressed && !wasPressed,
+        justReleased: !isPressed && wasPressed
       };
 
       if (button.pressed && this.buttonHeldStartTime[i]) {
@@ -189,6 +196,12 @@ export class GamepadManager {
       }
 
       buttons[buttonName] = buttonState;
+
+      // Update previous state for next frame
+      this.previousButtonState[i] = {
+        pressed: button.pressed,
+        value: button.value
+      };
     }
 
     const axes = {};

@@ -155,6 +155,23 @@ export class ControlMapper {
   }
 
   mapUtilityButtons(gamepadState, mode) {
-    return [];
+    const actions = [];
+
+    const BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
+
+    for (const [buttonIndex, config] of Object.entries(mode.utilityButtons)) {
+      const buttonName = BUTTON_NAMES[buttonIndex];
+      const button = gamepadState.buttons[buttonName];
+
+      if (!button) continue;
+
+      if (config.type === 'press' && button.justPressed) {
+        actions.push({ action: config.action, type: 'instant' });
+      } else if (config.type === 'hold' && button.heldDuration > config.holdDuration) {
+        actions.push({ action: config.action, type: 'hold', duration: button.heldDuration });
+      }
+    }
+
+    return actions;
   }
 }
