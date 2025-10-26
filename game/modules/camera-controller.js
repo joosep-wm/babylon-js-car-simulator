@@ -34,5 +34,8 @@ export function setupCamera(scene, car) {
         console.error("❌ Car not properly created for camera targeting");
     }
 
+    scene.activeCamera = camera;
+    console.log("✅ Camera set as active camera");
+
     return camera;
 }
