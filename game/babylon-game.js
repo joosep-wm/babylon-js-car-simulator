@@ -742,14 +742,14 @@ async function CreateCar(vueApp) {
 
         const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrame.physicsBody, true);
         const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrame.physicsBody, true);
-        AttachAxleToFrame(rlAxle.physicsBody, carFrame.physicsBody);
-        AttachAxleToFrame(rrAxle.physicsBody, carFrame.physicsBody);
+        const steerWheelC = AttachAxleToFrame(rlAxle.physicsBody, carFrame.physicsBody, true);
+        const steerWheelD = AttachAxleToFrame(rrAxle.physicsBody, carFrame.physicsBody, true);
 
         // Phase 1.2: Store references for later use
-        // TODO Phase 1.3-1.5: Pass these to InitKeyboardControls when rear wheels are powered
+        // Phase 1.3: Rear wheels now have steering capability
         const wheels = { FL: flWheel, FR: frWheel, RL: rlWheel, RR: rrWheel };
         const axles = { FL: flAxle, FR: frAxle, RL: rlAxle, RR: rrAxle };
-        const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: null, RR: null };
+        const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: steerWheelC, RR: steerWheelD };
         const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: null, RR: null };
 
         console.log('🔧 Wheels:', wheels);
@@ -797,14 +797,14 @@ async function CreateCar(vueApp) {
 
     const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrameBody, true);
     const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrameBody, true);
-    AttachAxleToFrame(rlAxle.physicsBody, carFrameBody);
-    AttachAxleToFrame(rrAxle.physicsBody, carFrameBody);
+    const steerWheelC = AttachAxleToFrame(rlAxle.physicsBody, carFrameBody, true);
+    const steerWheelD = AttachAxleToFrame(rrAxle.physicsBody, carFrameBody, true);
 
     // Phase 1.2: Store references for later use
-    // TODO Phase 1.3-1.5: Pass these to InitKeyboardControls when rear wheels are powered
+    // Phase 1.3: Rear wheels now have steering capability
     const wheels = { FL: flWheel, FR: frWheel, RL: rlWheel, RR: rrWheel };
     const axles = { FL: flAxle, FR: frAxle, RL: rlAxle, RR: rrAxle };
-    const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: null, RR: null };
+    const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: steerWheelC, RR: steerWheelD };
     const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: null, RR: null };
 
     console.log('🔧 Wheels:', wheels);
