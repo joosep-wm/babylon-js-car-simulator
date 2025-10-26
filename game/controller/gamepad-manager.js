@@ -85,14 +85,18 @@ export class GamepadManager {
   }
 
   _checkAxisChanges(gamepad) {
+    const axisNames = ['LS-X', 'LS-Y', 'RS-X', 'RS-Y', '', '', 'LT', 'RT'];
+    const deadZone = 0.05;
+
     for (let i = 0; i < gamepad.axes.length; i++) {
       const currentValue = gamepad.axes[i];
       const previousValue = this.previousAxisState[i] || 0;
 
-      const changed = Math.abs(currentValue - previousValue) > 0.01;
+      const changed = Math.abs(currentValue - previousValue) > deadZone;
 
       if (changed) {
-        console.log(`🎮 Axis ${i} changed: ${currentValue.toFixed(3)}`);
+        const axisName = axisNames[i] || `Axis-${i}`;
+        console.log(`🎮 ${axisName}: ${currentValue.toFixed(3)}`);
       }
 
       this.previousAxisState[i] = currentValue;
