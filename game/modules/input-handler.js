@@ -5,7 +5,7 @@ import { toggleDebugOverlay, updateDebugOverlay } from './debug-overlay.js';
 import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';
 
-export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene) {
+export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper) {
     let forwardPressed = false;
     let backPressed = false;
     let leftPressed = false;
@@ -68,6 +68,22 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     });
 
     scene.onBeforeRenderObservable.add(() => {
+        let controllerSpeed = 0;
+        let controllerSteering = { FL: 0, FR: 0, RL: 0, RR: 0 };
+        let controllerActions = [];
+        let controllerConnected = false;
+
+        if (gamepadManager && controlMapper && gamepadManager.getState()) {
+            const gamepadState = gamepadManager.getState();
+            if (gamepadState.connected) {
+                controllerConnected = true;
+                const mappedOutput = controlMapper.processFrame(gamepadState);
+                controllerSpeed = mappedOutput.speed;
+                controllerSteering = mappedOutput.steering;
+                controllerActions = mappedOutput.actions;
+            }
+        }
+
         const isForward = forwardPressed || (vueApp && vueApp.touchControls.forward);
         const isBackward = backPressed || (vueApp && vueApp.touchControls.backward);
         const isLeft = leftPressed || (vueApp && vueApp.touchControls.left);
@@ -75,8 +91,14 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         const isBrake = brakePressed || (vueApp && vueApp.touchControls.brake);
         const isJump = jumpPressed || (vueApp && vueApp.touchControls.jump);
 
-        if (isJump) {
-            console.log("Jump (keyboard or touch) activated!");
+        const controllerJump = controllerActions.find(a => a.action === 'jump');
+        if (isJump || controllerJump) {
+            if (isJump) {
+                console.log("Jump (keyboard or touch) activated!");
+            }
+            if (controllerJump) {
+                console.log("Jump (controller) activated!");
+            }
 
             if (carFrame.physicsBody) {
                 carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce / 2, 0), carFrame.getAbsolutePosition());
@@ -86,38 +108,75 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             }
         }
 
-        if (!manualControl.active) {
-            currentSteeringAngle = updateSteering(isLeft, isRight, currentSteeringAngle, maxSteeringAngle, steerAngle, CalculateWheelAngles);
+        const controllerResetPosition = controllerActions.find(a => a.action === 'resetPosition');
+        if (controllerResetPosition && vueApp) {
+            console.log("Reset position (controller) activated!");
+            vueApp.resetGame();
+        }
 
-            if (isBrake) {
-                wheelSpeed.FL = 0;
-                wheelSpeed.FR = 0;
-                wheelSpeed.RL = 0;
-                wheelSpeed.RR = 0;
-            } else if (isForward) {
-                ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
-                    if (wheelSpeed[wheel] < maxSpeed) wheelSpeed[wheel] += 1;
-                });
-            } else if (isBackward) {
-                ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
-                    if (wheelSpeed[wheel] > -maxSpeed * 0.5) wheelSpeed[wheel] -= 1;
-                });
-            } else if (!isForward && !isBackward) {
-                ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
-                    wheelSpeed[wheel] *= 0.92;
-                });
+        if (!manualControl.active) {
+            if (controllerConnected) {
+                steerAngle.FL = controllerSteering.FL * (Math.PI / 180);
+                steerAngle.FR = controllerSteering.FR * (Math.PI / 180);
+                steerAngle.RL = controllerSteering.RL * (Math.PI / 180);
+                steerAngle.RR = controllerSteering.RR * (Math.PI / 180);
+
+                const controllerBrake = controllerActions.find(a => a.action === 'brake');
+                if (controllerBrake) {
+                    wheelSpeed.FL = 0;
+                    wheelSpeed.FR = 0;
+                    wheelSpeed.RL = 0;
+                    wheelSpeed.RR = 0;
+                } else {
+                    wheelSpeed.FL = controllerSpeed;
+                    wheelSpeed.FR = controllerSpeed;
+                    wheelSpeed.RL = controllerSpeed;
+                    wheelSpeed.RR = controllerSpeed;
+                }
+            } else {
+                currentSteeringAngle = updateSteering(isLeft, isRight, currentSteeringAngle, maxSteeringAngle, steerAngle, CalculateWheelAngles);
+
+                if (isBrake) {
+                    wheelSpeed.FL = 0;
+                    wheelSpeed.FR = 0;
+                    wheelSpeed.RL = 0;
+                    wheelSpeed.RR = 0;
+                } else if (isForward) {
+                    ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                        if (wheelSpeed[wheel] < maxSpeed) wheelSpeed[wheel] += 1;
+                    });
+                } else if (isBackward) {
+                    ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                        if (wheelSpeed[wheel] > -maxSpeed * 0.5) wheelSpeed[wheel] -= 1;
+                    });
+                } else if (!isForward && !isBackward) {
+                    ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                        wheelSpeed[wheel] *= 0.92;
+                    });
+                }
             }
         }
 
         if (vueApp) {
             let directions = [];
 
-            if (isForward) directions.push('Forward');
-            if (isBackward) directions.push('Backward');
-            if (isLeft) directions.push('Left');
-            if (isRight) directions.push('Right');
-            if (isBrake) directions.push('Brake');
-            if (isJump) directions.push('Jump');
+            if (controllerConnected) {
+                if (controllerSpeed > 0) directions.push('Forward (Controller)');
+                if (controllerSpeed < 0) directions.push('Backward (Controller)');
+                if (Math.abs(controllerSteering.FL) > 0.1) {
+                    directions.push(controllerSteering.FL > 0 ? 'Right (Controller)' : 'Left (Controller)');
+                }
+                const controllerBrake = controllerActions.find(a => a.action === 'brake');
+                if (controllerBrake) directions.push('Brake (Controller)');
+                if (controllerJump) directions.push('Jump (Controller)');
+            } else {
+                if (isForward) directions.push('Forward');
+                if (isBackward) directions.push('Backward');
+                if (isLeft) directions.push('Left');
+                if (isRight) directions.push('Right');
+                if (isBrake) directions.push('Brake');
+                if (isJump) directions.push('Jump');
+            }
 
             if (directions.length > 0) {
                 vueApp.direction = directions.join(' + ');

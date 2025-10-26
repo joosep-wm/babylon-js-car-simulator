@@ -289,19 +289,35 @@ mapUtilityButtons(gamepadState, mode) {
 **Deliverable:** Controller actually controls the car
 
 **Implementation:**
-- Import ControlMapper
-- Call processFrame() each render loop
-- Apply speed output to wheel motor forces
-- Apply steering angles to wheel joints
+1. **Update default-modes.js:** Change `maxSpeed: 1.0` to `maxSpeed: 150` in all modes (lines 14, 39, 65, 91)
+2. **Update babylon-game.js:**
+   - Import ControlMapper and ModeManager
+   - Initialize ModeManager and ControlMapper
+   - Pass gamepadManager and controlMapper to car factory
+3. **Update car-factory.js:**
+   - Accept gamepadManager and controlMapper parameters
+   - Pass them to input handler
+4. **Update input-handler.js:**
+   - Call processFrame() each render loop
+   - Apply speed output to wheel motor forces (values will now be ~150 scale)
+   - Apply steering angles to wheel joints (convert degrees to radians)
+   - Process action buttons (jump, brake, etc.)
+   - Ensure jump physics matches keyboard: `applyImpulse(0, jumpForce/2, 0)` and velocity clamping with `Math.min(currentVel.y + jumpForce/200, jumpForce/50)`
+   - Ensure keyboard/touch fallback when controller not connected
+
+**Critical Requirements:**
+1. **Speed Scaling:** Update maxSpeed in default-modes.js from 1.0 to 150 to match keyboard scale
+2. **Jump Physics Consistency:** Controller jump must use EXACT same physics as keyboard (lines 102-105 of input-handler.js)
+3. **Fallback:** Keyboard/touch controls must still work when controller not connected
 
 **Test:**
 1. Connect controller
 2. Pull RT trigger
-3. Verify car moves forward
+3. Verify car moves forward at comparable speed to keyboard (W key)
 4. Push LS-X left
 5. Verify car turns left
 6. Press A button
-7. Verify car jumps
+7. Verify car jumps with same height/behavior as spacebar
 
 ---
 

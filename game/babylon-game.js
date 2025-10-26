@@ -52,6 +52,8 @@ import { CreateCar } from './modules/car-factory.js';
 // IMPORTS - Controller System
 // ============================================================================
 import { GamepadManager } from './controller/gamepad-manager.js';
+import { ModeManager } from './controller/mode-manager.js';
+import { ControlMapper } from './controller/control-mapper.js';
 
 // ============================================================================
 // IMPORTS - Debug and Testing
@@ -68,6 +70,8 @@ let engine;
 let havokInstance = null;
 let tyreMaterial;
 let gamepadManager = null;
+let modeManager = null;
+let controlMapper = null;
 
 // Export for external access from Vue app and other modules
 export { scene, engine };
@@ -203,6 +207,11 @@ async function createScene(vueApp) {
     gamepadManager = new GamepadManager();
     gamepadManager.init();
 
+    modeManager = new ModeManager();
+    modeManager.loadModes();
+
+    controlMapper = new ControlMapper(modeManager);
+
     // Setup ambient lighting
     setupHemisphericLight(scene);
 
@@ -210,7 +219,7 @@ async function createScene(vueApp) {
     tyreMaterial = InitTyreMaterial(scene);
 
     // Create car with all components (body, wheels, physics)
-    const carF = await CreateCar(vueApp, scene, tyreMaterial, InitKeyboardControls);
+    const carF = await CreateCar(vueApp, scene, tyreMaterial, InitKeyboardControls, gamepadManager, controlMapper);
 
     // Setup follow camera attached to car
     const camera = setupCamera(scene, carF);
