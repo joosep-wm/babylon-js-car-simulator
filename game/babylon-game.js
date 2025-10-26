@@ -26,6 +26,7 @@ import {
     CalculateWheelAngles
 } from './modules/physics-config.js';
 import { setupCamera } from './modules/camera-controller.js';
+import { addReflectionsToCar, addGlowLayer } from './modules/rendering-effects.js';
 
 // Global variables for car physics system
 let scene;
@@ -171,9 +172,9 @@ async function createScene(vueApp) {
     // Add bridge
     createBridge(scene);
 
-    addReflectionsToCar();
+    addReflectionsToCar(scene);
 
-    addGlowLayer();
+    addGlowLayer(scene);
 
     // Setup physics-based collision detection after car is fully created
     // Add a small delay to ensure physics body is properly initialized
@@ -230,28 +231,6 @@ async function createScene(vueApp) {
     return scene;
 }
 
-function addReflectionsToCar() {
-    const carProbe = new BABYLON.ReflectionProbe("reflections", 256, scene, false, false);
-
-    for (const mesh of scene.meshes) {
-        carProbe.renderList.push(mesh);
-    }
-
-    const reflection = carProbe.cubeTexture;
-    reflection.coordinatesMode = 6; //3;
-    reflection.level = 5;
-    scene.getMaterialByName("material0").reflectionTexture = reflection;
-    carProbe.attachToMesh(scene.getMeshByName("CarBody"));
-}
-
-function addGlowLayer() {
-    const glowLayer = new BABYLON.GlowLayer("Glow", scene, {
-        mainTextureSamples: 4
-    });
-
-    glowLayer.intensity = 4;
-    glowLayer.blurKernelSize = 64;
-}
 
 function createSquareRaceTrack(scene, width = 800, height = 800) {
     // Create a square ground/track
