@@ -35,10 +35,10 @@ npm run serve-php
 
 * `temp/`: Temporary files, plans, and development notes
 * `temp/development-plan.md`: Current development plan focused on active and next tasks
-* `temp/development-plan-phase1-archive.md`: Done development for archival - phase 1
-* `temp/development-plan-phase2-archive.md`: Done development for archival - phase 2
+* `temp/development-plan-phase1-archive.md`: Phase 1 archive
+* `temp/development-plan-phase2-archive.md`: Phase 2 archive
+* `temp/development-plan-phase3-archive.md`: Phase 3 archive
 * `temp/testing-strategy.md`: Comprehensive incremental testing strategy for validating changes
-* `temp/4-wheel-independent-steering-plan.md`: Full technical design for 4-wheel independent control
 * `docs/prd.md`: Product Requirements Document with full specifications
 * `docs/testing-tools.md`: Debug overlay (F11) and console test helpers (`window.testHelpers`) reference
 

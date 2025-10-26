@@ -33,5 +33,6 @@ After the phase is complete and QA validated:
    - Add Phase N Summary section at top with key achievements and status
    - Mark phase as COMPLETE in status line
    - Add references to archive and completion documents
-   - Keep detailed planning sections but mark as "(ARCHIVED - SEE ABOVE)"
-4. Commit all documentation with message: "Phase {N} complete: [brief description]"
+   - Remove detailed planning sections
+4. Update CLAUDE.md with references to these document.
+5. Commit all documentation with message: "Phase {N} complete: [brief description]"
