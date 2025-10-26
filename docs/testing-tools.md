@@ -85,8 +85,6 @@ testHelpers.disableManualControl()
 - **RL**: Rear-Left
 - **RR**: Rear-Right
 
-## Implementation
+## Implementation details
 
-- Test helpers: `game/babylon-game.js` lines 1319-1412
-- Debug overlay: `game/babylon-game.js` lines 1238-1317
 - Manual control flag prevents keyboard override when test helpers are active
