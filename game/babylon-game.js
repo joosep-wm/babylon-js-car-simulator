@@ -40,6 +40,7 @@ import {
     createTaillights,
     createHeadlights
 } from './modules/lighting-system.js';
+import { CreateCar } from './modules/car-factory.js';
 
 // Global variables for car physics system
 let scene;
@@ -162,7 +163,7 @@ async function createScene(vueApp) {
 
     tyreMaterial = InitTyreMaterial(scene);
 
-    const carF = await CreateCar(vueApp);
+    const carF = await CreateCar(vueApp, scene, tyreMaterial, InitKeyboardControls);
 
     const camera = setupCamera(scene, carF);
 
@@ -241,144 +242,6 @@ async function createScene(vueApp) {
     });
 
     return scene;
-}
-
-async function CreateCar(vueApp) {
-    // Import the custom car model
-    const customCarBody = await importCustomCar();
-
-    // Use the imported car body instead of creating a box
-    let carFrame;
-    if (customCarBody) {
-        carFrame = customCarBody;
-    } else {
-        console.error("Custom car loading failed! Using fallback box.");
-        // Fallback to original box if model loading fails
-        carFrame = BABYLON.MeshBuilder.CreateBox("CarBody", { height: 1, width: 12, depth: 24, faceColors: debugColours });
-        carFrame.position = new BABYLON.Vector3(0, 1, 0);
-        carFrame.visibility = 0.5;
-        const carFrameBody = AddDynamicPhysics(carFrame, 2000, 0, 0, new BABYLON.Vector3(0, -2.5, 1), scene);
-        FilterMeshCollisions(carFrame);
-
-        // Continue with wheel creation for fallback
-        const flWheel = CreateWheel(new BABYLON.Vector3(5, 0, 8));
-        const flAxle = CreateAxle(new BABYLON.Vector3(5, 0, 8));
-        const frWheel = CreateWheel(new BABYLON.Vector3(-5, 0, 8));
-        const frAxle = CreateAxle(new BABYLON.Vector3(-5, 0, 8));
-        const rlWheel = CreateWheel(new BABYLON.Vector3(5, 0, -10));
-        const rlAxle = CreateAxle(new BABYLON.Vector3(5, 0, -10));
-        const rrWheel = CreateWheel(new BABYLON.Vector3(-5, 0, -10));
-        const rrAxle = CreateAxle(new BABYLON.Vector3(-5, 0, -10));
-
-        const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel, scene);
-        const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel, scene);
-        const poweredWheelMotorC = CreatePoweredWheelJoint(rlAxle, rlWheel, scene);
-        const poweredWheelMotorD = CreatePoweredWheelJoint(rrAxle, rrWheel, scene);
-
-        const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrame.physicsBody, true, scene);
-        const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrame.physicsBody, true, scene);
-        const steerWheelC = AttachAxleToFrame(rlAxle.physicsBody, carFrame.physicsBody, true, scene);
-        const steerWheelD = AttachAxleToFrame(rrAxle.physicsBody, carFrame.physicsBody, true, scene);
-
-        // Phase 1.2: Store references for later use
-        // Phase 1.3: Rear wheels now have steering capability
-        // Phase 1.4: Rear wheels now have drive motors
-        const wheels = { FL: flWheel, FR: frWheel, RL: rlWheel, RR: rrWheel };
-        const axles = { FL: flAxle, FR: frAxle, RL: rlAxle, RR: rrAxle };
-        const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: steerWheelC, RR: steerWheelD };
-        const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: poweredWheelMotorC, RR: poweredWheelMotorD };
-
-        console.log('🔧 Wheels:', wheels);
-        console.log('🔧 Axles:', axles);
-        console.log('🔧 Steering joints:', steeringJoints);
-        console.log('🔧 Motor joints:', motorJoints);
-
-        InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints);
-
-        return carFrame;
-    }
-
-    carFrame.position = new BABYLON.Vector3(0, 5, 0); // Higher position for larger car
-    // Remove visibility setting to show the actual car model
-    // carFrame.visibility = 0.5; 
-
-    // Use ConvexHull physics for better performance with complex meshes
-    const carFrameBody = AddDynamicPhysicsConvex(carFrame, 5000, 0, 0.8, new BABYLON.Vector3(0, -2.5, 1), scene);
-    FilterMeshCollisions(carFrame);
-
-    const flWheel = CreateWheel(new BABYLON.Vector3(5, 0, 8));
-    const flAxle = CreateAxle(new BABYLON.Vector3(5, 0, 8));
-    const frWheel = CreateWheel(new BABYLON.Vector3(-5, 0, 8));
-    const frAxle = CreateAxle(new BABYLON.Vector3(-5, 0, 8));
-    const rlWheel = CreateWheel(new BABYLON.Vector3(5, 0, -8)); // Moved forward
-    const rlAxle = CreateAxle(new BABYLON.Vector3(5, 0, -8)); // Moved forward
-    const rrWheel = CreateWheel(new BABYLON.Vector3(-5, 0, -8)); // Moved forward
-    const rrAxle = CreateAxle(new BABYLON.Vector3(-5, 0, -8)); // Moved forward
-
-    for (const mesh of [flAxle, frAxle, rlAxle, rrAxle]) {
-        carFrame.addChild(mesh);
-        AddAxlePhysics(mesh, 190, 0, 0, scene);
-        FilterMeshCollisions(mesh);
-    }
-
-    for (const mesh of [flWheel, frWheel, rlWheel, rrWheel]) {
-        AddWheelPhysics(mesh, 150, 0, 2.5, scene);
-        FilterMeshCollisions(mesh);
-    }
-
-    const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel, scene);
-    const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel, scene);
-    const poweredWheelMotorC = CreatePoweredWheelJoint(rlAxle, rlWheel, scene);
-    const poweredWheelMotorD = CreatePoweredWheelJoint(rrAxle, rrWheel, scene);
-
-    const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrameBody, true, scene);
-    const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrameBody, true, scene);
-    const steerWheelC = AttachAxleToFrame(rlAxle.physicsBody, carFrameBody, true, scene);
-    const steerWheelD = AttachAxleToFrame(rrAxle.physicsBody, carFrameBody, true, scene);
-
-    // Phase 1.2: Store references for later use
-    // Phase 1.3: Rear wheels now have steering capability
-    // Phase 1.4: Rear wheels now have drive motors
-    const wheels = { FL: flWheel, FR: frWheel, RL: rlWheel, RR: rrWheel };
-    const axles = { FL: flAxle, FR: frAxle, RL: rlAxle, RR: rrAxle };
-    const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: steerWheelC, RR: steerWheelD };
-    const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: poweredWheelMotorC, RR: poweredWheelMotorD };
-
-    console.log('🔧 Wheels:', wheels);
-    console.log('🔧 Axles:', axles);
-    console.log('🔧 Steering joints:', steeringJoints);
-    console.log('🔧 Motor joints:', motorJoints);
-
-    InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints);
-
-    // Add red taillights to the car
-    createTaillights(carFrame, scene);
-
-    // Add warm white headlights to the car
-    createHeadlights(carFrame, scene);
-
-    return carFrame;
-}
-
-function CreateAxle(position) {
-    const axleMesh = BABYLON.MeshBuilder.CreateBox("Axle", { height: 1, width: 2.5, depth: 1, faceColors: debugColours });
-    axleMesh.position = position;
-    return axleMesh;
-}
-
-function CreateWheel(position) {
-    const faceUVforArrowTexture = [
-        new BABYLON.Vector4(0, 0, 0, 0),
-        new BABYLON.Vector4(0, 1, 1, 0),
-        new BABYLON.Vector4(0, 0, 0, 0),
-    ];
-
-    const wheelMesh = BABYLON.MeshBuilder.CreateCylinder("Wheel", { height: 1.6, diameter: 4, faceUV: faceUVforArrowTexture });
-    wheelMesh.rotation = new BABYLON.Vector3(0, 0, Math.PI / 2);
-    wheelMesh.bakeCurrentTransformIntoVertices();
-    wheelMesh.position = position;
-    wheelMesh.material = tyreMaterial;
-    return wheelMesh;
 }
 
 function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints) {
@@ -537,65 +400,5 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
 
         updateDebugOverlay(steerAngle, wheelSpeed, getCurrentModeName());
     });
-}
-
-
-async function importCustomCar() {
-    try {
-        console.log("🚗 Loading custom car model...");
-
-        const importResult = await BABYLON.SceneLoader.ImportMeshAsync("", "game/models/", "car.glb", scene);
-
-        console.log("📦 Car model loaded successfully:", importResult);
-
-        const importRoot = importResult.meshes[0];
-
-        if (importRoot) {
-            importRoot.scaling = new BABYLON.Vector3(14, 14, 14);
-
-            if (importRoot.rotationQuaternion) {
-                importRoot.rotationQuaternion = BABYLON.Quaternion.Identity();
-            }
-            importRoot.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0);
-
-            importRoot.position = new BABYLON.Vector3(0, 2.3, 0);
-
-            if (!importRoot.position) {
-                importRoot.position = new BABYLON.Vector3(0, 2, 0);
-            }
-
-            importRoot.bakeCurrentTransformIntoVertices();
-
-            const meshesToMerge = importResult.meshes.filter(mesh =>
-                mesh.getClassName() === "Mesh" && mesh !== importRoot
-            );
-
-            let carBody;
-            if (meshesToMerge.length > 0) {
-                carBody = BABYLON.Mesh.MergeMeshes(meshesToMerge, true, true, undefined, false, true);
-                carBody.name = "CarBody";
-            } else {
-                importRoot.name = "CarBody";
-                carBody = importRoot;
-            }
-
-            console.log("✅ Car body created:", carBody.name);
-
-            if (!carBody.position) {
-                carBody.position = new BABYLON.Vector3(0, 0, 0);
-            }
-
-            return carBody;
-
-        } else {
-            console.error("❌ No root mesh found in car model");
-            return null;
-        }
-
-    } catch (error) {
-        console.error("❌ Error loading car model:", error);
-        console.log("💡 Make sure the car.glb file exists in game/models/ folder");
-        return null;
-    }
 }
 
