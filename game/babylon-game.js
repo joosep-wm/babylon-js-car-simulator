@@ -1037,22 +1037,24 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
             }
         }
 
-        if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-            currentSteeringAngle += 0.05;
-        } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-            currentSteeringAngle -= 0.05;
-        } else if (!isLeft && !isRight) {
-            currentSteeringAngle *= 0.85;
-        }
-
-        const [innerAngle, outerAngle] = CalculateWheelAngles(currentSteeringAngle);
-
         // Only update control variables if manual control is not active
         if (!manualControl.active) {
-            steerAngle.FL = outerAngle;
-            steerAngle.FR = innerAngle;
-            steerAngle.RL = 0;
-            steerAngle.RR = 0;
+            if (steerMode === SteerMode.FRONT) {
+                if (isLeft && currentSteeringAngle < maxSteeringAngle) {
+                    currentSteeringAngle += 0.05;
+                } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
+                    currentSteeringAngle -= 0.05;
+                } else if (!isLeft && !isRight) {
+                    currentSteeringAngle *= 0.85;
+                }
+
+                const [innerAngle, outerAngle] = CalculateWheelAngles(currentSteeringAngle);
+
+                steerAngle.FL = outerAngle;
+                steerAngle.FR = innerAngle;
+                steerAngle.RL = 0;
+                steerAngle.RR = 0;
+            }
 
             if (isBrake) {
                 wheelSpeed.FL = 0;
