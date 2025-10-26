@@ -8,21 +8,13 @@ import {
     getCurrentModeName,
     updateSteering
 } from './modules/steering-system.js';
+import { debugColours, FILTERS, trackRad } from './modules/constants.js';
 
 // Global variables for car physics system
 let scene;
 let engine;
 let havokInstance = null;
 let tyreMaterial;
-const debugColours = [];
-debugColours[0] = new BABYLON.Color3(1, 0, 1);
-debugColours[1] = new BABYLON.Color3(1, 0, 0);
-debugColours[2] = new BABYLON.Color3(0, 1, 0);
-debugColours[3] = new BABYLON.Color3(1, 1, 0);
-debugColours[4] = new BABYLON.Color3(0, 1, 1);
-debugColours[5] = new BABYLON.Color3(0, 0, 1);
-const FILTERS = { CarParts: 1, Environment: 2 };
-const trackRad = 400;
 
 // Export global variables for access from Vue app
 export { scene, engine };
