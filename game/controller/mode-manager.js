@@ -2,6 +2,8 @@
  * ModeManager - Manages control modes and mode switching
  */
 
+import { defaultModes } from './default-modes.js';
+
 export class Mode {
   constructor(config = {}) {
     this.name = config.name || 'Unnamed Mode';
@@ -28,6 +30,20 @@ export class ModeManager {
   constructor() {
     this.modes = [];
     this.currentIndex = 0;
+  }
+
+  loadModes() {
+    const saved = localStorage.getItem('controllerModes');
+    if (saved) {
+      this.modes = JSON.parse(saved).map(m => new Mode(m));
+    } else {
+      this.modes = defaultModes.map(m => new Mode(m));
+    }
+  }
+
+  saveModes() {
+    const json = this.modes.map(m => m.toJSON());
+    localStorage.setItem('controllerModes', JSON.stringify(json));
   }
 
   getCurrentMode() {
