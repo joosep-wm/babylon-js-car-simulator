@@ -23,8 +23,23 @@ export class ControlMapper {
     const config = mode.speedControl;
 
     if (config.type === 'triggers') {
-      const rawForward = gamepadState.axes[7] || -1;
-      const rawBackward = gamepadState.axes[6] || -1;
+      // Handle triggers as buttons (some browsers/systems) or axes (others)
+      // RT = button 7 or axis 7, LT = button 6 or axis 6
+      let rawForward = -1;
+      let rawBackward = -1;
+
+      // Try buttons first (button.value gives 0-1)
+      if (gamepadState.buttons['RT']) {
+        rawForward = gamepadState.buttons['RT'].value * 2 - 1; // Convert 0-1 to -1 to 1
+      } else if (gamepadState.axes[7] !== undefined) {
+        rawForward = gamepadState.axes[7];
+      }
+
+      if (gamepadState.buttons['LT']) {
+        rawBackward = gamepadState.buttons['LT'].value * 2 - 1; // Convert 0-1 to -1 to 1
+      } else if (gamepadState.axes[6] !== undefined) {
+        rawBackward = gamepadState.axes[6];
+      }
 
       const forward = (rawForward + 1) / 2;
       const backward = (rawBackward + 1) / 2;
@@ -59,7 +74,7 @@ export class ControlMapper {
       value = applyDeadZone(value, config.deadZone);
       value = applySensitivity(value, config.sensitivity);
 
-      const angle = value * config.maxAngle;
+      const angle = -value * config.maxAngle;  // Inverted for natural steering
 
       return {
         FL: angle,
@@ -107,14 +122,14 @@ export class ControlMapper {
       value = applyDeadZone(value, config.deadZone);
       value = applySensitivity(value, config.sensitivity);
 
-      const frontAngle = value * (config.frontWheelsMaxAngle || config.maxAngle || 45);
-      const rearAngle = value * (config.rearWheelsMaxAngle || config.maxAngle || 45);
+      const frontAngle = -value * (config.frontWheelsMaxAngle || config.maxAngle || 45);  // Inverted
+      const rearAngle = -value * (config.rearWheelsMaxAngle || config.maxAngle || 45);    // Inverted
 
       return {
         FL: frontAngle,
         FR: frontAngle,
-        RL: -rearAngle,
-        RR: -rearAngle
+        RL: -rearAngle,  // Still opposite to front
+        RR: -rearAngle   // Still opposite to front
       };
     }
 
