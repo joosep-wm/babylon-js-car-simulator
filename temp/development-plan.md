@@ -123,7 +123,7 @@ mapSpeedControl(gamepadState, mode) {
 
 **Implementation:**
 ```javascript
-if (config.type === 'stickY') {
+if (config.type === 'stick') {
   const axisIndex = config.input === 'LS-Y' ? 1 : 3;
   let value = gamepadState.axes[axisIndex] || 0;
   value = applyDeadZone(value, config.deadZone);
@@ -663,16 +663,19 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ✅ HUD mode indicator component
 
 **Active Tasks:**
-- [ ] Task 3.3: Implement Speed Mapping - Stick Mode (Next up)
+- [ ] Task 3.7: Implement Steering Mapping - Independent Wheels (Next up)
 
 **Next Tasks:**
-- [ ] Task 3.4: Implement Steering Mapping - Front Wheels Only
-- [ ] Task 3.5: Implement Steering Mapping - All Wheels
-- [ ] Task 3.6: Implement Steering Mapping - Opposite Steering
+- [ ] Task 3.8: Implement Utility Button Mapping
+- [ ] Task 3.9: Integrate ControlMapper with babylon-game.js
 
 **Completed in Phase 3:**
 - ✅ Task 3.1: Create ControlMapper Class (commit c24b14e)
 - ✅ Task 3.2: Implement Speed Mapping - Trigger Mode (commit ee33b68)
+- ✅ Task 3.3: Implement Speed Mapping - Stick Mode (commit d8dcf1a)
+- ✅ Task 3.4: Implement Steering Mapping - Front Wheels Only (ready for commit)
+- ✅ Task 3.5: Implement Steering Mapping - All Wheels (ready for commit)
+- ✅ Task 3.6: Implement Steering Mapping - Opposite Steering (ready for commit)
 
 **Blocked:** None
 

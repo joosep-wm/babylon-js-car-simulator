@@ -48,6 +48,73 @@ export class ControlMapper {
   }
 
   mapSteeringControl(gamepadState, mode) {
+    const config = mode.steeringControl;
+
+    if (config.type === 'singleInput' && config.wheels === 'front') {
+      const axisIndex = config.input === 'RS-X' ? 2 : 0;  // RS-X → axis 2, LS-X → axis 0
+      let value = gamepadState.axes[axisIndex] || 0;
+      value = applyDeadZone(value, config.deadZone);
+      value = applySensitivity(value, config.sensitivity);
+
+      const angle = value * config.maxAngle;
+
+      return {
+        FL: angle,
+        FR: angle,
+        RL: 0,
+        RR: 0
+      };
+    }
+
+    if (config.type === 'singleInput' && config.wheels === 'all') {
+      const axisIndex = config.input === 'RS-X' ? 2 : 0;  // RS-X → axis 2, LS-X → axis 0
+      let value = gamepadState.axes[axisIndex] || 0;
+      value = applyDeadZone(value, config.deadZone);
+      value = applySensitivity(value, config.sensitivity);
+
+      const angle = value * config.maxAngle;
+
+      return {
+        FL: angle,
+        FR: angle,
+        RL: angle,
+        RR: angle
+      };
+    }
+
+    if (config.type === 'singleInput' && config.wheels === 'opposite') {
+      const axisIndex = config.input === 'RS-X' ? 2 : 0;  // RS-X → axis 2, LS-X → axis 0
+      let value = gamepadState.axes[axisIndex] || 0;
+      value = applyDeadZone(value, config.deadZone);
+      value = applySensitivity(value, config.sensitivity);
+
+      const angle = value * config.maxAngle;
+
+      return {
+        FL: angle,
+        FR: angle,
+        RL: -angle,
+        RR: -angle
+      };
+    }
+
+    if (config.type === 'opposing') {
+      const axisIndex = config.input === 'RS-X' ? 2 : 0;  // RS-X → axis 2, LS-X → axis 0
+      let value = gamepadState.axes[axisIndex] || 0;
+      value = applyDeadZone(value, config.deadZone);
+      value = applySensitivity(value, config.sensitivity);
+
+      const frontAngle = value * (config.frontWheelsMaxAngle || config.maxAngle || 45);
+      const rearAngle = value * (config.rearWheelsMaxAngle || config.maxAngle || 45);
+
+      return {
+        FL: frontAngle,
+        FR: frontAngle,
+        RL: -rearAngle,
+        RR: -rearAngle
+      };
+    }
+
     return { FL: 0, FR: 0, RL: 0, RR: 0 };
   }
 
