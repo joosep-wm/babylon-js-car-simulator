@@ -27,6 +27,7 @@ import {
 } from './modules/physics-config.js';
 import { setupCamera } from './modules/camera-controller.js';
 import { addReflectionsToCar, addGlowLayer } from './modules/rendering-effects.js';
+import { setupCollisionDetection } from './modules/collision-detection.js';
 
 // Global variables for car physics system
 let scene;
@@ -379,106 +380,6 @@ function createKnockableBoxes(scene, vueApp) {
     console.log(`Created ${boxes.length} knockable boxes - position settling in 2 seconds`);
 
     return boxes;
-}
-
-// Physics-based collision detection system
-function setupCollisionDetection(scene, car, vueApp) {
-    // Get car's physics body with multiple fallback options
-    let carPhysicsBody = null;
-
-    if (car) {
-        carPhysicsBody = car.physicsBody || car._physicsBody;
-
-        // If still not found, try to wait a bit more for physics to initialize
-        if (!carPhysicsBody) {
-            console.log("⏳ Physics body not ready, retrying in 100ms...");
-            setTimeout(() => {
-                setupCollisionDetection(scene, car, vueApp);
-            }, 100);
-            return;
-        }
-    }
-
-    if (!carPhysicsBody) {
-        console.error("❌ Car physics body not found after retries!");
-        return;
-    }
-
-    console.log("✅ Car physics body found, setting up collision detection");
-
-    // Track collision cooldowns to prevent spam
-    const collisionCooldowns = new Map();
-    let lastVelocity = { x: 0, y: 0, z: 0 };
-    let debugCounter = 0;
-    let startTime = Date.now(); // Track when system started
-
-    console.log("Collision detection system started, box detection active after 2 seconds...");
-
-    // Setup collision detection
-    scene.onBeforeRenderObservable.add(() => {
-        debugCounter++;
-
-        // Get current velocity
-        const velocity = carPhysicsBody.getLinearVelocity();
-        const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
-
-        // Check for sudden speed changes (collisions)
-        const lastSpeed = Math.sqrt(lastVelocity.x * lastVelocity.x + lastVelocity.y * lastVelocity.y + lastVelocity.z * lastVelocity.z);
-        const speedDifference = Math.abs(speed - lastSpeed);
-
-        // If speed drops significantly (collision), increment counter
-        if (speedDifference > 5 && speed < lastSpeed && lastSpeed > 2) {
-            const now = Date.now();
-            if (!collisionCooldowns.has('general') || now - collisionCooldowns.get('general') > 500) {
-                if (vueApp) {
-                    vueApp.collisions++;
-                    console.log(`Collision detected! Speed change: ${speedDifference.toFixed(2)}, Total collisions: ${vueApp.collisions}`);
-                }
-                collisionCooldowns.set('general', now);
-            }
-        }
-
-        // Debug every 300 frames (5 seconds at 60fps) - reduced spam
-        if (debugCounter % 300 === 0) {
-            const boxCount = scene.meshes.filter(m => m.name.includes("knockableBox_")).length;
-            console.log(`Debug: Car at (${car.position.x.toFixed(1)}, ${car.position.y.toFixed(1)}, ${car.position.z.toFixed(1)}), Found ${boxCount} boxes`);
-        }
-
-        // Only start checking box movement after 2 seconds (let physics settle)
-        if (Date.now() - startTime > 2000) {
-            // Check for box movement (knocked boxes) - allow multiple hits per box
-            scene.meshes.forEach(mesh => {
-                if (mesh.name.includes("knockableBox_")) {
-                    // Update initial position if this is first check after settling
-                    if (!mesh.positionSettled) {
-                        mesh.initialPosition = mesh.position.clone();
-                        mesh.positionSettled = true;
-                        return; // Skip this frame for this box
-                    }
-
-                    // Calculate how much the box has moved from its settled position
-                    const movementDistance = BABYLON.Vector3.Distance(mesh.position, mesh.initialPosition);
-                    const now = Date.now();
-
-                    // If box moved more than 3 units and enough time passed since last count
-                    if (movementDistance > 3) {
-                        // Use cooldown per box to prevent rapid spam (1000ms)
-                        if (!collisionCooldowns.has(mesh.name) || now - collisionCooldowns.get(mesh.name) > 1000) {
-                            if (vueApp) {
-                                vueApp.knockedBoxes++;
-                                console.log(`Box ${mesh.name} moved ${movementDistance.toFixed(2)} units from settled position! Total: ${vueApp.knockedBoxes}`);
-                                // Update initial position to current position to track further movement
-                                mesh.initialPosition = mesh.position.clone();
-                            }
-                            collisionCooldowns.set(mesh.name, now);
-                        }
-                    }
-                }
-            });
-        }
-
-        lastVelocity = { x: velocity.x, y: velocity.y, z: velocity.z };
-    });
 }
 
 // Create a ramp bridge for driving over
