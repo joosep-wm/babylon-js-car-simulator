@@ -1068,6 +1068,19 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
 
                 steerAngle.RL = -currentSteeringAngle;
                 steerAngle.RR = -currentSteeringAngle;
+            } else if (steerMode === SteerMode.OPPOSITE) {
+                if (isLeft && currentSteeringAngle < maxSteeringAngle) {
+                    currentSteeringAngle += 0.05;
+                } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
+                    currentSteeringAngle -= 0.05;
+                } else if (!isLeft && !isRight) {
+                    currentSteeringAngle *= 0.85;
+                }
+
+                steerAngle.FL = currentSteeringAngle;
+                steerAngle.FR = currentSteeringAngle;
+                steerAngle.RL = -currentSteeringAngle;
+                steerAngle.RR = -currentSteeringAngle;
             }
 
             if (isBrake) {
