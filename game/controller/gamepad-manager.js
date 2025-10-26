@@ -3,6 +3,9 @@
  */
 
 export class GamepadManager {
+  static BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
+  static AXIS_NAMES = ['LS-X', 'LS-Y', 'RS-X', 'RS-Y', '', '', 'LT', 'RT'];
+
   constructor() {
     this.gamepad = null;
     this.connected = false;
@@ -26,6 +29,10 @@ export class GamepadManager {
       this.previousButtonState = [];
       this.previousAxisState = [];
       this.buttonHeldStartTime = [];
+    });
+
+    Object.defineProperty(window, 'controllerState', {
+      get: () => this.getGamepadState()
     });
   }
 
@@ -75,7 +82,6 @@ export class GamepadManager {
   }
 
   _checkButtonChanges(gamepad) {
-    const buttonNames = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
     const currentTime = performance.now();
 
     for (let i = 0; i < gamepad.buttons.length; i++) {
@@ -91,7 +97,7 @@ export class GamepadManager {
         if (justPressed) {
           this.buttonHeldStartTime[i] = currentTime;
           console.log(`🎮 Button ${i} justPressed (value: ${button.value})`);
-          const buttonName = buttonNames[i] || `Button-${i}`;
+          const buttonName = GamepadManager.BUTTON_NAMES[i] || `Button-${i}`;
           this._emit('buttonpress', { buttonIndex: i, buttonName: buttonName });
         } else if (this.buttonHeldStartTime[i]) {
           heldDuration = currentTime - this.buttonHeldStartTime[i];
@@ -102,7 +108,7 @@ export class GamepadManager {
           : 0;
         console.log(`🎮 Button ${i} justReleased (held for: ${totalHeldDuration.toFixed(0)}ms)`);
         this.buttonHeldStartTime[i] = null;
-        const buttonName = buttonNames[i] || `Button-${i}`;
+        const buttonName = GamepadManager.BUTTON_NAMES[i] || `Button-${i}`;
         this._emit('buttonrelease', { buttonIndex: i, buttonName: buttonName });
       }
 
@@ -117,7 +123,6 @@ export class GamepadManager {
   }
 
   _checkAxisChanges(gamepad) {
-    const axisNames = ['LS-X', 'LS-Y', 'RS-X', 'RS-Y', '', '', 'LT', 'RT'];
     const deadZone = 0.05;
 
     for (let i = 0; i < gamepad.axes.length; i++) {
@@ -127,12 +132,69 @@ export class GamepadManager {
       const changed = Math.abs(currentValue - previousValue) > deadZone;
 
       if (changed) {
-        const axisName = axisNames[i] || `Axis-${i}`;
+        const axisName = GamepadManager.AXIS_NAMES[i] || `Axis-${i}`;
         console.log(`🎮 ${axisName}: ${currentValue.toFixed(3)}`);
         this._emit('axischange', { axisIndex: i, axisName: axisName, value: currentValue });
       }
 
       this.previousAxisState[i] = currentValue;
     }
+  }
+
+  getGamepadState() {
+    if (!this.connected || !this.gamepad) {
+      return {
+        connected: false,
+        gamepadId: null,
+        buttons: {},
+        axes: {}
+      };
+    }
+
+    const gamepads = navigator.getGamepads();
+    const gamepad = gamepads[this.gamepad.index];
+
+    if (!gamepad) {
+      return {
+        connected: false,
+        gamepadId: null,
+        buttons: {},
+        axes: {}
+      };
+    }
+
+    const buttons = {};
+    const currentTime = performance.now();
+
+    for (let i = 0; i < gamepad.buttons.length; i++) {
+      const button = gamepad.buttons[i];
+      const buttonName = GamepadManager.BUTTON_NAMES[i] || `Button-${i}`;
+      const buttonState = {
+        pressed: button.pressed,
+        value: button.value
+      };
+
+      if (button.pressed && this.buttonHeldStartTime[i]) {
+        buttonState.heldDuration = Math.round(currentTime - this.buttonHeldStartTime[i]);
+      }
+
+      buttons[buttonName] = buttonState;
+    }
+
+    const axes = {};
+
+    for (let i = 0; i < gamepad.axes.length; i++) {
+      const axisName = GamepadManager.AXIS_NAMES[i] || `Axis-${i}`;
+      if (axisName) {
+        axes[axisName] = parseFloat(gamepad.axes[i].toFixed(3));
+      }
+    }
+
+    return {
+      connected: true,
+      gamepadId: gamepad.id,
+      buttons: buttons,
+      axes: axes
+    };
   }
 }

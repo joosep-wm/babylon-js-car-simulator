@@ -134,7 +134,7 @@ export class GamepadManager {
 
 ---
 
-### Task 1.7: Create Console Test Display
+### Task 1.7: Create Console Test Display ✅
 **Deliverable:** Real-time controller state in console
 
 **Implementation:**
@@ -142,7 +142,7 @@ export class GamepadManager {
 - Make available via `window.controllerState`
 - Update every frame
 
-**Test:**
+**Test:** ✅
 1. Open browser console
 2. Type `window.controllerState`
 3. Verify shows current button/axis values
@@ -1011,10 +1011,10 @@ After each task, run relevant tests:
 ## CURRENT STATUS
 
 **Active Tasks:**
-- [ ] Task 1.7: Create Console Test Display
+- [ ] Task 1.8: Integrate GamepadManager into babylon-game.js
 
 **Next Tasks:**
-- [ ] Task 1.8: Integrate GamepadManager into babylon-game.js
+- [ ] Phase 2 tasks (Mode System)
 
 **Blocked:** None
 
@@ -1025,7 +1025,8 @@ After each task, run relevant tests:
 - Task 1.4 completed: Button state tracking (justPressed/justReleased/heldDuration)
 - Task 1.5 completed: Axis state tracking with dead zone (0.05 threshold)
 - Task 1.6 completed: Event system (addEventListener, buttonpress/buttonrelease/axischange events)
-- GamepadManager integrated into babylon-game.js render loop
+- Task 1.7 completed: Console test display (window.controllerState)
+- GamepadManager needs integration into babylon-game.js render loop (Task 1.8)
 - All modules have proper ES6 exports and are ready for implementation
 - test-imports.html available for validating module imports
 - Manual testing with physical controller recommended when available
