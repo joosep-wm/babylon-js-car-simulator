@@ -12,7 +12,7 @@ import {
 } from './physics-config.js';
 import { createTaillights, createHeadlights } from './lighting-system.js';
 
-export async function CreateCar(vueApp, scene, tyreMaterial, InitKeyboardControls) {
+export async function CreateCar(vueApp, scene, tyreMaterial, initKeyboardControls) {
     const customCarBody = await importCustomCar(scene);
 
     let carFrame;
@@ -55,7 +55,7 @@ export async function CreateCar(vueApp, scene, tyreMaterial, InitKeyboardControl
         console.log('Steering joints:', steeringJoints);
         console.log('Motor joints:', motorJoints);
 
-        InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints);
+        initKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene);
 
         return carFrame;
     }
@@ -105,7 +105,7 @@ export async function CreateCar(vueApp, scene, tyreMaterial, InitKeyboardControl
     console.log('Steering joints:', steeringJoints);
     console.log('Motor joints:', motorJoints);
 
-    InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints);
+    initKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene);
 
     createTaillights(carFrame, scene);
     createHeadlights(carFrame, scene);
