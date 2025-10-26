@@ -38,6 +38,7 @@ npm run serve-php
 * `temp/testing-strategy.md`: Comprehensive incremental testing strategy for validating changes
 * `temp/4-wheel-independent-steering-plan.md`: Full technical design for 4-wheel independent control
 * `docs/prd.md`: Product Requirements Document with full specifications
+* `docs/testing-tools.md`: Debug overlay (F11) and console test helpers (`window.testHelpers`) reference
 
 ### Entry Point Flow
 1. `index.html` - Loads Babylon.js, Vue.js, Havok Physics, and module scripts
