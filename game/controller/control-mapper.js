@@ -2,6 +2,8 @@
  * ControlMapper - Translates gamepad inputs to game actions based on current mode
  */
 
+import { applyDeadZone, applySensitivity } from './analog-processor.js';
+
 export class ControlMapper {
   constructor(modeManager) {
     this.modeManager = modeManager;
@@ -32,6 +34,14 @@ export class ControlMapper {
       }
 
       return speed;
+    }
+
+    if (config.type === 'stick') {
+      const axisIndex = config.input === 'LS-Y' ? 1 : 3;
+      let value = gamepadState.axes[axisIndex] || 0;
+      value = applyDeadZone(value, config.deadZone);
+      value = applySensitivity(value, config.sensitivity);
+      return -value * config.maxSpeed;
     }
 
     return 0;

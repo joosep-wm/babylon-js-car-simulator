@@ -672,7 +672,7 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 
 **Completed in Phase 3:**
 - ✅ Task 3.1: Create ControlMapper Class (commit c24b14e)
-- ✅ Task 3.2: Implement Speed Mapping - Trigger Mode (commit pending)
+- ✅ Task 3.2: Implement Speed Mapping - Trigger Mode (commit ee33b68)
 
 **Blocked:** None
 
