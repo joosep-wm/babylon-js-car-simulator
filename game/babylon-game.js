@@ -737,8 +737,8 @@ async function CreateCar(vueApp) {
 
         const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel);
         const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel);
-        CreateWheelJoint(rlAxle, rlWheel);
-        CreateWheelJoint(rrAxle, rrWheel);
+        const poweredWheelMotorC = CreatePoweredWheelJoint(rlAxle, rlWheel);
+        const poweredWheelMotorD = CreatePoweredWheelJoint(rrAxle, rrWheel);
 
         const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrame.physicsBody, true);
         const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrame.physicsBody, true);
@@ -747,10 +747,11 @@ async function CreateCar(vueApp) {
 
         // Phase 1.2: Store references for later use
         // Phase 1.3: Rear wheels now have steering capability
+        // Phase 1.4: Rear wheels now have drive motors
         const wheels = { FL: flWheel, FR: frWheel, RL: rlWheel, RR: rrWheel };
         const axles = { FL: flAxle, FR: frAxle, RL: rlAxle, RR: rrAxle };
         const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: steerWheelC, RR: steerWheelD };
-        const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: null, RR: null };
+        const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: poweredWheelMotorC, RR: poweredWheelMotorD };
 
         console.log('🔧 Wheels:', wheels);
         console.log('🔧 Axles:', axles);
@@ -792,8 +793,8 @@ async function CreateCar(vueApp) {
 
     const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel);
     const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel);
-    CreateWheelJoint(rlAxle, rlWheel);
-    CreateWheelJoint(rrAxle, rrWheel);
+    const poweredWheelMotorC = CreatePoweredWheelJoint(rlAxle, rlWheel);
+    const poweredWheelMotorD = CreatePoweredWheelJoint(rrAxle, rrWheel);
 
     const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrameBody, true);
     const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrameBody, true);
@@ -802,10 +803,11 @@ async function CreateCar(vueApp) {
 
     // Phase 1.2: Store references for later use
     // Phase 1.3: Rear wheels now have steering capability
+    // Phase 1.4: Rear wheels now have drive motors
     const wheels = { FL: flWheel, FR: frWheel, RL: rlWheel, RR: rrWheel };
     const axles = { FL: flAxle, FR: frAxle, RL: rlAxle, RR: rrAxle };
     const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: steerWheelC, RR: steerWheelD };
-    const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: null, RR: null };
+    const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: poweredWheelMotorC, RR: poweredWheelMotorD };
 
     console.log('🔧 Wheels:', wheels);
     console.log('🔧 Axles:', axles);
