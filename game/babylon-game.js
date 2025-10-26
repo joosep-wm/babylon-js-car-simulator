@@ -1012,6 +1012,7 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
             case "m": case "M":
                 if (e.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
                     steerMode = (steerMode + 1) % 4;
+                    currentSteeringAngle = 0; // Reset angle on mode switch to prevent contamination
                     console.log('🔄 Mode:', modeNames[steerMode]);
                 }
                 break;
