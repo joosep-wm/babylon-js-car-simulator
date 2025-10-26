@@ -11,6 +11,20 @@ import {
 import { debugColours, FILTERS, trackRad } from './modules/constants.js';
 import { toggleDebugOverlay, updateDebugOverlay } from './modules/debug-overlay.js';
 import { initializeTestHelpers } from './modules/test-helpers.js';
+import {
+    setupPhysics,
+    InitTyreMaterial,
+    AddWheelPhysics,
+    AddAxlePhysics,
+    AddDynamicPhysics,
+    AddDynamicPhysicsConvex,
+    FilterMeshCollisions,
+    AttachAxleToFrame,
+    CreateWheelJoint,
+    CreatePoweredWheelJoint,
+    AttachSteering,
+    CalculateWheelAngles
+} from './modules/physics-config.js';
 
 // Global variables for car physics system
 let scene;
@@ -127,11 +141,7 @@ async function createScene(vueApp) {
     scene.clearColor = new BABYLON.Color3(0.95, 0.95, 0.95); // Light white/gray background
 
     // Initialize Havok Physics
-    const havokPlugin = new BABYLON.HavokPlugin(true, await HavokPhysics());
-    scene.enablePhysics(new BABYLON.Vector3(0, -150, 0), havokPlugin);
-    scene.getPhysicsEngine().setTimeStep(1 / 500);
-    scene.getPhysicsEngine().setVelocityLimits(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
-    scene.getPhysicsEngine().setSubTimeStep(1.8);
+    await setupPhysics(scene);
 
     const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 10, -10), scene);
     camera.radius = 50;
@@ -164,7 +174,7 @@ async function createScene(vueApp) {
     const hemisphericLight = new BABYLON.HemisphericLight("Hemispheric Light", new BABYLON.Vector3(1, 1, 0), scene);
     hemisphericLight.intensity = 0.5; // Much darker ambient lighting
 
-    InitTyreMaterial();
+    tyreMaterial = InitTyreMaterial(scene);
 
     const carF = await CreateCar(vueApp);
 
@@ -725,7 +735,7 @@ async function CreateCar(vueApp) {
         carFrame = BABYLON.MeshBuilder.CreateBox("CarBody", { height: 1, width: 12, depth: 24, faceColors: debugColours });
         carFrame.position = new BABYLON.Vector3(0, 1, 0);
         carFrame.visibility = 0.5;
-        const carFrameBody = AddDynamicPhysics(carFrame, 2000, 0, 0, new BABYLON.Vector3(0, -2.5, 1));
+        const carFrameBody = AddDynamicPhysics(carFrame, 2000, 0, 0, new BABYLON.Vector3(0, -2.5, 1), scene);
         FilterMeshCollisions(carFrame);
 
         // Continue with wheel creation for fallback
@@ -738,15 +748,15 @@ async function CreateCar(vueApp) {
         const rrWheel = CreateWheel(new BABYLON.Vector3(-5, 0, -10));
         const rrAxle = CreateAxle(new BABYLON.Vector3(-5, 0, -10));
 
-        const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel);
-        const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel);
-        const poweredWheelMotorC = CreatePoweredWheelJoint(rlAxle, rlWheel);
-        const poweredWheelMotorD = CreatePoweredWheelJoint(rrAxle, rrWheel);
+        const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel, scene);
+        const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel, scene);
+        const poweredWheelMotorC = CreatePoweredWheelJoint(rlAxle, rlWheel, scene);
+        const poweredWheelMotorD = CreatePoweredWheelJoint(rrAxle, rrWheel, scene);
 
-        const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrame.physicsBody, true);
-        const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrame.physicsBody, true);
-        const steerWheelC = AttachAxleToFrame(rlAxle.physicsBody, carFrame.physicsBody, true);
-        const steerWheelD = AttachAxleToFrame(rrAxle.physicsBody, carFrame.physicsBody, true);
+        const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrame.physicsBody, true, scene);
+        const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrame.physicsBody, true, scene);
+        const steerWheelC = AttachAxleToFrame(rlAxle.physicsBody, carFrame.physicsBody, true, scene);
+        const steerWheelD = AttachAxleToFrame(rrAxle.physicsBody, carFrame.physicsBody, true, scene);
 
         // Phase 1.2: Store references for later use
         // Phase 1.3: Rear wheels now have steering capability
@@ -771,7 +781,7 @@ async function CreateCar(vueApp) {
     // carFrame.visibility = 0.5; 
 
     // Use ConvexHull physics for better performance with complex meshes
-    const carFrameBody = AddDynamicPhysicsConvex(carFrame, 5000, 0, 0.8, new BABYLON.Vector3(0, -2.5, 1));
+    const carFrameBody = AddDynamicPhysicsConvex(carFrame, 5000, 0, 0.8, new BABYLON.Vector3(0, -2.5, 1), scene);
     FilterMeshCollisions(carFrame);
 
     const flWheel = CreateWheel(new BABYLON.Vector3(5, 0, 8));
@@ -785,24 +795,24 @@ async function CreateCar(vueApp) {
 
     for (const mesh of [flAxle, frAxle, rlAxle, rrAxle]) {
         carFrame.addChild(mesh);
-        AddAxlePhysics(mesh, 190, 0, 0);
+        AddAxlePhysics(mesh, 190, 0, 0, scene);
         FilterMeshCollisions(mesh);
     }
 
     for (const mesh of [flWheel, frWheel, rlWheel, rrWheel]) {
-        AddWheelPhysics(mesh, 150, 0, 2.5);
+        AddWheelPhysics(mesh, 150, 0, 2.5, scene);
         FilterMeshCollisions(mesh);
     }
 
-    const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel);
-    const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel);
-    const poweredWheelMotorC = CreatePoweredWheelJoint(rlAxle, rlWheel);
-    const poweredWheelMotorD = CreatePoweredWheelJoint(rrAxle, rrWheel);
+    const poweredWheelMotorA = CreatePoweredWheelJoint(flAxle, flWheel, scene);
+    const poweredWheelMotorB = CreatePoweredWheelJoint(frAxle, frWheel, scene);
+    const poweredWheelMotorC = CreatePoweredWheelJoint(rlAxle, rlWheel, scene);
+    const poweredWheelMotorD = CreatePoweredWheelJoint(rrAxle, rrWheel, scene);
 
-    const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrameBody, true);
-    const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrameBody, true);
-    const steerWheelC = AttachAxleToFrame(rlAxle.physicsBody, carFrameBody, true);
-    const steerWheelD = AttachAxleToFrame(rrAxle.physicsBody, carFrameBody, true);
+    const steerWheelA = AttachAxleToFrame(flAxle.physicsBody, carFrameBody, true, scene);
+    const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrameBody, true, scene);
+    const steerWheelC = AttachAxleToFrame(rlAxle.physicsBody, carFrameBody, true, scene);
+    const steerWheelD = AttachAxleToFrame(rrAxle.physicsBody, carFrameBody, true, scene);
 
     // Phase 1.2: Store references for later use
     // Phase 1.3: Rear wheels now have steering capability
@@ -847,106 +857,6 @@ function CreateWheel(position) {
     wheelMesh.position = position;
     wheelMesh.material = tyreMaterial;
     return wheelMesh;
-}
-
-function AttachAxleToFrame(axle, frame, hasSteering) {
-    const aPos = axle.transformNode.position;
-
-    const joint = new BABYLON.Physics6DoFConstraint(
-        {
-            pivotA: new BABYLON.Vector3(0, 0, 0),
-            pivotB: new BABYLON.Vector3(aPos.x, aPos.y, aPos.z),
-        },
-        [
-            {
-                axis: BABYLON.PhysicsConstraintAxis.LINEAR_X,
-                minLimit: 0,
-                maxLimit: 0,
-            },
-            {
-                axis: BABYLON.PhysicsConstraintAxis.LINEAR_Y,
-                minLimit: -0.15,
-                maxLimit: 0.15,
-                stiffness: 100000,
-                damping: 1500
-            },
-            {
-                axis: BABYLON.PhysicsConstraintAxis.LINEAR_Z,
-                minLimit: 0,
-                maxLimit: 0,
-            },
-            {
-                axis: BABYLON.PhysicsConstraintAxis.ANGULAR_X,
-                minLimit: -0.25,
-                maxLimit: 0.25,
-            },
-            {
-                axis: BABYLON.PhysicsConstraintAxis.ANGULAR_Y,
-                minLimit: hasSteering ? null : 0,
-                maxLimit: hasSteering ? null : 0,
-            },
-            {
-                axis: BABYLON.PhysicsConstraintAxis.ANGULAR_Z,
-                minLimit: -0.05,
-                maxLimit: 0.05,
-            },
-        ],
-        scene
-    );
-
-    axle.addConstraint(frame, joint);
-
-    if (hasSteering)
-        AttachSteering(joint);
-
-    return joint;
-}
-
-function CreateWheelJoint(axle, wheel) {
-    const motorJoint = new BABYLON.Physics6DoFConstraint(
-        {},
-        [
-            {
-                axis: BABYLON.PhysicsConstraintAxis.LINEAR_DISTANCE,
-                minLimit: 0,
-                maxLimit: 0,
-            },
-            {
-                axis: BABYLON.PhysicsConstraintAxis.ANGULAR_Y,
-                minLimit: 0,
-                maxLimit: 0,
-            },
-            {
-                axis: BABYLON.PhysicsConstraintAxis.ANGULAR_Z,
-                minLimit: 0,
-                maxLimit: 0,
-            },
-        ],
-        scene
-    );
-
-    axle.addChild(wheel);
-    axle.physicsBody.addConstraint(wheel.physicsBody, motorJoint);
-
-    return motorJoint;
-}
-
-function CreatePoweredWheelJoint(axle, wheel) {
-    const motorJoint = CreateWheelJoint(axle, wheel);
-
-    motorJoint.setAxisMotorType(BABYLON.PhysicsConstraintAxis.ANGULAR_X, BABYLON.PhysicsConstraintMotorType.VELOCITY);
-    motorJoint.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
-    motorJoint.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 0);
-
-    return motorJoint;
-}
-
-function AttachSteering(joint) {
-    joint.setAxisMotorType(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, BABYLON.PhysicsConstraintMotorType.POSITION);
-    joint.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 60000000);
-    joint.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 0);
-
-    return joint;
 }
 
 function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints) {
@@ -1107,71 +1017,6 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
     });
 }
 
-function InitTyreMaterial() {
-    tyreMaterial = new BABYLON.StandardMaterial("Tyre", scene);
-    const tireTexture = new BABYLON.Texture("game/textures/tire.png", scene);
-    tireTexture.wAng = -Math.PI / 2;
-    tireTexture.vScale = 0.4;
-    tyreMaterial.diffuseTexture = tireTexture;
-}
-
-function AddWheelPhysics(mesh, mass, bounce, friction) {
-    const physicsShape = new BABYLON.PhysicsShapeCylinder(new BABYLON.Vector3(-0.8, 0, 0), new BABYLON.Vector3(0.8, 0, 0), 2, scene);
-    const physicsBody = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.DYNAMIC, false, scene);
-    physicsBody.setMassProperties({ mass: mass });
-    physicsShape.material = { restitution: bounce, friction: friction };
-    physicsBody.shape = physicsShape;
-
-    return physicsBody;
-}
-
-function AddAxlePhysics(mesh, mass, bounce, friction) {
-    const physicsShape = new BABYLON.PhysicsShapeCylinder(new BABYLON.Vector3(-0.8, 0, 0), new BABYLON.Vector3(0.8, 0, 0), 1.8, scene);
-    const physicsBody = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.DYNAMIC, false, scene);
-    physicsBody.setMassProperties({ mass: mass });
-    physicsShape.material = { restitution: bounce, friction: friction };
-    physicsBody.shape = physicsShape;
-
-    return physicsBody;
-}
-
-function AddDynamicPhysics(mesh, mass, bounce, friction, centerOfMass) {
-    const physicsShape = new BABYLON.PhysicsShapeMesh(mesh, scene);
-    const physicsBody = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.DYNAMIC, false, scene);
-    physicsBody.setMassProperties({ mass: mass, centerOfMass: centerOfMass });
-    physicsShape.material = { restitution: bounce, friction: friction };
-    physicsBody.shape = physicsShape;
-
-    return physicsBody;
-}
-
-function AddDynamicPhysicsConvex(mesh, mass, bounce, friction, centerOfMass) {
-    const physicsShape = new BABYLON.PhysicsShapeConvexHull(mesh, scene);
-    const physicsBody = new BABYLON.PhysicsBody(mesh, BABYLON.PhysicsMotionType.DYNAMIC, false, scene);
-    physicsBody.setMassProperties({ mass: mass, centerOfMass: centerOfMass });
-    physicsShape.material = { restitution: bounce, friction: friction };
-    physicsBody.shape = physicsShape;
-
-    return physicsBody;
-}
-
-function FilterMeshCollisions(mesh) {
-    mesh.physicsBody.shape.filterMembershipMask = FILTERS.CarParts;
-    mesh.physicsBody.shape.filterCollideMask = FILTERS.Environment;
-}
-
-function CalculateWheelAngles(averageAngle) {
-    const wheelbase = 16;
-    const trackWidth = 11;
-
-    const avgRadius = wheelbase / Math.tan(averageAngle);
-    const innerRadius = avgRadius - trackWidth / 2;
-    const outerRadius = avgRadius + trackWidth / 2;
-    const innerAngle = Math.atan(wheelbase / innerRadius);
-    const outerAngle = Math.atan(wheelbase / outerRadius);
-
-    return [innerAngle, outerAngle];
-}
 
 async function importCustomCar() {
     try {
