@@ -34,10 +34,11 @@ npm run serve-php
 ## Notable Files and Directories
 
 * `temp/`: Temporary files, plans, and development notes
+* `temp/xbox-controller-design.md`: Design plan for Xbox controller support
 * `temp/development-plan.md`: Current development plan focused on active and next tasks
-* `temp/development-plan-phase1-archive.md`: Phase 1 archive
-* `temp/development-plan-phase2-archive.md`: Phase 2 archive
-* `temp/development-plan-phase3-archive.md`: Phase 3 archive
+* `temp/M1-phase1-archive.md`: M1 phase 1 archive
+* `temp/M1-phase2-archive.md`: M1 phase 2 archive
+* `temp/M1-phase3-archive.md`: M1 phase 3 archive
 * `temp/testing-strategy.md`: Comprehensive incremental testing strategy for validating changes
 * `docs/prd.md`: Product Requirements Document with full specifications
 * `docs/testing-tools.md`: Debug overlay (F11) and console test helpers (`window.testHelpers`) reference

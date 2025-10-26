@@ -9,8 +9,9 @@ The development plan is in `temp/development-plan.md`. If it's missing stop and 
 
 ### Steps
 1. Pick the next logical step from the plan TODO list.
-2a. If the chosen step is about software development use `frontend-coder` agent to implement it.
-2b. In other cases, implement it yourself.
+2a. Make sure the game is stopped/killed before starting development.
+2b. If the chosen step is about software development use `frontend-coder` agent to implement it.
+2c. In other cases, implement it yourself.
 3. After implementation use `implementation-validator` to validate the implementation. Tell which step was implemented and provide path to the plan and ask to check git diff for latest changes.
 4. If NOT valid 
 4a. Revert all changes made.
@@ -27,8 +28,8 @@ The development plan is in `temp/development-plan.md`. If it's missing stop and 
 
 ### Cleanup and Archiving
 After the phase is complete and QA validated:
-1. Create archive document `temp/development-plan-phase{N}-archive.md` with all detailed planning steps from the completed phase
-2. Create completion report `temp/PHASE-{N}-COMPLETE.md` with implementation summary, metrics, and results
+1. Create archive document `temp/M{M}-phase{N}-archive.md` with all detailed planning steps from the completed phase and milestone
+2. Create completion report `temp/M{M}-PHASE-{N}-COMPLETE.md` with implementation summary, metrics, and results
 3. Update `temp/development-plan.md`:
    - Add Phase N Summary section at top with key achievements and status
    - Mark phase as COMPLETE in status line
