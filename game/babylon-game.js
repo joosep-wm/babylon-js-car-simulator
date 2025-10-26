@@ -25,6 +25,7 @@ import {
     AttachSteering,
     CalculateWheelAngles
 } from './modules/physics-config.js';
+import { setupCamera } from './modules/camera-controller.js';
 
 // Global variables for car physics system
 let scene;
@@ -143,34 +144,6 @@ async function createScene(vueApp) {
     // Initialize Havok Physics
     await setupPhysics(scene);
 
-    const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 10, -10), scene);
-    camera.radius = 50;
-    camera.heightOffset = 20;
-    camera.rotationOffset = 180;
-    camera.cameraAcceleration = 0.035;
-    camera.maxCameraSpeed = 10;
-
-    // Add mouse control for camera rotation (from playground)
-    let isMouseDown = false;
-    scene.onPointerObservable.add((pointerInfo) => {
-        switch (pointerInfo.type) {
-            case BABYLON.PointerEventTypes.POINTERDOWN:
-                isMouseDown = true;
-                break;
-
-            case BABYLON.PointerEventTypes.POINTERUP:
-                isMouseDown = false;
-                break;
-
-            case BABYLON.PointerEventTypes.POINTERMOVE:
-                if (isMouseDown) {
-                    // Rotate camera around the car using mouse movement
-                    camera.rotationOffset += pointerInfo.event.movementX * 0.5;
-                }
-                break;
-        }
-    });
-
     const hemisphericLight = new BABYLON.HemisphericLight("Hemispheric Light", new BABYLON.Vector3(1, 1, 0), scene);
     hemisphericLight.intensity = 0.5; // Much darker ambient lighting
 
@@ -178,13 +151,7 @@ async function createScene(vueApp) {
 
     const carF = await CreateCar(vueApp);
 
-    // Ensure camera setup waits for car to be fully initialized
-    if (carF && carF.position) {
-        camera.lockedTarget = carF;
-        console.log("✅ Camera locked to car:", carF.name);
-    } else {
-        console.error("❌ Car not properly created for camera targeting");
-    }
+    const camera = setupCamera(scene, carF);
 
     // Create square race track
     const track = createSquareRaceTrack(scene, 800, 800);
