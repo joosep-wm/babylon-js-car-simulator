@@ -35,4 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Expose test helpers for Task 3.2 validation
     window.controlMapperTests = createTestHelpers();
     console.log('🧪 Test helpers available: window.controlMapperTests.testTriggerMode()');
+
+    // Expose getGamepadManager for testing
+    window.getGamepadManager = getGamepadManager;
 });

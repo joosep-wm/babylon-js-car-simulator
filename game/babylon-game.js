@@ -203,12 +203,12 @@ async function createScene(vueApp) {
     // Initialize Havok Physics engine
     await setupPhysics(scene);
 
-    // Initialize controller system
-    gamepadManager = new GamepadManager();
-    gamepadManager.init();
-
+    // Initialize controller system - use single ModeManager instance
     modeManager = new ModeManager();
     modeManager.loadModes();
+
+    gamepadManager = new GamepadManager(modeManager);
+    gamepadManager.init();
 
     controlMapper = new ControlMapper(modeManager);
 

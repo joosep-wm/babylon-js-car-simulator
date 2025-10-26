@@ -8,19 +8,18 @@ export class GamepadManager {
   static BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
   static AXIS_NAMES = ['LS-X', 'LS-Y', 'RS-X', 'RS-Y', '', '', 'LT', 'RT'];
 
-  constructor() {
+  constructor(modeManager = null) {
     this.gamepad = null;
     this.connected = false;
     this.previousButtonState = [];
     this.previousAxisState = [];
     this.buttonHeldStartTime = [];
     this.eventListeners = {};
-    this.modeManager = new ModeManager();
+    this.modeManager = modeManager || new ModeManager();
   }
 
   init() {
-    this.modeManager.loadModes();
-    console.log('🎮 Loaded control modes. Current:', this.modeManager.getCurrentMode().name);
+    console.log('🎮 GamepadManager initialized. Current mode:', this.modeManager.getCurrentMode().name);
 
     this.addEventListener('buttonpress', (data) => {
       this._handleModeSwitch(data.buttonIndex);
