@@ -1,0 +1,78 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Trigger on push to main branch
+  push:
+    branches: [ main ]
+
+  # Allow manual trigger from Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create deployment package
+        run: |
+          echo "📦 Preparing files for deployment..."
+          mkdir -p _site
+
+          # Copy all necessary files
+          cp index.html _site/
+          cp index.js _site/
+          cp vue-app.js _site/
+          cp -r css _site/
+          cp -r components _site/
+          cp -r game _site/
+
+          # Create .nojekyll to prevent GitHub Pages from ignoring certain files
+          touch _site/.nojekyll
+
+          echo "✅ Deployment package ready"
+
+      - name: Verify assets
+        run: |
+          echo "🔍 Checking for required assets..."
+
+          if [ ! -f "_site/game/textures/tire.png" ]; then
+            echo "❌ Error: tire.png texture missing"
+            exit 1
+          fi
+
+          if [ ! -f "_site/game/models/car.glb" ]; then
+            echo "⚠️ Warning: car.glb not found (fallback box will be used)"
+          fi
+
+          echo "✅ Asset check complete"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

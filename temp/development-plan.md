@@ -686,35 +686,40 @@ After each task, run relevant tests:
 
 ---
 
-### 🔴 Bug 2: Mode Switching Broken (REGRESSION)
+### ✅ Bug 2: Mode Switching Broken (REGRESSION) - FIXED
 **Severity:** HIGH - Core feature broken
 **Description:** LB/RB buttons no longer change modes
 **Expected:** LB/RB buttons cycle through driving modes
-**Actual:** Mode switching does not work
-**Impact:** Cannot test different driving modes with controller
-**Status:** ❌ Not Fixed
+**Root Cause:** Duplicate ModeManager instances causing state desynchronization
+**Fix:** Modified GamepadManager to accept ModeManager parameter; babylon-game.js now passes single shared instance
+**Files Modified:** game/controller/gamepad-manager.js, game/babylon-game.js, index.js
+**Commits:** 35912b1
+**Status:** ✅ Fixed and Validated (Runtime)
 
 ---
 
-### 🔴 Bug 3: Left Joystick Steers But No Speed Control
+### ✅ Bug 3: Speed Control Not Working (RT/LT triggers) - FIXED
 **Severity:** HIGH - Core feature incomplete
 **Description:** Left joystick (LS-X) steers front wheels correctly, but no button/trigger adds speed
 **Expected:** RT trigger should provide forward speed, LT trigger backward speed
-**Actual:** Steering works, but car doesn't move forward/backward
-**Impact:** Car cannot be driven with controller
-**Related:** Task 3.2 (Speed Mapping - Trigger Mode) may need debugging
-**Status:** ❌ Not Fixed
+**Root Cause:** Xbox controller triggers rest at -1.0 (not 0.0), required normalization to [0, 1] range
+**Fix:** Added trigger normalization formula: `(rawValue + 1) / 2` in mapSpeedControl method
+**Files Modified:** game/controller/control-mapper.js
+**Commits:** a1d57e1
+**Status:** ✅ Fixed and Validated (Runtime)
 
 ---
 
-### 🔴 Bug 4: X Button "No Camera Defined" Error
+### ✅ Bug 4: X Button "No Camera Defined" Error - FIXED
 **Severity:** MEDIUM - Button causes crash
 **Error:** `Uncaught Error: No camera defined`
 **Trigger:** Pressing X button on controller
 **Expected:** X button should reset car position (Task 3.12)
-**Actual:** JavaScript error thrown
-**Impact:** One utility button is unusable
-**Status:** ❌ Not Fixed
+**Root Cause:** Camera was created but never set as scene.activeCamera
+**Fix:** Added `scene.activeCamera = camera;` in setupCamera function
+**Files Modified:** game/modules/camera-controller.js
+**Commits:** b8605e4
+**Status:** ✅ Fixed and Validated (Runtime)
 
 ---
 
@@ -738,39 +743,38 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ✅ Analog processing utilities
 - ✅ HUD mode indicator component
 
-**⚠️ CRITICAL: BUG FIXING MODE ACTIVE**
-**Priority:** Fix Bugs 1-4 before continuing Phase 3 tasks
+**✅ CRITICAL BUGS FIXED!**
+**All high-priority bugs resolved and validated:**
+- ✅ Bug 2: Mode switching broken (FIXED - commit 35912b1)
+- ✅ Bug 3: Speed control not working (FIXED - commit a1d57e1)
+- ✅ Bug 4: X button camera error (FIXED - commit b8605e4)
+- ⚠️ Bug 1: WebGL feedback loop (deferred - low impact on functionality)
 
-**Active Bug Fixes:**
-- [ ] Bug 2: Mode switching broken (REGRESSION) - **Fix First**
-- [ ] Bug 3: Speed control not working - **Fix Second**
-- [ ] Bug 4: X button camera error - **Fix Third**
-- [ ] Bug 1: WebGL feedback loop - **Fix When Time Permits**
-
-**Paused Tasks (Resume After Bug Fixes):**
+**Next Tasks (Resume Phase 3):**
 - [ ] Task 3.10: Implement Jump Action
 - [ ] Task 3.11: Implement Brake Action
 - [ ] Task 3.12: Implement Reset Position Action
+- [ ] Task 3.13: Implement Reset Wheels Action
+- [ ] Task 3.14: Test All 4 Default Modes End-to-End
 
 **Completed in Phase 3:**
 - ✅ Task 3.1: Create ControlMapper Class (commit c24b14e)
-- ✅ Task 3.2: Implement Speed Mapping - Trigger Mode (commit ee33b68) - **May Need Debug**
+- ✅ Task 3.2: Implement Speed Mapping - Trigger Mode (commit ee33b68, fixed in a1d57e1)
 - ✅ Task 3.3: Implement Speed Mapping - Stick Mode (commit d8dcf1a)
 - ✅ Task 3.6: Implement Steering Mapping - Opposite Steering (commit 752c7e2)
 - ✅ Task 3.7: Implement Steering Mapping - Independent Wheels (commit 1c3133c)
 - ✅ Task 3.8: Implement Utility Button Mapping (commit 1d44ae6)
 - ✅ Task 3.9: Integrate ControlMapper with babylon-game.js (commit ba6bb08)
 
-**Blocked:** Phase 3 progress blocked by critical bugs
-
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)
 - ✅ Phase 2: Mode System (mode data, switching, persistence, HUD)
 
 **Testing:**
-- ⚠️ Mode switching **NOT functional** (regression bug)
-- ⚠️ Steering works but speed control broken
-- ⚠️ X button causes JavaScript error
-- 🔴 WebGL console spam (hundreds of errors/second)
+- ✅ Mode switching functional (LB/RB buttons cycle modes)
+- ✅ Speed control functional (RT/LT triggers)
+- ✅ X button reset functional (no camera error)
+- ✅ Steering functional (LS-X controls front wheels)
+- ⚠️ WebGL console spam (deferred - no functional impact)
 - Test via: http://localhost:8080 + browser console (F12)
 - Type `window.controllerState` to see real-time controller data

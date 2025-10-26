@@ -21,6 +21,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     let steerAngle = { FL: 0, FR: 0, RL: 0, RR: 0 };
     let wheelSpeed = { FL: 0, FR: 0, RL: 0, RR: 0 };
     let manualControl = { active: false };
+    let controllerJumpPrev = false;
 
     initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl);
 
@@ -92,21 +93,17 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         const isJump = jumpPressed || (vueApp && vueApp.touchControls.jump);
 
         const controllerJump = controllerActions.find(a => a.action === 'jump');
-        if (isJump || controllerJump) {
-            if (isJump) {
-                console.log("Jump (keyboard or touch) activated!");
-            }
-            if (controllerJump) {
-                console.log("Jump (controller) activated!");
-            }
+        const controllerJumpJustPressed = !!controllerJump && !controllerJumpPrev;
 
-            if (carFrame.physicsBody) {
-                carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce / 2, 0), carFrame.getAbsolutePosition());
-
-                const currentVel = carFrame.physicsBody.getLinearVelocity();
-                carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, Math.min(currentVel.y + jumpForce / 200, jumpForce / 50), currentVel.z));
-            }
+        if (controllerJumpJustPressed && carFrame.physicsBody) {
+            console.log("Jump (controller) activated!");
+            carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce / 2, 0), carFrame.getAbsolutePosition());
+            const currentVel = carFrame.physicsBody.getLinearVelocity();
+            carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x,
+                Math.min(currentVel.y + jumpForce / 200, jumpForce / 50), currentVel.z));
         }
+
+        controllerJumpPrev = !!controllerJump;
 
         const controllerResetPosition = controllerActions.find(a => a.action === 'resetPosition');
         if (controllerResetPosition && vueApp) {
