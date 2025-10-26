@@ -49,6 +49,11 @@ import { setupCollisionDetection } from './modules/collision-detection.js';
 import { CreateCar } from './modules/car-factory.js';
 
 // ============================================================================
+// IMPORTS - Controller System
+// ============================================================================
+import { GamepadManager } from './controller/gamepad-manager.js';
+
+// ============================================================================
 // IMPORTS - Debug and Testing
 // ============================================================================
 import { toggleDebugOverlay, updateDebugOverlay } from './modules/debug-overlay.js';
@@ -62,6 +67,7 @@ let scene;
 let engine;
 let havokInstance = null;
 let tyreMaterial;
+let gamepadManager = null;
 
 // Export for external access from Vue app and other modules
 export { scene, engine };
@@ -189,6 +195,10 @@ async function createScene(vueApp) {
     // Initialize Havok Physics engine
     await setupPhysics(scene);
 
+    // Initialize controller system
+    gamepadManager = new GamepadManager();
+    gamepadManager.init();
+
     // Setup ambient lighting
     setupHemisphericLight(scene);
 
@@ -241,6 +251,11 @@ function setupRenderLoop(carF, vueApp) {
     let fCounter = 0;
 
     scene.onBeforeRenderObservable.add(() => {
+        // Poll controller input every frame
+        if (gamepadManager) {
+            gamepadManager.pollGamepads();
+        }
+
         // Calculate current speed
         carF.physicsBody.getLinearVelocityToRef(velocity);
         speed = velocity.length();
