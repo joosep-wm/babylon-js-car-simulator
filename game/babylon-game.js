@@ -758,7 +758,7 @@ async function CreateCar(vueApp) {
         console.log('🔧 Steering joints:', steeringJoints);
         console.log('🔧 Motor joints:', motorJoints);
 
-        InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
+        InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints);
 
         return carFrame;
     }
@@ -814,7 +814,7 @@ async function CreateCar(vueApp) {
     console.log('🔧 Steering joints:', steeringJoints);
     console.log('🔧 Motor joints:', motorJoints);
 
-    InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
+    InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints);
 
     // Add red taillights to the car
     createTaillights(carFrame, scene);
@@ -946,7 +946,7 @@ function AttachSteering(joint) {
     return joint;
 }
 
-function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp) {
+function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints) {
     let forwardPressed = false;
     let backPressed = false;
     let leftPressed = false;
@@ -1037,8 +1037,6 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
         }
 
         const [innerAngle, outerAngle] = CalculateWheelAngles(currentSteeringAngle);
-        steerWheelA.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, outerAngle);
-        steerWheelB.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, innerAngle);
 
         // Only update control variables if manual control is not active
         if (!manualControl.active) {
@@ -1080,16 +1078,30 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
             }
         }
 
+        // Apply steering angles to ALL 4 wheels
+        steeringJoints.FL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.FL);
+        steeringJoints.FR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.FR);
+        steeringJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.RL);
+        steeringJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.RR);
+
+        // Set brake force for all wheels
         if (isBrake) {
-            motorWheelA.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
-            motorWheelB.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
+            motorJoints.FL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
+            motorJoints.FR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
+            motorJoints.RL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
+            motorJoints.RR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
         } else {
-            motorWheelA.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
-            motorWheelB.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
+            motorJoints.FL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
+            motorJoints.FR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
+            motorJoints.RL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
+            motorJoints.RR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
         }
 
-        motorWheelA.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, currentSpeed);
-        motorWheelB.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, currentSpeed);
+        // Apply motor speeds to ALL 4 wheels
+        motorJoints.FL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.FL);
+        motorJoints.FR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.FR);
+        motorJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RL);
+        motorJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RR);
 
         updateDebugOverlay(steerAngle, wheelSpeed);
     });
