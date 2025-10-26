@@ -9,7 +9,12 @@ export class Mode {
     this.speedControl = config.speedControl || {};
     this.steeringControl = config.steeringControl || {};
     this.utilityButtons = config.utilityButtons || {};
-    this.reservedButtons = config.reservedButtons || {};
+    this.reservedButtons = {
+      4: 'previousMode',
+      5: 'nextMode',
+      8: 'toggleHUD',
+      9: 'openMenu'
+    };
     this.createdAt = config.createdAt || Date.now();
     this.modifiedAt = config.modifiedAt || Date.now();
   }
