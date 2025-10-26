@@ -1161,7 +1161,7 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
         motorJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RL);
         motorJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RR);
 
-        updateDebugOverlay(steerAngle, wheelSpeed);
+        updateDebugOverlay(steerAngle, wheelSpeed, modeNames[steerMode]);
     });
 }
 
@@ -1333,7 +1333,7 @@ function createDebugOverlay() {
                 RR: <span id="speed-rr">0.0</span>
             </div>
             <div style="margin-top: 10px;"><strong>Steering Mode:</strong></div>
-            <div id="steering-mode" style="margin-left: 10px;">N/A (placeholder)</div>
+            <div id="steering-mode" style="margin-left: 10px; color: #ffff00;">--</div>
         </div>
     `;
 
@@ -1355,7 +1355,7 @@ function toggleDebugOverlay() {
     }
 }
 
-function updateDebugOverlay(steerAngle, wheelSpeed) {
+function updateDebugOverlay(steerAngle, wheelSpeed, currentMode) {
     if (!debugOverlayElement || debugOverlayElement.style.display === 'none') return;
 
     const radToDeg = (rad) => (rad * 180 / Math.PI).toFixed(1);
@@ -1369,6 +1369,8 @@ function updateDebugOverlay(steerAngle, wheelSpeed) {
     document.getElementById('speed-fr').textContent = wheelSpeed.FR.toFixed(1);
     document.getElementById('speed-rl').textContent = wheelSpeed.RL.toFixed(1);
     document.getElementById('speed-rr').textContent = wheelSpeed.RR.toFixed(1);
+
+    document.getElementById('steering-mode').textContent = currentMode;
 }
 
 function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl) {
