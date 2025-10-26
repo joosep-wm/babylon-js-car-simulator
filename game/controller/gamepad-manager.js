@@ -8,6 +8,7 @@ export class GamepadManager {
     this.connected = false;
     this.previousButtonState = [];
     this.previousAxisState = [];
+    this.buttonHeldStartTime = [];
   }
 
   init() {
@@ -23,6 +24,7 @@ export class GamepadManager {
       this.connected = false;
       this.previousButtonState = [];
       this.previousAxisState = [];
+      this.buttonHeldStartTime = [];
     });
   }
 
@@ -46,22 +48,38 @@ export class GamepadManager {
   }
 
   _checkButtonChanges(gamepad) {
+    const currentTime = performance.now();
+
     for (let i = 0; i < gamepad.buttons.length; i++) {
       const button = gamepad.buttons[i];
       const wasPressed = this.previousButtonState[i]?.pressed || false;
       const isPressed = button.pressed;
 
-      if (isPressed !== wasPressed) {
-        if (isPressed) {
-          console.log(`🎮 Button ${i} pressed (value: ${button.value})`);
-        } else {
-          console.log(`🎮 Button ${i} released`);
+      const justPressed = isPressed && !wasPressed;
+      const justReleased = !isPressed && wasPressed;
+
+      let heldDuration = 0;
+      if (isPressed) {
+        if (justPressed) {
+          this.buttonHeldStartTime[i] = currentTime;
+          console.log(`🎮 Button ${i} justPressed (value: ${button.value})`);
+        } else if (this.buttonHeldStartTime[i]) {
+          heldDuration = currentTime - this.buttonHeldStartTime[i];
         }
+      } else if (justReleased) {
+        const totalHeldDuration = this.buttonHeldStartTime[i]
+          ? currentTime - this.buttonHeldStartTime[i]
+          : 0;
+        console.log(`🎮 Button ${i} justReleased (held for: ${totalHeldDuration.toFixed(0)}ms)`);
+        this.buttonHeldStartTime[i] = null;
       }
 
       this.previousButtonState[i] = {
         pressed: button.pressed,
-        value: button.value
+        value: button.value,
+        justPressed: justPressed,
+        justReleased: justReleased,
+        heldDuration: heldDuration
       };
     }
   }
