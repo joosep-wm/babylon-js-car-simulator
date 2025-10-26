@@ -15,10 +15,15 @@
     <link rel="stylesheet" href="css/info-panel.css">
     <link rel="stylesheet" href="css/mobile-controls.css">
     <link rel="stylesheet" href="css/desktop-controls.css">
+    <link rel="stylesheet" href="css/mode-indicator.css">
 </head>
 
 <body>
     <div id="app">
+        <!-- Mode Indicator Component -->
+        <mode-indicator :mode-name="currentModeName">
+        </mode-indicator>
+
         <!-- Info Panel Component -->
         <info-panel :speed="speed" :position="position" :rotation="rotation" :direction="direction"
             :collisions="collisions" :knocked-boxes="knockedBoxes" :max-speed="maxSpeed" :race-time="raceTime"

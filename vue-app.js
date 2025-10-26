@@ -4,6 +4,7 @@ import { resetGame, resetBoxes } from './game/babylon-game.js';
 import { InfoPanel } from './components/info-panel.js';
 import { DesktopControls } from './components/desktop-controls.js';
 import { MobileControls } from './components/mobile-controls.js';
+import { ModeIndicator } from './components/mode-indicator.js';
 
 /**
  * Create and mount the Vue application
@@ -16,7 +17,8 @@ export function createVueApp() {
         components: {
             'info-panel': InfoPanel,
             'desktop-controls': DesktopControls,
-            'mobile-controls': MobileControls
+            'mobile-controls': MobileControls,
+            'mode-indicator': ModeIndicator
         },
         data() {
             return {
@@ -31,6 +33,7 @@ export function createVueApp() {
                     right: false,
                     brake: false
                 },
+                currentModeName: 'Traditional Driving',
                 speed: 0,
                 position: { x: 0, y: 0, z: 0 },
                 rotation: 0,

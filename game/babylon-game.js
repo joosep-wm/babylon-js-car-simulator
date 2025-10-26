@@ -72,6 +72,10 @@ let gamepadManager = null;
 // Export for external access from Vue app and other modules
 export { scene, engine };
 
+export function getGamepadManager() {
+    return gamepadManager;
+}
+
 // ============================================================================
 // MAIN INITIALIZATION
 // ============================================================================
