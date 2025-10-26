@@ -106,10 +106,3 @@ export function createHeadlights(carFrame, scene) {
 
     console.log("Warm white headlights with shadows created");
 }
-
-export function addGlowLayer(scene) {
-    const glowLayer = new BABYLON.GlowLayer("glow", scene);
-    glowLayer.intensity = 4;
-    glowLayer.blurKernelSize = 64;
-    return glowLayer;
-}
