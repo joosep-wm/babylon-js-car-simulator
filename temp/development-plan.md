@@ -2,7 +2,7 @@
 
 **Source Document:** temp/xbox-controller-design.md v3.0
 **Strategy:** Minimal testable increments, test after EVERY change
-**Current Phase:** Phase 2 - Mode System
+**Current Phase:** Phase 3 - Control Mapping
 
 ---
 
@@ -25,243 +25,25 @@
 
 ---
 
-## PHASE 2: MODE SYSTEM (Week 1-2)
+### PHASE 2: MODE SYSTEM ✅ COMPLETE
+**Status:** Complete (2025-10-26)
 **Goal:** Mode data structure, switching, and persistence
 
-> **Note:** Phase 1 detailed planning has been archived. See `temp/M2-phase1-archive.md` for full task details.
+**Key Achievements:**
+- ✅ Mode class with JSON serialization (speed/steering/utility configs)
+- ✅ 4 default driving modes (Traditional/Crab/Opposing/Independent)
+- ✅ ModeManager with localStorage persistence
+- ✅ Mode switching via LB/RB buttons
+- ✅ Analog processing utilities (dead zone, sensitivity, range mapping)
+- ✅ HUD mode indicator component (top-center display)
+- ✅ All 8 tasks completed and validated
+- ✅ 11 git commits: 3edb08d → f1cc57f
 
----
+**Documents:**
+- Archive: `temp/M2-phase2-archive.md`
+- Completion Report: `temp/M2-PHASE-2-COMPLETE.md`
 
-### Task 2.1: Create Mode Data Class
-**Deliverable:** Mode class with all properties
-
-**Implementation:**
-```javascript
-// game/controller/mode-manager.js
-export class Mode {
-  constructor(config = {}) {
-    this.name = config.name || 'Unnamed Mode';
-    this.description = config.description || '';
-    this.speedControl = config.speedControl || {};
-    this.steeringControl = config.steeringControl || {};
-    this.utilityButtons = config.utilityButtons || {};
-    this.reservedButtons = {
-      4: 'previousMode',  // LB
-      5: 'nextMode',      // RB
-      8: 'toggleHUD',     // View
-      9: 'openMenu'       // Menu
-    };
-    this.createdAt = config.createdAt || Date.now();
-    this.modifiedAt = config.modifiedAt || Date.now();
-  }
-
-  toJSON() {
-    return { ...this };
-  }
-}
-```
-
-**Test:**
-1. Create new Mode instance
-2. Verify all properties exist
-3. Call `toJSON()`
-4. Verify serialization works
-
----
-
-### Task 2.2: Create Default Mode 1 - Traditional Driving
-**Deliverable:** First working mode configuration
-
-**Implementation:**
-```javascript
-// game/controller/default-modes.js
-export const defaultModes = [
-  {
-    name: 'Traditional Driving',
-    description: 'Standard car controls with front-wheel steering',
-    speedControl: {
-      type: 'triggers',
-      forwardInput: 'RT',  // axis 7
-      backwardInput: 'LT', // axis 6
-      deadZone: 0.15,
-      maxSpeed: 1.0,
-      sensitivity: 1.0
-    },
-    steeringControl: {
-      type: 'singleInput',
-      input: 'LS-X',  // axis 0
-      wheels: 'front',
-      maxAngle: 45,
-      sensitivity: 1.0,
-      deadZone: 0.15
-    },
-    utilityButtons: {
-      0: { action: 'jump', type: 'press' },
-      1: { action: 'brake', type: 'hold', holdDuration: 100 },
-      2: { action: 'resetPosition', type: 'press' },
-      3: { action: 'resetWheels', type: 'press' }
-    }
-  }
-];
-```
-
-**Test:**
-1. Import defaultModes
-2. Create Mode from defaultModes[0]
-3. Verify all properties match expected values
-4. Check that speedControl has correct trigger mappings
-
----
-
-### Task 2.3: Create Remaining Default Modes
-**Deliverable:** All 4 default modes defined
-
-**Implementation:**
-- Mode 2: Crab Walk (Right Stick Y = speed, Right Stick X = all wheels)
-- Mode 3: Opposing Turn (RT/LT = speed, LS-X = opposite steering)
-- Mode 4: 4-Wheel Independent (RT/LT = speed, both sticks = individual steering)
-
-**Test:**
-1. Verify all 4 modes can be instantiated
-2. Check each mode has unique speedControl
-3. Check each mode has unique steeringControl
-4. Verify JSON serialization for all modes
-
----
-
-### Task 2.4: Implement ModeManager - Load/Save
-**Deliverable:** ModeManager with mode storage
-
-**Implementation:**
-```javascript
-export class ModeManager {
-  constructor() {
-    this.modes = [];
-    this.currentIndex = 0;
-  }
-
-  loadModes() {
-    // Try localStorage first
-    const saved = localStorage.getItem('controllerModes');
-    if (saved) {
-      this.modes = JSON.parse(saved).map(m => new Mode(m));
-    } else {
-      // Load defaults
-      this.modes = defaultModes.map(m => new Mode(m));
-    }
-  }
-
-  saveModes() {
-    const json = this.modes.map(m => m.toJSON());
-    localStorage.setItem('controllerModes', JSON.stringify(json));
-  }
-
-  getCurrentMode() {
-    return this.modes[this.currentIndex];
-  }
-}
-```
-
-**Test:**
-1. Create ModeManager
-2. Call loadModes()
-3. Verify 4 default modes loaded
-4. Modify a mode
-5. Call saveModes()
-6. Reload page
-7. Verify modified mode persists
-
----
-
-### Task 2.5: Implement ModeManager - Mode Switching
-**Deliverable:** nextMode() and previousMode() methods
-
-**Implementation:**
-```javascript
-nextMode() {
-  this.currentIndex = (this.currentIndex + 1) % this.modes.length;
-  console.log('🎮 Switched to:', this.getCurrentMode().name);
-  return this.getCurrentMode();
-}
-
-previousMode() {
-  this.currentIndex = (this.currentIndex - 1 + this.modes.length) % this.modes.length;
-  console.log('🎮 Switched to:', this.getCurrentMode().name);
-  return this.getCurrentMode();
-}
-```
-
-**Test:**
-1. Load 4 modes
-2. Call nextMode() 5 times
-3. Verify cycles through all modes and wraps
-4. Call previousMode() 5 times
-5. Verify cycles backward correctly
-
----
-
-### Task 2.6: Connect Mode Switching to LB/RB Buttons
-**Deliverable:** Physical buttons switch modes
-
-**Implementation:**
-- In GamepadManager, detect LB (button 4) and RB (button 5) presses
-- Call ModeManager.nextMode() / previousMode()
-- Emit 'modechange' event
-
-**Test:**
-1. Start game
-2. Press RB button
-3. Verify console shows "Switched to: Crab Walk"
-4. Press RB again
-5. Verify cycles to next mode
-6. Press LB button
-7. Verify cycles backward
-
----
-
-### Task 2.7: Create AnalogProcessor Helper Functions
-**Deliverable:** Reusable analog processing utilities
-
-**Implementation:**
-```javascript
-// game/controller/analog-processor.js
-export function applyDeadZone(value, deadZone = 0.15) {
-  if (Math.abs(value) < deadZone) return 0;
-  return value;
-}
-
-export function applySensitivity(value, sensitivity = 1.0) {
-  return Math.max(-1, Math.min(1, value * sensitivity));
-}
-
-export function mapRange(value, inMin, inMax, outMin, outMax) {
-  return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
-}
-```
-
-**Test:**
-1. Test applyDeadZone(0.1, 0.15) → expect 0
-2. Test applyDeadZone(0.5, 0.15) → expect 0.5
-3. Test applySensitivity(0.5, 2.0) → expect 1.0 (clamped)
-4. Test mapRange(0.5, 0, 1, -45, 45) → expect 0
-
----
-
-### Task 2.8: Create Mode Indicator HUD Component
-**Deliverable:** On-screen display of current mode
-
-**Implementation:**
-- Create `components/mode-indicator.js` (Vue component)
-- Create `css/mode-indicator.css`
-- Display mode name in top-left corner
-- Update on mode change
-
-**Test:**
-1. Start game
-2. Verify "Traditional Driving" shown in top-left
-3. Press RB to switch mode
-4. Verify display updates instantly
-5. Verify no visual transition/animation
+> **Note:** Phase 1-2 detailed planning has been archived. See archive documents for full task details.
 
 ---
 
@@ -871,28 +653,32 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
+**Phase 2 Complete! ✅**
+All Phase 2 tasks (2.1-2.8) completed successfully:
+- ✅ Mode class with JSON serialization
+- ✅ 4 default driving modes (Traditional/Crab/Opposing/Independent)
+- ✅ ModeManager with localStorage persistence
+- ✅ Mode switching via LB/RB buttons
+- ✅ Analog processing utilities
+- ✅ HUD mode indicator component
+
 **Active Tasks:**
-- [ ] Task 2.1: Create Mode Data Class
+- [ ] Task 3.1: Create ControlMapper Class (Phase 3 ready to start)
 
 **Next Tasks:**
-- [ ] Task 2.2: Create Default Mode 1 - Traditional Driving
-- [ ] Task 2.3: Create Remaining Default Modes
+- [ ] Task 3.2: Implement Speed Mapping - Trigger Mode
+- [ ] Task 3.3: Implement Speed Mapping - Stick Mode
+- [ ] Task 3.4: Implement Steering Mapping - Front Wheels Only
 
 **Blocked:** None
 
-**Phase 1 Complete! ✅**
-All Phase 1 tasks (1.1-1.8) completed successfully:
-- Task 1.1 completed: All directory structure and skeleton files created
-- Task 1.2 completed: GamepadManager connection/disconnection detection implemented
-- Task 1.3 completed: GamepadManager polling with state change logging implemented
-- Task 1.4 completed: Button state tracking (justPressed/justReleased/heldDuration)
-- Task 1.5 completed: Axis state tracking with dead zone (0.05 threshold)
-- Task 1.6 completed: Event system (addEventListener, buttonpress/buttonrelease/axischange events)
-- Task 1.7 completed: Console test display (window.controllerState)
-- Task 1.8 completed: GamepadManager integrated into babylon-game.js render loop
+**Completed Phases:**
+- ✅ Phase 1: Foundation (GamepadManager, events, polling)
+- ✅ Phase 2: Mode System (mode data, switching, persistence, HUD)
 
 **Testing:**
-- GamepadManager fully functional and ready for testing with physical Xbox controller
+- Mode switching functional with physical Xbox controller (LB/RB buttons)
+- Mode indicator displays current mode in real-time
+- All modes persist across page reloads via localStorage
 - Test via: http://localhost:8080 + browser console (F12)
 - Type `window.controllerState` to see real-time controller data
-- Manual testing with physical controller recommended
