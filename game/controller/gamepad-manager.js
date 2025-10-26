@@ -2,6 +2,8 @@
  * GamepadManager - Handles Xbox controller input detection and polling
  */
 
+import { ModeManager } from './mode-manager.js';
+
 export class GamepadManager {
   static BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
   static AXIS_NAMES = ['LS-X', 'LS-Y', 'RS-X', 'RS-Y', '', '', 'LT', 'RT'];
@@ -13,9 +15,17 @@ export class GamepadManager {
     this.previousAxisState = [];
     this.buttonHeldStartTime = [];
     this.eventListeners = {};
+    this.modeManager = new ModeManager();
   }
 
   init() {
+    this.modeManager.loadModes();
+    console.log('🎮 Loaded control modes. Current:', this.modeManager.getCurrentMode().name);
+
+    this.addEventListener('buttonpress', (data) => {
+      this._handleModeSwitch(data.buttonIndex);
+    });
+
     window.addEventListener('gamepadconnected', (e) => {
       console.log('🎮 Controller connected:', e.gamepad.id);
       this.gamepad = e.gamepad;
@@ -196,5 +206,15 @@ export class GamepadManager {
       buttons: buttons,
       axes: axes
     };
+  }
+
+  _handleModeSwitch(buttonIndex) {
+    if (buttonIndex === 4) {
+      const mode = this.modeManager.previousMode();
+      this._emit('modechange', { mode: mode, direction: 'previous' });
+    } else if (buttonIndex === 5) {
+      const mode = this.modeManager.nextMode();
+      this._emit('modechange', { mode: mode, direction: 'next' });
+    }
   }
 }
