@@ -24,7 +24,7 @@ The development plan is in `temp/development-plan.md`. If it's missing stop and 
 6. GOTO step 1 (next step), until all steps in the plan are done.
 
 ### Final validation
-* When the plan is completed, use `qa-reviewer` agent to validate the entire implementation. Also give it link to the plan.
+* When the plan is completed, use `web-app-validator` agent to validate the entire implementation. Also give it link to the plan.
 
 ### Cleanup and Archiving
 After the phase is complete and QA validated:

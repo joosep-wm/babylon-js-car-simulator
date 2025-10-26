@@ -26,6 +26,12 @@ npm run serve-php
 
 ## Architecture
 
+## Custom Agents
+
+Project-specific agents in `.claude/agents/`:
+
+* **web-app-validator**: Runtime validation agent that uses playwright-mcp to test the app in browser. **USE THIS** instead of implementation-validator for all task validations. Checks console errors, page load, UI rendering, and basic functionality.
+
 ## Available MCP Servers
 
 * `playwright-mcp`: Browser access for debugging and manual validation
