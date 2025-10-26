@@ -49,4 +49,16 @@ export class ModeManager {
   getCurrentMode() {
     return this.modes[this.currentIndex];
   }
+
+  nextMode() {
+    this.currentIndex = (this.currentIndex + 1) % this.modes.length;
+    console.log('🎮 Switched to:', this.getCurrentMode().name);
+    return this.getCurrentMode();
+  }
+
+  previousMode() {
+    this.currentIndex = (this.currentIndex - 1 + this.modes.length) % this.modes.length;
+    console.log('🎮 Switched to:', this.getCurrentMode().name);
+    return this.getCurrentMode();
+  }
 }
