@@ -115,6 +115,42 @@ export class ControlMapper {
       };
     }
 
+    if (config.type === 'multiInput') {
+      const axisMap = {
+        'LS-X': 0,
+        'LS-Y': 1,
+        'RS-X': 2,
+        'RS-Y': 3
+      };
+
+      const frontAxisIndex = axisMap[config.frontInput];
+      const rearAxisIndex = axisMap[config.rearInput];
+
+      if (frontAxisIndex === undefined || rearAxisIndex === undefined) {
+        console.error('🎮 Invalid multiInput config:', config);
+        return { FL: 0, FR: 0, RL: 0, RR: 0 };
+      }
+
+      let frontValue = gamepadState.axes[frontAxisIndex] || 0;
+      let rearValue = gamepadState.axes[rearAxisIndex] || 0;
+
+      frontValue = applyDeadZone(frontValue, config.deadZone);
+      frontValue = applySensitivity(frontValue, config.sensitivity);
+
+      rearValue = applyDeadZone(rearValue, config.deadZone);
+      rearValue = applySensitivity(rearValue, config.sensitivity);
+
+      const frontAngle = frontValue * config.frontMaxAngle;
+      const rearAngle = rearValue * config.rearMaxAngle;
+
+      return {
+        FL: frontAngle,
+        FR: frontAngle,
+        RL: rearAngle,
+        RR: rearAngle
+      };
+    }
+
     return { FL: 0, FR: 0, RL: 0, RR: 0 };
   }
 

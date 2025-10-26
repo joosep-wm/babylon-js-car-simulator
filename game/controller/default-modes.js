@@ -92,9 +92,9 @@ export const defaultModes = [
       sensitivity: 1.0
     },
     steeringControl: {
-      type: 'independent',
-      frontInput: 'LS-X',  // axis 0
-      rearInput: 'RS-X',   // axis 2
+      type: 'multiInput',
+      frontInput: 'RS-Y',  // axis 3
+      rearInput: 'LS-Y',   // axis 1
       frontMaxAngle: 45,
       rearMaxAngle: 45,
       sensitivity: 1.0,
