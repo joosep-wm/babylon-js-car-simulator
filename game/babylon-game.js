@@ -1,5 +1,14 @@
 // babylon-game.js - Babylon.js Game Logic and Functions
 
+import {
+    SteerMode,
+    modeNames,
+    getSteerMode,
+    cycleSteerMode,
+    getCurrentModeName,
+    updateSteering
+} from './modules/steering-system.js';
+
 // Global variables for car physics system
 let scene;
 let engine;
@@ -14,10 +23,6 @@ debugColours[4] = new BABYLON.Color3(0, 1, 1);
 debugColours[5] = new BABYLON.Color3(0, 0, 1);
 const FILTERS = { CarParts: 1, Environment: 2 };
 const trackRad = 400;
-
-const SteerMode = { FRONT: 0, REAR: 1, OPPOSITE: 2, CRAB: 3 };
-let steerMode = SteerMode.FRONT;
-const modeNames = ['Front-Wheel', 'Rear-Wheel', '4W-Opposite', '4W-Crab'];
 
 // Export global variables for access from Vue app
 export { scene, engine };
@@ -1011,9 +1016,9 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
                 break;
             case "m": case "M":
                 if (e.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
-                    steerMode = (steerMode + 1) % 4;
+                    cycleSteerMode();
                     currentSteeringAngle = 0; // Reset angle on mode switch to prevent contamination
-                    console.log('🔄 Mode:', modeNames[steerMode]);
+                    console.log('🔄 Mode:', getCurrentModeName());
                 }
                 break;
         }
@@ -1040,64 +1045,7 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
 
         // Only update control variables if manual control is not active
         if (!manualControl.active) {
-            if (steerMode === SteerMode.FRONT) {
-                if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-                    currentSteeringAngle += 0.05;
-                } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-                    currentSteeringAngle -= 0.05;
-                } else if (!isLeft && !isRight) {
-                    currentSteeringAngle *= 0.85;
-                }
-
-                const [innerAngle, outerAngle] = CalculateWheelAngles(currentSteeringAngle);
-
-                steerAngle.FL = outerAngle;
-                steerAngle.FR = innerAngle;
-                steerAngle.RL = 0;
-                steerAngle.RR = 0;
-            } else if (steerMode === SteerMode.REAR) {
-                steerAngle.FL = 0;
-                steerAngle.FR = 0;
-
-                if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-                    currentSteeringAngle += 0.05;
-                } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-                    currentSteeringAngle -= 0.05;
-                } else if (!isLeft && !isRight) {
-                    currentSteeringAngle *= 0.85;
-                }
-
-                steerAngle.RL = -currentSteeringAngle;
-                steerAngle.RR = -currentSteeringAngle;
-            } else if (steerMode === SteerMode.OPPOSITE) {
-                if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-                    currentSteeringAngle += 0.05;
-                } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-                    currentSteeringAngle -= 0.05;
-                } else if (!isLeft && !isRight) {
-                    currentSteeringAngle *= 0.85;
-                }
-
-                steerAngle.FL = currentSteeringAngle;
-                steerAngle.FR = currentSteeringAngle;
-                steerAngle.RL = -currentSteeringAngle;
-                steerAngle.RR = -currentSteeringAngle;
-            } else if (steerMode === SteerMode.CRAB) {
-                const crabMaxAngle = Math.PI / 2;
-
-                if (isLeft && currentSteeringAngle < crabMaxAngle) {
-                    currentSteeringAngle += 0.05;
-                } else if (isRight && currentSteeringAngle > -crabMaxAngle) {
-                    currentSteeringAngle -= 0.05;
-                } else if (!isLeft && !isRight) {
-                    currentSteeringAngle *= 0.85;
-                }
-
-                steerAngle.FL = currentSteeringAngle;
-                steerAngle.FR = currentSteeringAngle;
-                steerAngle.RL = currentSteeringAngle;
-                steerAngle.RR = currentSteeringAngle;
-            }
+            currentSteeringAngle = updateSteering(isLeft, isRight, currentSteeringAngle, maxSteeringAngle, steerAngle, CalculateWheelAngles);
 
             if (isBrake) {
                 wheelSpeed.FL = 0;
@@ -1161,7 +1109,7 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
         motorJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RL);
         motorJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RR);
 
-        updateDebugOverlay(steerAngle, wheelSpeed, modeNames[steerMode]);
+        updateDebugOverlay(steerAngle, wheelSpeed, getCurrentModeName());
     });
 }
 
