@@ -936,8 +936,9 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
 
     let steerAngle = { FL: 0, FR: 0, RL: 0, RR: 0 };
     let wheelSpeed = { FL: 0, FR: 0, RL: 0, RR: 0 };
+    let manualControl = { active: false }; // Flag to prevent keyboard override of manual test commands
 
-    initializeTestHelpers(steerAngle, wheelSpeed, carFrame);
+    initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl);
 
     scene.onKeyboardObservable.add(e => {
         switch (e.event.key) {
@@ -1013,25 +1014,28 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
         steerWheelA.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, outerAngle);
         steerWheelB.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, innerAngle);
 
-        steerAngle.FL = outerAngle;
-        steerAngle.FR = innerAngle;
-        steerAngle.RL = 0;
-        steerAngle.RR = 0;
+        // Only update control variables if manual control is not active
+        if (!manualControl.active) {
+            steerAngle.FL = outerAngle;
+            steerAngle.FR = innerAngle;
+            steerAngle.RL = 0;
+            steerAngle.RR = 0;
 
-        if (isBrake) {
-            currentSpeed = 0;
-        } else if (isForward && currentSpeed < maxSpeed) {
-            currentSpeed += 1;
-        } else if (isBackward && currentSpeed > -maxSpeed * 0.5) {
-            currentSpeed -= 1;
-        } else if (!isForward && !isBackward) {
-            currentSpeed *= 0.92;
+            if (isBrake) {
+                currentSpeed = 0;
+            } else if (isForward && currentSpeed < maxSpeed) {
+                currentSpeed += 1;
+            } else if (isBackward && currentSpeed > -maxSpeed * 0.5) {
+                currentSpeed -= 1;
+            } else if (!isForward && !isBackward) {
+                currentSpeed *= 0.92;
+            }
+
+            wheelSpeed.FL = currentSpeed;
+            wheelSpeed.FR = currentSpeed;
+            wheelSpeed.RL = currentSpeed;
+            wheelSpeed.RR = currentSpeed;
         }
-
-        wheelSpeed.FL = currentSpeed;
-        wheelSpeed.FR = currentSpeed;
-        wheelSpeed.RL = currentSpeed;
-        wheelSpeed.RR = currentSpeed;
 
         if (vueApp) {
             let directions = [];
@@ -1271,12 +1275,13 @@ function updateDebugOverlay(steerAngle, wheelSpeed) {
     document.getElementById('speed-rr').textContent = wheelSpeed.RR.toFixed(1);
 }
 
-function initializeTestHelpers(steerAngle, wheelSpeed, carFrame) {
+function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl) {
     window.testHelpers = {
         getWheelStates: () => {
             return {
                 angles: { ...steerAngle },
-                speeds: { ...wheelSpeed }
+                speeds: { ...wheelSpeed },
+                manualControlActive: manualControl.active
             };
         },
 
@@ -1284,7 +1289,9 @@ function initializeTestHelpers(steerAngle, wheelSpeed, carFrame) {
             const angleRadians = angleDegrees * Math.PI / 180;
             if (steerAngle.hasOwnProperty(wheel)) {
                 steerAngle[wheel] = angleRadians;
+                manualControl.active = true; // Enable manual control mode
                 console.log(`🔧 Set ${wheel} angle to ${angleDegrees}° (${angleRadians.toFixed(3)} rad)`);
+                console.log(`   ⚠️  Manual control active - keyboard steering disabled`);
             } else {
                 console.error(`❌ Invalid wheel: ${wheel}. Use FL, FR, RL, or RR`);
             }
@@ -1293,7 +1300,9 @@ function initializeTestHelpers(steerAngle, wheelSpeed, carFrame) {
         setWheelSpeed: (wheel, speed) => {
             if (wheelSpeed.hasOwnProperty(wheel)) {
                 wheelSpeed[wheel] = speed;
+                manualControl.active = true; // Enable manual control mode
                 console.log(`🔧 Set ${wheel} speed to ${speed}`);
+                console.log(`   ⚠️  Manual control active - keyboard throttle disabled`);
             } else {
                 console.error(`❌ Invalid wheel: ${wheel}. Use FL, FR, RL, or RR`);
             }
@@ -1305,7 +1314,14 @@ function initializeTestHelpers(steerAngle, wheelSpeed, carFrame) {
                 steerAngle[wheel] = angleRadians;
                 wheelSpeed[wheel] = speed;
             });
+            manualControl.active = true; // Enable manual control mode
             console.log(`🔧 Set all wheels to ${angleDegrees}° and speed ${speed}`);
+            console.log(`   ⚠️  Manual control active - keyboard controls disabled`);
+        },
+
+        disableManualControl: () => {
+            manualControl.active = false;
+            console.log(`✅ Manual control disabled - keyboard controls re-enabled`);
         },
 
         resetCarPosition: () => {
@@ -1349,6 +1365,7 @@ function initializeTestHelpers(steerAngle, wheelSpeed, carFrame) {
     console.log("   - setWheelAngle(wheel, angle)");
     console.log("   - setWheelSpeed(wheel, speed)");
     console.log("   - setAllWheels(angle, speed)");
+    console.log("   - disableManualControl()");
     console.log("   - resetCarPosition()");
     console.log("   - testMotors()");
 }
