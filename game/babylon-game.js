@@ -745,6 +745,18 @@ async function CreateCar(vueApp) {
         AttachAxleToFrame(rlAxle.physicsBody, carFrame.physicsBody);
         AttachAxleToFrame(rrAxle.physicsBody, carFrame.physicsBody);
 
+        // Phase 1.2: Store references for later use
+        // TODO Phase 1.3-1.5: Pass these to InitKeyboardControls when rear wheels are powered
+        const wheels = { FL: flWheel, FR: frWheel, RL: rlWheel, RR: rrWheel };
+        const axles = { FL: flAxle, FR: frAxle, RL: rlAxle, RR: rrAxle };
+        const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: null, RR: null };
+        const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: null, RR: null };
+
+        console.log('🔧 Wheels:', wheels);
+        console.log('🔧 Axles:', axles);
+        console.log('🔧 Steering joints:', steeringJoints);
+        console.log('🔧 Motor joints:', motorJoints);
+
         InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
 
         return carFrame;
@@ -787,6 +799,18 @@ async function CreateCar(vueApp) {
     const steerWheelB = AttachAxleToFrame(frAxle.physicsBody, carFrameBody, true);
     AttachAxleToFrame(rlAxle.physicsBody, carFrameBody);
     AttachAxleToFrame(rrAxle.physicsBody, carFrameBody);
+
+    // Phase 1.2: Store references for later use
+    // TODO Phase 1.3-1.5: Pass these to InitKeyboardControls when rear wheels are powered
+    const wheels = { FL: flWheel, FR: frWheel, RL: rlWheel, RR: rrWheel };
+    const axles = { FL: flAxle, FR: frAxle, RL: rlAxle, RR: rrAxle };
+    const steeringJoints = { FL: steerWheelA, FR: steerWheelB, RL: null, RR: null };
+    const motorJoints = { FL: poweredWheelMotorA, FR: poweredWheelMotorB, RL: null, RR: null };
+
+    console.log('🔧 Wheels:', wheels);
+    console.log('🔧 Axles:', axles);
+    console.log('🔧 Steering joints:', steeringJoints);
+    console.log('🔧 Motor joints:', motorJoints);
 
     InitKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp);
 
