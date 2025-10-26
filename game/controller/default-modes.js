@@ -33,16 +33,17 @@ export const defaultModes = [
     name: 'Crab Walk',
     description: 'All wheels steer together for sideways movement',
     speedControl: {
-      type: 'stick',
-      input: 'RS-Y',  // axis 3
+      type: 'triggers',
+      forwardInput: 'RT',  // axis 7
+      backwardInput: 'LT', // axis 6
       deadZone: 0.15,
       maxSpeed: 150,
       sensitivity: 1.0
     },
     steeringControl: {
       type: 'singleInput',
-      input: 'RS-X',  // axis 2
-      wheels: 'all',
+      input: 'LS-X',  // axis 0 - Left Stick X (same as Traditional)
+      wheels: 'all',  // All 4 wheels turn together
       maxAngle: 45,
       sensitivity: 1.0,
       deadZone: 0.15

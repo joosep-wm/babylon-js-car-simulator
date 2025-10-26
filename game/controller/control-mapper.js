@@ -90,7 +90,7 @@ export class ControlMapper {
       value = applyDeadZone(value, config.deadZone);
       value = applySensitivity(value, config.sensitivity);
 
-      const angle = value * config.maxAngle;
+      const angle = -value * config.maxAngle;  // Inverted for natural steering
 
       return {
         FL: angle,
