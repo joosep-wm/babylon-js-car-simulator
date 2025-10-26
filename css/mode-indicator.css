@@ -1,7 +1,8 @@
 .mode-indicator {
     position: fixed;
     top: 20px;
-    left: 180px;  /* Moved right to avoid debug button */
+    left: 50%;
+    transform: translateX(-50%);  /* Center horizontally */
     background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
     backdrop-filter: blur(15px);
     border: 1px solid rgba(148, 163, 184, 0.2);
