@@ -954,7 +954,6 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
     let brakePressed = false;
     let jumpPressed = false;
 
-    let currentSpeed = 0;
     let currentSteeringAngle = 0;
     let maxSpeed = 80;
     const maxSteeringAngle = Math.PI / 4;
@@ -1046,19 +1045,23 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
             steerAngle.RR = 0;
 
             if (isBrake) {
-                currentSpeed = 0;
-            } else if (isForward && currentSpeed < maxSpeed) {
-                currentSpeed += 1;
-            } else if (isBackward && currentSpeed > -maxSpeed * 0.5) {
-                currentSpeed -= 1;
+                wheelSpeed.FL = 0;
+                wheelSpeed.FR = 0;
+                wheelSpeed.RL = 0;
+                wheelSpeed.RR = 0;
+            } else if (isForward) {
+                ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                    if (wheelSpeed[wheel] < maxSpeed) wheelSpeed[wheel] += 1;
+                });
+            } else if (isBackward) {
+                ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                    if (wheelSpeed[wheel] > -maxSpeed * 0.5) wheelSpeed[wheel] -= 1;
+                });
             } else if (!isForward && !isBackward) {
-                currentSpeed *= 0.92;
+                ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                    wheelSpeed[wheel] *= 0.92;
+                });
             }
-
-            wheelSpeed.FL = currentSpeed;
-            wheelSpeed.FR = currentSpeed;
-            wheelSpeed.RL = currentSpeed;
-            wheelSpeed.RR = currentSpeed;
         }
 
         if (vueApp) {
