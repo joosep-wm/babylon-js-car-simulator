@@ -926,13 +926,18 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
     let leftPressed = false;
     let rightPressed = false;
     let brakePressed = false;
-    let jumpPressed = false; // New jump state
+    let jumpPressed = false;
 
     let currentSpeed = 0;
     let currentSteeringAngle = 0;
-    let maxSpeed = 80; // Optimized for good control
-    const maxSteeringAngle = Math.PI / 4; // Increased from PI/6 to PI/4 for sharper turns
-    const jumpForce = 3000; // Increased jump force for better visibility
+    let maxSpeed = 80;
+    const maxSteeringAngle = Math.PI / 4;
+    const jumpForce = 3000;
+
+    let steerAngle = { FL: 0, FR: 0, RL: 0, RR: 0 };
+    let wheelSpeed = { FL: 0, FR: 0, RL: 0, RR: 0 };
+
+    initializeTestHelpers(steerAngle, wheelSpeed, carFrame);
 
     scene.onKeyboardObservable.add(e => {
         switch (e.event.key) {
@@ -944,19 +949,16 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
                 break;
             case "d": case "D": case "ArrowRight": rightPressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
                 break;
-            case "b": case "B": brakePressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false; // Changed from Space to B
+            case "b": case "B": brakePressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
                 break;
-            case " ": // Space is now jump
+            case " ":
                 if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN) {
                     jumpPressed = true;
                     console.log("🚀 Jump button pressed!");
 
-                    // Apply jump force using multiple methods for reliability
                     if (carFrame.physicsBody) {
-                        // Primary method: Direct impulse
                         carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce, 0), carFrame.getAbsolutePosition());
 
-                        // Secondary method: Velocity adjustment
                         const currentVel = carFrame.physicsBody.getLinearVelocity();
                         carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, jumpForce / 100, currentVel.z));
                     } else {
@@ -964,6 +966,12 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
                     }
                 } else {
                     jumpPressed = false;
+                }
+                break;
+            case "F11":
+                if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN) {
+                    e.event.preventDefault();
+                    toggleDebugOverlay();
                 }
                 break;
             case "Enter":
@@ -975,7 +983,6 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
     });
 
     scene.onBeforeRenderObservable.add(() => {
-        // Combine keyboard and touch inputs
         const isForward = forwardPressed || (vueApp && vueApp.touchControls.forward);
         const isBackward = backPressed || (vueApp && vueApp.touchControls.backward);
         const isLeft = leftPressed || (vueApp && vueApp.touchControls.left);
@@ -983,44 +990,49 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
         const isBrake = brakePressed || (vueApp && vueApp.touchControls.brake);
         const isJump = jumpPressed || (vueApp && vueApp.touchControls.jump);
 
-        // Handle jump from both keyboard and touch
         if (isJump) {
             console.log("🚀 Jump (keyboard or touch) activated!");
 
-            // Apply jump force continuously while button/touch is held
             if (carFrame.physicsBody) {
-                // Apply continuous upward force for as long as jump is held
                 carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce / 2, 0), carFrame.getAbsolutePosition());
 
-                // Also add slight upward velocity for sustained effect
                 const currentVel = carFrame.physicsBody.getLinearVelocity();
                 carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, Math.min(currentVel.y + jumpForce / 200, jumpForce / 50), currentVel.z));
             }
         }
 
         if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-            currentSteeringAngle += 0.05; // Increased from 0.02 to 0.08 (4x faster)
+            currentSteeringAngle += 0.05;
         } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-            currentSteeringAngle -= 0.05; // Increased from 0.02 to 0.08 (4x faster)
+            currentSteeringAngle -= 0.05;
         } else if (!isLeft && !isRight) {
-            currentSteeringAngle *= 0.85; // Increased from 0.98 to 0.85 (much faster centering)
+            currentSteeringAngle *= 0.85;
         }
 
         const [innerAngle, outerAngle] = CalculateWheelAngles(currentSteeringAngle);
         steerWheelA.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, outerAngle);
         steerWheelB.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, innerAngle);
 
+        steerAngle.FL = outerAngle;
+        steerAngle.FR = innerAngle;
+        steerAngle.RL = 0;
+        steerAngle.RR = 0;
+
         if (isBrake) {
             currentSpeed = 0;
         } else if (isForward && currentSpeed < maxSpeed) {
-            currentSpeed += 1; // Smooth acceleration
+            currentSpeed += 1;
         } else if (isBackward && currentSpeed > -maxSpeed * 0.5) {
-            currentSpeed -= 1; // Smooth deceleration
+            currentSpeed -= 1;
         } else if (!isForward && !isBackward) {
-            currentSpeed *= 0.92; // Natural slowdown
+            currentSpeed *= 0.92;
         }
 
-        // Update Vue.js direction data
+        wheelSpeed.FL = currentSpeed;
+        wheelSpeed.FR = currentSpeed;
+        wheelSpeed.RL = currentSpeed;
+        wheelSpeed.RR = currentSpeed;
+
         if (vueApp) {
             let directions = [];
 
@@ -1048,6 +1060,8 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
 
         motorWheelA.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, currentSpeed);
         motorWheelB.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, currentSpeed);
+
+        updateDebugOverlay(steerAngle, wheelSpeed);
     });
 }
 
@@ -1121,54 +1135,43 @@ async function importCustomCar() {
     try {
         console.log("🚗 Loading custom car model...");
 
-        // Import your custom car.glb model
         const importResult = await BABYLON.SceneLoader.ImportMeshAsync("", "game/models/", "car.glb", scene);
 
         console.log("📦 Car model loaded successfully:", importResult);
 
-        // Get the root node of the imported model
         const importRoot = importResult.meshes[0];
 
         if (importRoot) {
-            // Scale up the car model even more to extend over the wheels
-            importRoot.scaling = new BABYLON.Vector3(14, 14, 14); // Larger scale for better proportions
+            importRoot.scaling = new BABYLON.Vector3(14, 14, 14);
 
-            // Rotate the car by 90 degrees around Y-axis
             if (importRoot.rotationQuaternion) {
                 importRoot.rotationQuaternion = BABYLON.Quaternion.Identity();
             }
-            importRoot.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0); // 90° rotation
+            importRoot.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0);
 
-            // Position the car higher above the wheels
-            importRoot.position = new BABYLON.Vector3(0, 2.3, 0); // Raised position
+            importRoot.position = new BABYLON.Vector3(0, 2.3, 0);
 
-            // Ensure position is properly accessible for camera
             if (!importRoot.position) {
                 importRoot.position = new BABYLON.Vector3(0, 2, 0);
             }
 
-            // Bake transformations into vertices for better performance
             importRoot.bakeCurrentTransformIntoVertices();
 
-            // Find all meshes that should be merged into the car body
             const meshesToMerge = importResult.meshes.filter(mesh =>
                 mesh.getClassName() === "Mesh" && mesh !== importRoot
             );
 
-            // Merge all car body meshes into one
             let carBody;
             if (meshesToMerge.length > 0) {
                 carBody = BABYLON.Mesh.MergeMeshes(meshesToMerge, true, true, undefined, false, true);
                 carBody.name = "CarBody";
             } else {
-                // If no meshes to merge, use the root as car body
                 importRoot.name = "CarBody";
                 carBody = importRoot;
             }
 
             console.log("✅ Car body created:", carBody.name);
 
-            // Ensure position is accessible for camera targeting
             if (!carBody.position) {
                 carBody.position = new BABYLON.Vector3(0, 0, 0);
             }
@@ -1185,4 +1188,167 @@ async function importCustomCar() {
         console.log("💡 Make sure the car.glb file exists in game/models/ folder");
         return null;
     }
+}
+
+let debugOverlayElement = null;
+
+function createDebugOverlay() {
+    if (debugOverlayElement) return;
+
+    debugOverlayElement = document.createElement('div');
+    debugOverlayElement.id = 'debug-overlay';
+    debugOverlayElement.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.85);
+        color: #00ff00;
+        padding: 15px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        border: 2px solid #00ff00;
+        border-radius: 5px;
+        z-index: 10000;
+        min-width: 300px;
+        display: none;
+    `;
+
+    debugOverlayElement.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #00ff00; padding-bottom: 5px;">
+            DEBUG OVERLAY (F11 to toggle)
+        </div>
+        <div id="debug-content">
+            <div><strong>Wheel Angles (degrees):</strong></div>
+            <div id="wheel-angles" style="margin-left: 10px;">
+                FL: <span id="angle-fl">0.0</span>°<br>
+                FR: <span id="angle-fr">0.0</span>°<br>
+                RL: <span id="angle-rl">0.0</span>°<br>
+                RR: <span id="angle-rr">0.0</span>°
+            </div>
+            <div style="margin-top: 10px;"><strong>Wheel Speeds:</strong></div>
+            <div id="wheel-speeds" style="margin-left: 10px;">
+                FL: <span id="speed-fl">0.0</span><br>
+                FR: <span id="speed-fr">0.0</span><br>
+                RL: <span id="speed-rl">0.0</span><br>
+                RR: <span id="speed-rr">0.0</span>
+            </div>
+            <div style="margin-top: 10px;"><strong>Steering Mode:</strong></div>
+            <div id="steering-mode" style="margin-left: 10px;">N/A (placeholder)</div>
+        </div>
+    `;
+
+    document.body.appendChild(debugOverlayElement);
+    console.log("🔧 Debug overlay created");
+}
+
+function toggleDebugOverlay() {
+    if (!debugOverlayElement) {
+        createDebugOverlay();
+    }
+
+    if (debugOverlayElement.style.display === 'none') {
+        debugOverlayElement.style.display = 'block';
+        console.log("🔧 Debug overlay enabled");
+    } else {
+        debugOverlayElement.style.display = 'none';
+        console.log("🔧 Debug overlay disabled");
+    }
+}
+
+function updateDebugOverlay(steerAngle, wheelSpeed) {
+    if (!debugOverlayElement || debugOverlayElement.style.display === 'none') return;
+
+    const radToDeg = (rad) => (rad * 180 / Math.PI).toFixed(1);
+
+    document.getElementById('angle-fl').textContent = radToDeg(steerAngle.FL);
+    document.getElementById('angle-fr').textContent = radToDeg(steerAngle.FR);
+    document.getElementById('angle-rl').textContent = radToDeg(steerAngle.RL);
+    document.getElementById('angle-rr').textContent = radToDeg(steerAngle.RR);
+
+    document.getElementById('speed-fl').textContent = wheelSpeed.FL.toFixed(1);
+    document.getElementById('speed-fr').textContent = wheelSpeed.FR.toFixed(1);
+    document.getElementById('speed-rl').textContent = wheelSpeed.RL.toFixed(1);
+    document.getElementById('speed-rr').textContent = wheelSpeed.RR.toFixed(1);
+}
+
+function initializeTestHelpers(steerAngle, wheelSpeed, carFrame) {
+    window.testHelpers = {
+        getWheelStates: () => {
+            return {
+                angles: { ...steerAngle },
+                speeds: { ...wheelSpeed }
+            };
+        },
+
+        setWheelAngle: (wheel, angleDegrees) => {
+            const angleRadians = angleDegrees * Math.PI / 180;
+            if (steerAngle.hasOwnProperty(wheel)) {
+                steerAngle[wheel] = angleRadians;
+                console.log(`🔧 Set ${wheel} angle to ${angleDegrees}° (${angleRadians.toFixed(3)} rad)`);
+            } else {
+                console.error(`❌ Invalid wheel: ${wheel}. Use FL, FR, RL, or RR`);
+            }
+        },
+
+        setWheelSpeed: (wheel, speed) => {
+            if (wheelSpeed.hasOwnProperty(wheel)) {
+                wheelSpeed[wheel] = speed;
+                console.log(`🔧 Set ${wheel} speed to ${speed}`);
+            } else {
+                console.error(`❌ Invalid wheel: ${wheel}. Use FL, FR, RL, or RR`);
+            }
+        },
+
+        setAllWheels: (angleDegrees, speed) => {
+            const angleRadians = angleDegrees * Math.PI / 180;
+            ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                steerAngle[wheel] = angleRadians;
+                wheelSpeed[wheel] = speed;
+            });
+            console.log(`🔧 Set all wheels to ${angleDegrees}° and speed ${speed}`);
+        },
+
+        resetCarPosition: () => {
+            if (carFrame && carFrame.physicsBody) {
+                carFrame.position = new BABYLON.Vector3(0, 5, 0);
+                carFrame.physicsBody.setLinearVelocity(BABYLON.Vector3.Zero());
+                carFrame.physicsBody.setAngularVelocity(BABYLON.Vector3.Zero());
+                console.log("🔧 Car position reset to origin");
+            } else {
+                console.error("❌ Car frame or physics body not available");
+            }
+        },
+
+        testMotors: async () => {
+            console.log("🔧 Starting motor test sequence...");
+            const testSequence = [
+                { wheel: 'FL', speed: 30 },
+                { wheel: 'FR', speed: 30 },
+                { wheel: 'RL', speed: 30 },
+                { wheel: 'RR', speed: 30 }
+            ];
+
+            for (const test of testSequence) {
+                console.log(`Testing ${test.wheel} at speed ${test.speed}...`);
+
+                ['FL', 'FR', 'RL', 'RR'].forEach(w => wheelSpeed[w] = 0);
+
+                wheelSpeed[test.wheel] = test.speed;
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                wheelSpeed[test.wheel] = 0;
+            }
+
+            console.log("✅ Motor test sequence complete");
+        }
+    };
+
+    console.log("🔧 Test helpers initialized. Access via window.testHelpers");
+    console.log("   - getWheelStates()");
+    console.log("   - setWheelAngle(wheel, angle)");
+    console.log("   - setWheelSpeed(wheel, speed)");
+    console.log("   - setAllWheels(angle, speed)");
+    console.log("   - resetCarPosition()");
+    console.log("   - testMotors()");
 }
