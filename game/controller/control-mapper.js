@@ -18,6 +18,22 @@ export class ControlMapper {
   }
 
   mapSpeedControl(gamepadState, mode) {
+    const config = mode.speedControl;
+
+    if (config.type === 'triggers') {
+      const forward = gamepadState.axes[7] || 0;
+      const backward = gamepadState.axes[6] || 0;
+
+      let speed = 0;
+      if (forward > config.deadZone) {
+        speed = forward * config.maxSpeed * config.sensitivity;
+      } else if (backward > config.deadZone) {
+        speed = -backward * config.maxSpeed * config.sensitivity;
+      }
+
+      return speed;
+    }
+
     return 0;
   }
 
