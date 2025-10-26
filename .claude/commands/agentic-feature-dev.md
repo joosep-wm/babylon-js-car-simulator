@@ -24,3 +24,14 @@ The development plan is in `temp/development-plan.md`. If it's missing stop and 
 
 ### Final validation
 * When the plan is completed, use `qa-reviewer` agent to validate the entire implementation. Also give it link to the plan.
+
+### Cleanup and Archiving
+After the phase is complete and QA validated:
+1. Create archive document `temp/development-plan-phase{N}-archive.md` with all detailed planning steps from the completed phase
+2. Create completion report `temp/PHASE-{N}-COMPLETE.md` with implementation summary, metrics, and results
+3. Update `temp/development-plan.md`:
+   - Add Phase N Summary section at top with key achievements and status
+   - Mark phase as COMPLETE in status line
+   - Add references to archive and completion documents
+   - Keep detailed planning sections but mark as "(ARCHIVED - SEE ABOVE)"
+4. Commit all documentation with message: "Phase {N} complete: [brief description]"
