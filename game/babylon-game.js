@@ -15,6 +15,10 @@ debugColours[5] = new BABYLON.Color3(0, 0, 1);
 const FILTERS = { CarParts: 1, Environment: 2 };
 const trackRad = 400;
 
+const SteerMode = { FRONT: 0, REAR: 1, OPPOSITE: 2, CRAB: 3 };
+let steerMode = SteerMode.FRONT;
+const modeNames = ['Front-Wheel', 'Rear-Wheel', '4W-Opposite', '4W-Crab'];
+
 // Export global variables for access from Vue app
 export { scene, engine };
 
@@ -1003,6 +1007,12 @@ function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB
             case "Enter":
                 if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN && vueApp) {
                     vueApp.resetGame();
+                }
+                break;
+            case "m": case "M":
+                if (e.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                    steerMode = (steerMode + 1) % 4;
+                    console.log('🔄 Mode:', modeNames[steerMode]);
                 }
                 break;
         }
