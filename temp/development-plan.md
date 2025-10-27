@@ -749,8 +749,6 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ⚠️ Bug 1: WebGL feedback loop (deferred - low impact on functionality)
 
 **Next Tasks (Resume Phase 3):**
-- [ ] Task 3.11: Implement Brake Action
-- [ ] Task 3.12: Implement Reset Position Action
 - [ ] Task 3.13: Implement Reset Wheels Action
 - [ ] Task 3.14: Test All 4 Default Modes End-to-End
 
@@ -763,6 +761,8 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ✅ Task 3.8: Implement Utility Button Mapping (commit 1d44ae6)
 - ✅ Task 3.9: Integrate ControlMapper with babylon-game.js (commit ba6bb08)
 - ✅ Task 3.10: Implement Jump Action (ground checks + edge detection)
+- ✅ Task 3.11: Implement Brake Action (commit 9f82c6a)
+- ✅ Task 3.12: Implement Reset Position Action (already implemented, X button calls resetGame)
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)

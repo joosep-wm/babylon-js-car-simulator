@@ -120,8 +120,10 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             vueApp.resetGame();
         }
 
+        const controllerResetWheels = controllerActions.find(a => a.action === 'resetWheels');
+
         if (!manualControl.active) {
-            if (controllerConnected) {
+            if (controllerConnected && !controllerResetWheels) {
                 steerAngle.FL = controllerSteering.FL * (Math.PI / 180);
                 steerAngle.FR = controllerSteering.FR * (Math.PI / 180);
                 steerAngle.RL = controllerSteering.RL * (Math.PI / 180);
@@ -162,6 +164,13 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             }
         }
 
+        if (controllerResetWheels) {
+            steerAngle.FL = 0;
+            steerAngle.FR = 0;
+            steerAngle.RL = 0;
+            steerAngle.RR = 0;
+        }
+
         if (vueApp) {
             let directions = [];
 
@@ -173,6 +182,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 }
                 if (controllerBrake) directions.push('Brake (Controller)');
                 if (controllerJump) directions.push('Jump (Controller)');
+                if (controllerResetWheels) directions.push('Reset Wheels (Controller)');
             } else {
                 if (isForward) directions.push('Forward');
                 if (isBackward) directions.push('Backward');
