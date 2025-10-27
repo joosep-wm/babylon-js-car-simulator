@@ -3,6 +3,8 @@
 export const SteerMode = { FRONT: 0, REAR: 1, OPPOSITE: 2, CRAB: 3 };
 export const modeNames = ['Front-Wheel', 'Rear-Wheel', '4W-Opposite', '4W-Crab'];
 
+const steeringSpeed = 0.001;
+
 let steerMode = SteerMode.FRONT;
 
 export function getSteerMode() {
@@ -27,9 +29,9 @@ export function updateSteering(isLeft, isRight, currentSteeringAngle, maxSteerin
 
     if (steerMode === SteerMode.FRONT) {
         if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-            updatedAngle += 0.05;
+            updatedAngle += steeringSpeed;
         } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-            updatedAngle -= 0.05;
+            updatedAngle -= steeringSpeed;
         } else if (!isLeft && !isRight) {
             updatedAngle *= 0.85;
         }
@@ -45,9 +47,9 @@ export function updateSteering(isLeft, isRight, currentSteeringAngle, maxSteerin
         steerAngle.FR = 0;
 
         if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-            updatedAngle += 0.05;
+            updatedAngle += steeringSpeed;
         } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-            updatedAngle -= 0.05;
+            updatedAngle -= steeringSpeed;
         } else if (!isLeft && !isRight) {
             updatedAngle *= 0.85;
         }
@@ -56,9 +58,9 @@ export function updateSteering(isLeft, isRight, currentSteeringAngle, maxSteerin
         steerAngle.RR = -updatedAngle;
     } else if (steerMode === SteerMode.OPPOSITE) {
         if (isLeft && currentSteeringAngle < maxSteeringAngle) {
-            updatedAngle += 0.05;
+            updatedAngle += steeringSpeed;
         } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
-            updatedAngle -= 0.05;
+            updatedAngle -= steeringSpeed;
         } else if (!isLeft && !isRight) {
             updatedAngle *= 0.85;
         }
@@ -71,9 +73,9 @@ export function updateSteering(isLeft, isRight, currentSteeringAngle, maxSteerin
         const crabMaxAngle = Math.PI / 2;
 
         if (isLeft && currentSteeringAngle < crabMaxAngle) {
-            updatedAngle += 0.05;
+            updatedAngle += steeringSpeed;
         } else if (isRight && currentSteeringAngle > -crabMaxAngle) {
-            updatedAngle -= 0.05;
+            updatedAngle -= steeringSpeed;
         } else if (!isLeft && !isRight) {
             updatedAngle *= 0.85;
         }

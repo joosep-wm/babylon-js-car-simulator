@@ -14,7 +14,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     let jumpPressed = false;
 
     let currentSteeringAngle = 0;
-    let maxSpeed = 80;
+    let maxSpeed = 15;
     const maxSteeringAngle = Math.PI / 4;
     const jumpForce = 3000;
 

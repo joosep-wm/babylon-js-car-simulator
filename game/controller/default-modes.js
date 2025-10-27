@@ -11,7 +11,7 @@ export const defaultModes = [
       forwardInput: 'RT',  // axis 7
       backwardInput: 'LT', // axis 6
       deadZone: 0.15,
-      maxSpeed: 150,
+      maxSpeed: 15,
       sensitivity: 1.0
     },
     steeringControl: {
@@ -37,7 +37,7 @@ export const defaultModes = [
       forwardInput: 'RT',  // axis 7
       backwardInput: 'LT', // axis 6
       deadZone: 0.15,
-      maxSpeed: 150,
+      maxSpeed: 15,
       sensitivity: 1.0
     },
     steeringControl: {
@@ -63,7 +63,7 @@ export const defaultModes = [
       forwardInput: 'RT',  // axis 7
       backwardInput: 'LT', // axis 6
       deadZone: 0.15,
-      maxSpeed: 150,
+      maxSpeed: 15,
       sensitivity: 1.0
     },
     steeringControl: {
@@ -89,7 +89,7 @@ export const defaultModes = [
       forwardInput: 'RT',  // axis 7
       backwardInput: 'LT', // axis 6
       deadZone: 0.15,
-      maxSpeed: 150,
+      maxSpeed: 15,
       sensitivity: 1.0
     },
     steeringControl: {

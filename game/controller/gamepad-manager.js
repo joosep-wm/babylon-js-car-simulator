@@ -14,8 +14,10 @@ export class GamepadManager {
     this.previousButtonState = [];
     this.previousAxisState = [];
     this.buttonHeldStartTime = [];
+    this.currentFrameButtonFlags = {}; // Store justPressed/justReleased for current frame
     this.eventListeners = {};
     this.modeManager = modeManager || new ModeManager();
+    this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
   }
 
   init() {
@@ -38,6 +40,8 @@ export class GamepadManager {
       this.previousButtonState = [];
       this.previousAxisState = [];
       this.buttonHeldStartTime = [];
+      this.currentFrameButtonFlags = {};
+      this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
     });
 
     Object.defineProperty(window, 'controllerState', {
@@ -73,25 +77,32 @@ export class GamepadManager {
 
   pollGamepads() {
     if (!this.connected) {
+      this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
       return;
     }
 
     const gamepads = navigator.getGamepads();
     if (!gamepads) {
+      this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
       return;
     }
 
     const gamepad = gamepads[this.gamepad?.index];
     if (!gamepad) {
+      this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
       return;
     }
 
     this._checkButtonChanges(gamepad);
     this._checkAxisChanges(gamepad);
+
+    // Build and cache the complete gamepad state
+    this.cachedGamepadState = this._buildGamepadState(gamepad);
   }
 
   _checkButtonChanges(gamepad) {
     const currentTime = performance.now();
+    this.currentFrameButtonFlags = {}; // Reset for this frame
 
     for (let i = 0; i < gamepad.buttons.length; i++) {
       const button = gamepad.buttons[i];
@@ -121,12 +132,16 @@ export class GamepadManager {
         this._emit('buttonrelease', { buttonIndex: i, buttonName: buttonName });
       }
 
-      this.previousButtonState[i] = {
-        pressed: button.pressed,
-        value: button.value,
+      // Store flags for this frame BEFORE updating previousButtonState
+      this.currentFrameButtonFlags[i] = {
         justPressed: justPressed,
         justReleased: justReleased,
         heldDuration: heldDuration
+      };
+
+      this.previousButtonState[i] = {
+        pressed: button.pressed,
+        value: button.value
       };
     }
   }
@@ -150,61 +165,35 @@ export class GamepadManager {
     }
   }
 
-  getGamepadState() {
-    if (!this.connected || !this.gamepad) {
-      return {
-        connected: false,
-        gamepadId: null,
-        buttons: {},
-        axes: []
-      };
-    }
-
-    const gamepads = navigator.getGamepads();
-    const gamepad = gamepads[this.gamepad.index];
-
-    if (!gamepad) {
-      return {
-        connected: false,
-        gamepadId: null,
-        buttons: {},
-        axes: []
-      };
-    }
-
+  _buildGamepadState(gamepad) {
     const buttons = {};
-    const currentTime = performance.now();
 
     for (let i = 0; i < gamepad.buttons.length; i++) {
       const button = gamepad.buttons[i];
       const buttonName = GamepadManager.BUTTON_NAMES[i] || `Button-${i}`;
 
-      // Compute justPressed/justReleased for current frame
-      const wasPressed = this.previousButtonState[i]?.pressed || false;
-      const isPressed = button.pressed;
+      // Use the flags computed by _checkButtonChanges
+      const flags = this.currentFrameButtonFlags[i] || {
+        justPressed: false,
+        justReleased: false,
+        heldDuration: 0
+      };
 
       const buttonState = {
         pressed: button.pressed,
         value: button.value,
-        justPressed: isPressed && !wasPressed,
-        justReleased: !isPressed && wasPressed
+        justPressed: flags.justPressed,
+        justReleased: flags.justReleased
       };
 
-      if (button.pressed && this.buttonHeldStartTime[i]) {
-        buttonState.heldDuration = Math.round(currentTime - this.buttonHeldStartTime[i]);
+      if (flags.heldDuration > 0) {
+        buttonState.heldDuration = flags.heldDuration;
       }
 
       buttons[buttonName] = buttonState;
-
-      // Update previous state for next frame
-      this.previousButtonState[i] = {
-        pressed: button.pressed,
-        value: button.value
-      };
     }
 
     const axes = [];
-
     for (let i = 0; i < gamepad.axes.length; i++) {
       axes[i] = parseFloat(gamepad.axes[i].toFixed(3));
     }
@@ -215,6 +204,10 @@ export class GamepadManager {
       buttons: buttons,
       axes: axes
     };
+  }
+
+  getGamepadState() {
+    return this.cachedGamepadState;
   }
 
   _handleModeSwitch(buttonIndex) {

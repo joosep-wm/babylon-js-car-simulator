@@ -82,8 +82,8 @@ export function AttachAxleToFrame(axle, frame, hasSteering, scene) {
                 axis: BABYLON.PhysicsConstraintAxis.LINEAR_Y,
                 minLimit: -0.15,
                 maxLimit: 0.15,
-                stiffness: 100000,
-                damping: 1500
+                stiffness: 400000,
+                damping: 7000
             },
             {
                 axis: BABYLON.PhysicsConstraintAxis.LINEAR_Z,
@@ -158,7 +158,7 @@ export function CreatePoweredWheelJoint(axle, wheel, scene) {
 
 export function AttachSteering(joint) {
     joint.setAxisMotorType(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, BABYLON.PhysicsConstraintMotorType.POSITION);
-    joint.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 60000000);
+    joint.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 50000);
     joint.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 0);
 
     return joint;

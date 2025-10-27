@@ -235,8 +235,9 @@ async function createScene(vueApp) {
     createBridge(scene);
 
     // Add visual effects
-    addReflectionsToCar(scene);
-    addGlowLayer(scene);
+    // COMMENTED OUT: Causing WebGL feedback loop warning - see rendering-effects.js
+    // addReflectionsToCar(scene);
+    // addGlowLayer(scene);
 
     // Setup collision detection with delay for physics initialization
     setTimeout(() => {
