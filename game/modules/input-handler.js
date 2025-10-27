@@ -120,6 +120,15 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             vueApp.resetGame();
         }
 
+        const controllerResetWheels = controllerActions.find(a => a.action === 'resetWheels');
+        if (controllerResetWheels) {
+            console.log("Reset wheels (controller) activated!");
+            steerAngle.FL = 0;
+            steerAngle.FR = 0;
+            steerAngle.RL = 0;
+            steerAngle.RR = 0;
+        }
+
         if (!manualControl.active) {
             if (controllerConnected) {
                 steerAngle.FL = controllerSteering.FL * (Math.PI / 180);
