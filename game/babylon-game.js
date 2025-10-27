@@ -210,6 +210,17 @@ async function createScene(vueApp) {
     gamepadManager = new GamepadManager(modeManager);
     gamepadManager.init();
 
+    // Set initial mode name in Vue
+    const initialMode = modeManager.getCurrentMode();
+    vueApp.currentModeName = initialMode.name;
+    console.log('🎮 Initial mode set:', initialMode.name);
+
+    // Set up mode change listener to update Vue app when mode changes
+    gamepadManager.addEventListener('modechange', (data) => {
+        vueApp.currentModeName = data.mode.name;
+        console.log('🎮 Mode indicator updated:', data.mode.name);
+    });
+
     controlMapper = new ControlMapper(modeManager);
 
     // Setup ambient lighting

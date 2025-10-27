@@ -4,6 +4,7 @@ export const SteerMode = { FRONT: 0, REAR: 1, OPPOSITE: 2, CRAB: 3 };
 export const modeNames = ['Front-Wheel', 'Rear-Wheel', '4W-Opposite', '4W-Crab'];
 
 const steeringSpeed = 0.001;
+const steeringMultiplierWhenReleased = 0.99;
 
 let steerMode = SteerMode.FRONT;
 
@@ -33,7 +34,7 @@ export function updateSteering(isLeft, isRight, currentSteeringAngle, maxSteerin
         } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
             updatedAngle -= steeringSpeed;
         } else if (!isLeft && !isRight) {
-            updatedAngle *= 0.85;
+            updatedAngle *= steeringMultiplierWhenReleased;
         }
 
         const [innerAngle, outerAngle] = CalculateWheelAngles(updatedAngle);
@@ -51,7 +52,7 @@ export function updateSteering(isLeft, isRight, currentSteeringAngle, maxSteerin
         } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
             updatedAngle -= steeringSpeed;
         } else if (!isLeft && !isRight) {
-            updatedAngle *= 0.85;
+            updatedAngle *= steeringMultiplierWhenReleased;
         }
 
         steerAngle.RL = -updatedAngle;
@@ -62,7 +63,7 @@ export function updateSteering(isLeft, isRight, currentSteeringAngle, maxSteerin
         } else if (isRight && currentSteeringAngle > -maxSteeringAngle) {
             updatedAngle -= steeringSpeed;
         } else if (!isLeft && !isRight) {
-            updatedAngle *= 0.85;
+            updatedAngle *= steeringMultiplierWhenReleased;
         }
 
         steerAngle.FL = updatedAngle;
@@ -77,7 +78,7 @@ export function updateSteering(isLeft, isRight, currentSteeringAngle, maxSteerin
         } else if (isRight && currentSteeringAngle > -crabMaxAngle) {
             updatedAngle -= steeringSpeed;
         } else if (!isLeft && !isRight) {
-            updatedAngle *= 0.85;
+            updatedAngle *= steeringMultiplierWhenReleased;
         }
 
         steerAngle.FL = updatedAngle;

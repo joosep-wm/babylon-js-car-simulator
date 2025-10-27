@@ -13,23 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Babylon.js game with Vue app reference
     initializeGame(vueApp);
 
-    // Set up mode change listener after a short delay to ensure gamepadManager is initialized
-    setTimeout(() => {
-        const gamepadManager = getGamepadManager();
-        if (gamepadManager) {
-            // Set initial mode name
-            const initialMode = gamepadManager.modeManager.getCurrentMode();
-            vueApp.currentModeName = initialMode.name;
-            console.log('🎮 Initial mode set:', initialMode.name);
-
-            // Listen for mode changes
-            gamepadManager.addEventListener('modechange', (data) => {
-                vueApp.currentModeName = data.mode.name;
-                console.log('🎮 Mode indicator updated:', data.mode.name);
-            });
-        }
-    }, 500);
-
     console.log('✅ Game initialization complete!');
 
     // Expose test helpers for Task 3.2 validation

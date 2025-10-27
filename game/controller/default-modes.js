@@ -2,6 +2,8 @@
  * Default controller modes - predefined configurations
  */
 
+const maxSpeed = 10;
+
 export const defaultModes = [
   {
     name: 'Traditional Driving',
@@ -11,7 +13,7 @@ export const defaultModes = [
       forwardInput: 'RT',  // axis 7
       backwardInput: 'LT', // axis 6
       deadZone: 0.15,
-      maxSpeed: 15,
+      maxSpeed: maxSpeed,
       sensitivity: 1.0
     },
     steeringControl: {
@@ -37,7 +39,7 @@ export const defaultModes = [
       forwardInput: 'RT',  // axis 7
       backwardInput: 'LT', // axis 6
       deadZone: 0.15,
-      maxSpeed: 15,
+      maxSpeed: maxSpeed,
       sensitivity: 1.0
     },
     steeringControl: {
@@ -63,7 +65,7 @@ export const defaultModes = [
       forwardInput: 'RT',  // axis 7
       backwardInput: 'LT', // axis 6
       deadZone: 0.15,
-      maxSpeed: 15,
+      maxSpeed: maxSpeed,
       sensitivity: 1.0
     },
     steeringControl: {
@@ -89,7 +91,7 @@ export const defaultModes = [
       forwardInput: 'RT',  // axis 7
       backwardInput: 'LT', // axis 6
       deadZone: 0.15,
-      maxSpeed: 15,
+      maxSpeed: maxSpeed,
       sensitivity: 1.0
     },
     steeringControl: {
