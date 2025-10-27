@@ -22,6 +22,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     let wheelSpeed = { FL: 0, FR: 0, RL: 0, RR: 0 };
     let manualControl = { active: false };
     let controllerJumpPrev = false;
+    let keyboardJumpPrev = false;
 
     initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl);
 
@@ -38,21 +39,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             case "b": case "B": brakePressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
                 break;
             case " ":
-                if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN) {
-                    jumpPressed = true;
-                    console.log("Jump button pressed!");
-
-                    if (carFrame.physicsBody) {
-                        carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce, 0), carFrame.getAbsolutePosition());
-
-                        const currentVel = carFrame.physicsBody.getLinearVelocity();
-                        carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, jumpForce / 100, currentVel.z));
-                    } else {
-                        console.error("No physics body found on car frame!");
-                    }
-                } else {
-                    jumpPressed = false;
-                }
+                jumpPressed = e.type == BABYLON.KeyboardEventTypes.KEYDOWN ? true : false;
                 break;
             case "F11":
                 if (e.type == BABYLON.KeyboardEventTypes.KEYDOWN) {
@@ -69,6 +56,17 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     });
 
     scene.onBeforeRenderObservable.add(() => {
+        function isCarOnGround() {
+            const rayStart = carFrame.getAbsolutePosition();
+            const ray = new BABYLON.Ray(rayStart, new BABYLON.Vector3(0, -1, 0), 10);
+            const hit = scene.pickWithRay(ray, (mesh) => {
+                return mesh !== carFrame &&
+                       !mesh.name.includes('wheel') &&
+                       !mesh.name.includes('axle');
+            });
+            return hit && hit.hit;
+        }
+
         let controllerSpeed = 0;
         let controllerSteering = { FL: 0, FR: 0, RL: 0, RR: 0 };
         let controllerActions = [];
@@ -95,15 +93,23 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
         const controllerJump = controllerActions.find(a => a.action === 'jump');
         const controllerJumpJustPressed = !!controllerJump && !controllerJumpPrev;
+        const keyboardJumpJustPressed = isJump && !keyboardJumpPrev;
 
-        if (controllerJumpJustPressed && carFrame.physicsBody) {
-            console.log("Jump (controller) activated!");
-            carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce / 2, 0), carFrame.getAbsolutePosition());
+        if (keyboardJumpJustPressed && carFrame.physicsBody && isCarOnGround()) {
+            console.log("Jump (keyboard) activated!");
+            carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce, 0), carFrame.getAbsolutePosition());
             const currentVel = carFrame.physicsBody.getLinearVelocity();
-            carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x,
-                Math.min(currentVel.y + jumpForce / 200, jumpForce / 50), currentVel.z));
+            carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, jumpForce / 100, currentVel.z));
         }
 
+        if (controllerJumpJustPressed && carFrame.physicsBody && isCarOnGround()) {
+            console.log("Jump (controller) activated!");
+            carFrame.physicsBody.applyImpulse(new BABYLON.Vector3(0, jumpForce, 0), carFrame.getAbsolutePosition());
+            const currentVel = carFrame.physicsBody.getLinearVelocity();
+            carFrame.physicsBody.setLinearVelocity(new BABYLON.Vector3(currentVel.x, jumpForce / 100, currentVel.z));
+        }
+
+        keyboardJumpPrev = isJump;
         controllerJumpPrev = !!controllerJump;
 
         const controllerResetPosition = controllerActions.find(a => a.action === 'resetPosition');

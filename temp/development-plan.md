@@ -302,7 +302,7 @@ mapUtilityButtons(gamepadState, mode) {
    - Apply speed output to wheel motor forces (values will now be ~150 scale)
    - Apply steering angles to wheel joints (convert degrees to radians)
    - Process action buttons (jump, brake, etc.)
-   - Ensure jump physics matches keyboard: `applyImpulse(0, jumpForce/2, 0)` and velocity clamping with `Math.min(currentVel.y + jumpForce/200, jumpForce/50)`
+   - Ensure jump physics matches keyboard: `applyImpulse(0, jumpForce, 0)` and velocity set to `jumpForce/100` (see lines 46-49 of input-handler.js)
    - Ensure keyboard/touch fallback when controller not connected
 
 **Critical Requirements:**
@@ -322,23 +322,21 @@ mapUtilityButtons(gamepadState, mode) {
 ---
 
 ### Task 3.10: Implement Jump Action
-**Deliverable:** A button makes car jump
+**Deliverable:** A button makes car jump with ground check
 
 **Implementation:**
-```javascript
-// In babylon-game.js
-if (actions.find(a => a.action === 'jump')) {
-  carBody.physicsBody.applyForce(
-    new BABYLON.Vector3(0, jumpForce, 0),
-    carBody.getAbsolutePosition()
-  );
-}
-```
+Controller jump is handled in `input-handler.js`. Must use EXACT same physics as keyboard (lines 46-49):
+- `applyImpulse(0, jumpForce, 0)` - Initial upward force
+- `setLinearVelocity` with Y = `jumpForce/100` - Velocity cap
+- Add ground check using raycasting to prevent double-jump
+- Use edge detection (`controllerJumpJustPressed`) to trigger only on button press, not hold
+
+**Critical:** Also add ground check to keyboard jump (currently missing) for consistency.
 
 **Test:**
-1. Press A button
-2. Verify car jumps into air
-3. Verify can't double-jump (ground check)
+1. Press A button → car jumps into air
+2. Press A button mid-air → no second jump (ground check works)
+3. Verify jump height matches spacebar jump exactly
 
 ---
 
@@ -751,7 +749,6 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ⚠️ Bug 1: WebGL feedback loop (deferred - low impact on functionality)
 
 **Next Tasks (Resume Phase 3):**
-- [ ] Task 3.10: Implement Jump Action
 - [ ] Task 3.11: Implement Brake Action
 - [ ] Task 3.12: Implement Reset Position Action
 - [ ] Task 3.13: Implement Reset Wheels Action
@@ -765,6 +762,7 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ✅ Task 3.7: Implement Steering Mapping - Independent Wheels (commit 1c3133c)
 - ✅ Task 3.8: Implement Utility Button Mapping (commit 1d44ae6)
 - ✅ Task 3.9: Integrate ControlMapper with babylon-game.js (commit ba6bb08)
+- ✅ Task 3.10: Implement Jump Action (ground checks + edge detection)
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)
