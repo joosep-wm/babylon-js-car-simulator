@@ -118,6 +118,8 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             vueApp.resetGame();
         }
 
+        const controllerBrake = controllerActions.find(a => a.action === 'brake');
+
         if (!manualControl.active) {
             if (controllerConnected) {
                 steerAngle.FL = controllerSteering.FL * (Math.PI / 180);
@@ -125,7 +127,6 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 steerAngle.RL = controllerSteering.RL * (Math.PI / 180);
                 steerAngle.RR = controllerSteering.RR * (Math.PI / 180);
 
-                const controllerBrake = controllerActions.find(a => a.action === 'brake');
                 if (controllerBrake) {
                     wheelSpeed.FL = 0;
                     wheelSpeed.FR = 0;
@@ -194,7 +195,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         steeringJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.RL);
         steeringJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.RR);
 
-        if (isBrake) {
+        if (isBrake || controllerBrake) {
             motorJoints.FL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
             motorJoints.FR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
             motorJoints.RL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
