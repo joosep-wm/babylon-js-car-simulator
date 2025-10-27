@@ -71,6 +71,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         let controllerSteering = { FL: 0, FR: 0, RL: 0, RR: 0 };
         let controllerActions = [];
         let controllerConnected = false;
+        let controllerBrake = null;
 
         if (gamepadManager && controlMapper) {
             gamepadManager.pollGamepads();
@@ -81,6 +82,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 controllerSpeed = mappedOutput.speed;
                 controllerSteering = mappedOutput.steering;
                 controllerActions = mappedOutput.actions;
+                controllerBrake = controllerActions.find(a => a.action === 'brake');
             }
         }
 
@@ -125,7 +127,6 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 steerAngle.RL = controllerSteering.RL * (Math.PI / 180);
                 steerAngle.RR = controllerSteering.RR * (Math.PI / 180);
 
-                const controllerBrake = controllerActions.find(a => a.action === 'brake');
                 if (controllerBrake) {
                     wheelSpeed.FL = 0;
                     wheelSpeed.FR = 0;
@@ -170,7 +171,6 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 if (Math.abs(controllerSteering.FL) > 0.1) {
                     directions.push(controllerSteering.FL > 0 ? 'Right (Controller)' : 'Left (Controller)');
                 }
-                const controllerBrake = controllerActions.find(a => a.action === 'brake');
                 if (controllerBrake) directions.push('Brake (Controller)');
                 if (controllerJump) directions.push('Jump (Controller)');
             } else {
@@ -194,7 +194,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         steeringJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.RL);
         steeringJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.RR);
 
-        if (isBrake) {
+        if (isBrake || controllerBrake) {
             motorJoints.FL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
             motorJoints.FR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
             motorJoints.RL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
