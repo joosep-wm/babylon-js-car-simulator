@@ -344,13 +344,12 @@ Controller jump is handled in `input-handler.js`. Must use EXACT same physics as
 **Deliverable:** B button slows car down
 
 **Implementation:**
-In `game/modules/input-handler.js`:
-1. Detect brake action ONCE at the start: `const controllerBrake = controllerActions.find(a => a.action === 'brake');`
-2. When brake active, set `wheelSpeed.FL/FR/RL/RR = 0` (stops acceleration)
-3. When applying motor forces (line ~198), check `if (isBrake || controllerBrake)` and increase motor max force to 1000000 (matches keyboard brake)
-4. In UI direction display, use existing `controllerBrake` variable (DO NOT redeclare)
-
-**CRITICAL:** Declare `controllerBrake` ONLY ONCE at the top of the render loop. Reuse it for both wheelSpeed logic and UI display. No duplicate declarations.
+```javascript
+if (actions.find(a => a.action === 'brake')) {
+  // Reduce motor forces to 0
+  // Apply friction
+}
+```
 
 **Test:**
 1. Drive car at full speed
@@ -750,6 +749,7 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ⚠️ Bug 1: WebGL feedback loop (deferred - low impact on functionality)
 
 **Next Tasks (Resume Phase 3):**
+- [ ] Task 3.11: Implement Brake Action
 - [ ] Task 3.12: Implement Reset Position Action
 - [ ] Task 3.13: Implement Reset Wheels Action
 - [ ] Task 3.14: Test All 4 Default Modes End-to-End
@@ -763,7 +763,6 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ✅ Task 3.8: Implement Utility Button Mapping (commit 1d44ae6)
 - ✅ Task 3.9: Integrate ControlMapper with babylon-game.js (commit ba6bb08)
 - ✅ Task 3.10: Implement Jump Action (ground checks + edge detection)
-- ✅ Task 3.11: Implement Brake Action (commit 9f82c6a)
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)
