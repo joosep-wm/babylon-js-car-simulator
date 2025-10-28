@@ -137,7 +137,6 @@ export async function resetGame(vueApp) {
     // Dispose the current scene completely
     if (scene) {
         scene.dispose();
-        scene = null;  // Temporarily null to prevent render errors during recreation
     }
 
     // Create a fresh scene (updates module-level scene variable)
