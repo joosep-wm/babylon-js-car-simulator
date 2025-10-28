@@ -69,6 +69,7 @@ let scene;
 let engine;
 let havokInstance = null;
 let tyreMaterial;
+// Controller instances are initialized once and preserved across resets
 let gamepadManager = null;
 let modeManager = null;
 let controlMapper = null;
@@ -133,6 +134,7 @@ export function initializeGame(vueApp) {
  */
 export async function resetGame(vueApp) {
     console.log("🔄 Resetting game using Babylon.js...");
+    console.log("🔍 [DEBUG] GamepadManager before reset - Instance ID:", gamepadManager?._instanceId, "Connected:", gamepadManager?.connected);
 
     // Stop render loop before disposing scene
     engine.stopRenderLoop();
@@ -165,6 +167,7 @@ export async function resetGame(vueApp) {
     }, 100);
 
     console.log("✅ Game reset complete!");
+    console.log("🔍 [DEBUG] GamepadManager after reset - Instance ID:", gamepadManager?._instanceId, "Connected:", gamepadManager?.connected);
 }
 
 /**
@@ -214,25 +217,31 @@ async function createScene(vueApp) {
     // Initialize Havok Physics engine
     await setupPhysics(scene);
 
-    // Initialize controller system - use single ModeManager instance
-    modeManager = new ModeManager();
-    modeManager.loadModes();
+    // Initialize controller system ONCE - preserve instances across resets
+    // This ensures gamepad connection state and event listeners are maintained
+    if (!gamepadManager) {
+        console.log('🎮 [INIT] Creating controller system for first time');
+        modeManager = new ModeManager();
+        modeManager.loadModes();
 
-    gamepadManager = new GamepadManager(modeManager);
-    gamepadManager.init();
+        gamepadManager = new GamepadManager(modeManager);
+        gamepadManager.init();
 
-    // Set initial mode name in Vue
-    const initialMode = modeManager.getCurrentMode();
-    vueApp.currentModeName = initialMode.name;
-    console.log('🎮 Initial mode set:', initialMode.name);
+        controlMapper = new ControlMapper(modeManager);
 
-    // Set up mode change listener to update Vue app when mode changes
-    gamepadManager.addEventListener('modechange', (data) => {
-        vueApp.currentModeName = data.mode.name;
-        console.log('🎮 Mode indicator updated:', data.mode.name);
-    });
+        // Set up mode change listener to update Vue app when mode changes
+        gamepadManager.addEventListener('modechange', (data) => {
+            vueApp.currentModeName = data.mode.name;
+            console.log('🎮 Mode indicator updated:', data.mode.name);
+        });
+    } else {
+        console.log('🎮 [RESET] Reusing existing controller system - Instance ID:', gamepadManager._instanceId);
+    }
 
-    controlMapper = new ControlMapper(modeManager);
+    // Always sync current mode to Vue (in case mode changed during gameplay)
+    const currentMode = modeManager.getCurrentMode();
+    vueApp.currentModeName = currentMode.name;
+    console.log('🎮 Current mode:', currentMode.name);
 
     // Setup ambient lighting
     setupHemisphericLight(scene);

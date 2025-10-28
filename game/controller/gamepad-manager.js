@@ -7,8 +7,10 @@ import { ModeManager } from './mode-manager.js';
 export class GamepadManager {
   static BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
   static AXIS_NAMES = ['LS-X', 'LS-Y', 'RS-X', 'RS-Y', '', '', 'LT', 'RT'];
+  static _instanceCounter = 0;
 
   constructor(modeManager = null) {
+    this._instanceId = ++GamepadManager._instanceCounter;
     this.gamepad = null;
     this.connected = false;
     this.previousButtonState = [];
@@ -21,7 +23,7 @@ export class GamepadManager {
   }
 
   init() {
-    console.log('🎮 GamepadManager initialized. Current mode:', this.modeManager.getCurrentMode().name);
+    console.log('🎮 GamepadManager initialized. Instance ID:', this._instanceId, 'Current mode:', this.modeManager.getCurrentMode().name);
 
     this.addEventListener('buttonpress', (data) => {
       this._handleModeSwitch(data.buttonIndex);

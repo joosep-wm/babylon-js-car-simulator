@@ -371,6 +371,15 @@ if (actions.find(a => a.action === 'brake')) {
 ### Task 3.13: Implement Reset Wheels Action
 **Deliverable:** Y button resets wheel angles to 0
 
+**Implementation:**
+In `game/modules/input-handler.js`:
+1. Detect resetWheels action ONCE at the start: `const controllerResetWheels = controllerActions.find(a => a.action === 'resetWheels');`
+2. Guard normal steering updates: Add `&& !controllerResetWheels` to prevent override
+3. Apply reset AFTER steering conditionals but BEFORE physics application (after line 148, before line 201)
+4. When resetWheels active, set `steerAngle.FL/FR/RL/RR = 0`
+
+**CRITICAL:** Reset must be the LAST operation on steerAngle before physics apply. Normal steering must be SKIPPED when reset is active.
+
 **Test:**
 1. Turn wheels fully left
 2. Press Y button
@@ -730,6 +739,46 @@ After each task, run relevant tests:
 
 ---
 
+### 🔴 Bug 6: Xbox Controller Stops Working After X Button Reset (CRITICAL)
+**Severity:** CRITICAL - Core functionality broken
+**Trigger:** Pressing X button (Button 2) to reset car position
+**Expected:** Car resets, controller continues working
+**Actual:** Car resets successfully, but controller stops responding (keyboard still works)
+**Reproducibility:** 100% - Happens every time
+**Impact:** Requires page reload to use controller again
+
+**Symptoms:**
+- ✅ Car resets to spawn position successfully
+- ✅ Scene recreates without errors
+- ✅ Keyboard controls continue working
+- ❌ Xbox controller buttons/triggers/sticks stop responding
+- ✅ No JavaScript errors in console
+
+**Previous Fix Attempts (All Failed):**
+- Commit 82fb36e: Fixed controllerState redefine error
+- Commit c31b5bd: Fixed camera verification
+- Commit 143fa36: Changed render loop to module-level scene
+- Commit d94f93f: Removed scene=null
+- Commit bc96939: Added stop/restart render loop
+
+**Root Cause Theories:**
+1. Gamepad polling observer lost after scene disposal
+2. GamepadManager instance confusion
+3. Input handler re-initialization issue
+4. Event listener cleanup problems
+
+**Detailed Analysis:** See `temp/BUG-xbox-controller-stops-after-reset.md`
+
+**Files Involved:**
+- game/babylon-game.js (scene reset, gamepad polling)
+- game/controller/gamepad-manager.js (polling, init)
+- game/modules/input-handler.js (controller integration)
+
+**Status:** ❌ Not Fixed - Requires agentic AI debugging approach
+**Priority:** BLOCKS PHASE 3 COMPLETION
+
+---
+
 ## CURRENT STATUS
 
 **Phase 2 Complete! ✅**
@@ -741,16 +790,18 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ✅ Analog processing utilities
 - ✅ HUD mode indicator component
 
-**✅ CRITICAL BUGS FIXED!**
-**All high-priority bugs resolved and validated:**
+**✅ CRITICAL BUG BLOCKING PHASE 3:**
+- ✅ Bug 6: Xbox Controller Stops After Reset (CRITICAL - needs AI debugging)
+
+**✅ PREVIOUSLY FIXED BUGS:**
 - ✅ Bug 2: Mode switching broken (FIXED - commit 35912b1)
 - ✅ Bug 3: Speed control not working (FIXED - commit a1d57e1)
 - ✅ Bug 4: X button camera error (FIXED - commit b8605e4)
-- ⚠️ Bug 1: WebGL feedback loop (deferred - low impact on functionality)
+- ✅ Bug 1: WebGL feedback loop (deferred - low impact on functionality)
 
-**Next Tasks (Resume Phase 3):**
-- [ ] Task 3.13: Implement Reset Wheels Action
-- [ ] Task 3.14: Test All 4 Default Modes End-to-End
+**Next Tasks:**
+- [x] **CRITICAL:** Fix Bug 6 - Xbox Controller Stops After Reset (see temp/BUG-xbox-controller-stops-after-reset.md)
+- [x] Task 3.14: Test All 4 Default Modes End-to-End (blocked by Bug 6)
 
 **Completed in Phase 3:**
 - ✅ Task 3.1: Create ControlMapper Class (commit c24b14e)
@@ -763,6 +814,7 @@ All Phase 2 tasks (2.1-2.8) completed successfully:
 - ✅ Task 3.10: Implement Jump Action (ground checks + edge detection)
 - ✅ Task 3.11: Implement Brake Action (commit 9f82c6a)
 - ✅ Task 3.12: Implement Reset Position Action (already implemented, X button calls resetGame)
+- ✅ Task 3.13: Implement Reset Wheels Action (commit 0313b0c)
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)
