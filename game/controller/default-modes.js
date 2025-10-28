@@ -2,7 +2,7 @@
  * Default controller modes - predefined configurations
  */
 
-const maxSpeed = 10;
+const maxSpeed = 20;
 
 export const defaultModes = [
   {
