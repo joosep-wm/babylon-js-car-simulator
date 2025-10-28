@@ -140,11 +140,17 @@ export async function resetGame(vueApp) {
     }
 
     // Create a fresh scene
-    const newScene = await createScene(vueApp);
+    await createScene(vueApp);
+
+    // Verify camera is set before starting render loop
+    if (!scene.activeCamera) {
+        console.error("❌ No active camera after scene creation!");
+        return;
+    }
 
     // Restart the render loop with the new scene
     engine.runRenderLoop(() => {
-        newScene.render();
+        scene.render();
     });
 
     // Re-focus canvas for immediate input
