@@ -81,6 +81,10 @@ export function getGamepadManager() {
     return gamepadManager;
 }
 
+export function getModeManager() {
+    return modeManager;
+}
+
 // ============================================================================
 // MAIN INITIALIZATION
 // ============================================================================

@@ -104,3 +104,124 @@
     font-size: 1rem;
     margin: 0;
 }
+
+.mode-list-section {
+    width: 100%;
+}
+
+.mode-list-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    color: #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mode-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mode-item {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(51, 65, 85, 0.4));
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.mode-item:hover {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.6));
+    border-color: rgba(148, 163, 184, 0.4);
+    transform: translateX(4px);
+}
+
+.mode-active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(124, 58, 237, 0.2));
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.mode-active:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(124, 58, 237, 0.3));
+    border-color: rgba(139, 92, 246, 0.8);
+}
+
+.mode-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.mode-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 0.25rem;
+}
+
+.mode-active .mode-name {
+    color: #c4b5fd;
+}
+
+.mode-description {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.mode-active .mode-description {
+    color: #a78bfa;
+}
+
+.mode-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+.mode-button {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mode-edit {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.7));
+    color: white;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.mode-edit:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 0.9));
+    transform: scale(1.05);
+}
+
+.mode-edit:active {
+    transform: scale(0.95);
+}
+
+.mode-delete {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.7));
+    color: white;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.mode-delete:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 0.9));
+    transform: scale(1.05);
+}
+
+.mode-delete:active {
+    transform: scale(0.95);
+}

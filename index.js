@@ -1,5 +1,5 @@
 // index.js - Main Entry Point
-import { initializeGame, getGamepadManager } from './game/babylon-game.js';
+import { initializeGame, getGamepadManager, getModeManager } from './game/babylon-game.js';
 import { createVueApp } from './vue-app.js';
 import { createTestHelpers } from './game/testing/control-mapper-test.js';
 
@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.controlMapperTests = createTestHelpers();
     console.log('🧪 Test helpers available: window.controlMapperTests.testTriggerMode()');
 
-    // Expose getGamepadManager for testing
+    // Expose getGamepadManager and getModeManager for testing
     window.getGamepadManager = getGamepadManager;
+    window.getModeManager = getModeManager;
 });
