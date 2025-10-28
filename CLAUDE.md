@@ -49,6 +49,8 @@ Project-specific agents in `.claude/agents/`:
 * `temp/M2-PHASE-1-COMPLETE.md`: M2 phase 1 completion report
 * `temp/M2-phase2-archive.md`: M2 phase 2 archive (Mode System)
 * `temp/M2-PHASE-2-COMPLETE.md`: M2 phase 2 completion report
+* `temp/M2-phase3-archive.md`: M2 phase 3 archive (Control Mapping)
+* `temp/M2-PHASE-3-COMPLETE.md`: M2 phase 3 completion report
 * `temp/testing-strategy.md`: Comprehensive incremental testing strategy for validating changes
 * `docs/prd.md`: Product Requirements Document with full specifications
 * `docs/testing-tools.md`: Debug overlay (F11) and console test helpers (`window.testHelpers`) reference

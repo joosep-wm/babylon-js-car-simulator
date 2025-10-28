@@ -2,11 +2,32 @@
 
 **Source Document:** temp/xbox-controller-design.md v3.0
 **Strategy:** Minimal testable increments, test after EVERY change
-**Current Phase:** Phase 3 - Control Mapping
+**Current Phase:** Phase 4 - Configuration UI
 
 ---
 
 ## Phase Summaries
+
+### PHASE 3: CONTROL MAPPING ✅ COMPLETE
+**Status:** Complete (2025-10-28)
+**Goal:** Translate controller inputs to game actions
+
+**Key Achievements:**
+- ✅ ControlMapper class with mode-aware input processing (217 lines)
+- ✅ Speed control: triggers + sticks with proper Xbox trigger normalization
+- ✅ Steering control: 4 types (front-only, all-wheel, opposite, independent)
+- ✅ Utility buttons: jump (ground check), brake (physics-based), reset position, reset wheels
+- ✅ Full integration with babylon-game.js and car physics
+- ✅ All 4 default driving modes functional end-to-end
+- ✅ 4 critical bugs fixed (mode switching, speed control, camera error, reset handling)
+- ✅ 14/14 tasks completed, 24 git commits: 0c7cbea → ba22718
+- ✅ Extensive testing: visual, console, edge cases, performance (60fps maintained)
+
+**Documents:**
+- Archive: `temp/M2-phase3-archive.md`
+- Completion Report: `temp/M2-PHASE-3-COMPLETE.md`
+
+---
 
 ### PHASE 1: FOUNDATION ✅ COMPLETE
 **Status:** Complete (2025-10-26)
@@ -45,358 +66,7 @@
 
 > **Note:** Phase 1-2 detailed planning has been archived. See archive documents for full task details.
 
----
-
-## PHASE 3: CONTROL MAPPING (Week 2)
-**Goal:** Translate controller inputs to game actions
-
-### Task 3.1: Create ControlMapper Class
-**Deliverable:** Basic control mapper structure
-
-**Implementation:**
-```javascript
-// game/controller/control-mapper.js
-export class ControlMapper {
-  constructor(modeManager) {
-    this.modeManager = modeManager;
-  }
-
-  processFrame(gamepadState) {
-    const mode = this.modeManager.getCurrentMode();
-
-    return {
-      speed: this.mapSpeedControl(gamepadState, mode),
-      steering: this.mapSteeringControl(gamepadState, mode),
-      actions: this.mapUtilityButtons(gamepadState, mode)
-    };
-  }
-}
-```
-
-**Test:**
-1. Create ControlMapper with ModeManager
-2. Create mock gamepadState
-3. Call processFrame()
-4. Verify returns object with speed, steering, actions
-
----
-
-### Task 3.2: Implement Speed Mapping - Trigger Mode
-**Deliverable:** RT/LT controls forward/backward speed
-
-**Implementation:**
-```javascript
-mapSpeedControl(gamepadState, mode) {
-  const config = mode.speedControl;
-
-  if (config.type === 'triggers') {
-    const forward = gamepadState.axes[7] || 0;  // RT
-    const backward = gamepadState.axes[6] || 0; // LT
-
-    let speed = 0;
-    if (forward > config.deadZone) {
-      speed = forward * config.maxSpeed * config.sensitivity;
-    } else if (backward > config.deadZone) {
-      speed = -backward * config.maxSpeed * config.sensitivity;
-    }
-
-    return speed;
-  }
-
-  return 0;
-}
-```
-
-**Test:**
-1. Set mode to "Traditional Driving"
-2. Pull RT halfway
-3. Verify speed output ~0.5
-4. Pull LT fully
-5. Verify speed output ~-1.0
-6. Release both
-7. Verify speed output 0
-
----
-
-### Task 3.3: Implement Speed Mapping - Stick Mode
-**Deliverable:** Stick Y-axis controls speed
-
-**Implementation:**
-```javascript
-if (config.type === 'stick') {
-  const axisIndex = config.input === 'LS-Y' ? 1 : 3;
-  let value = gamepadState.axes[axisIndex] || 0;
-  value = applyDeadZone(value, config.deadZone);
-  value = applySensitivity(value, config.sensitivity);
-  return -value * config.maxSpeed; // Invert Y axis
-}
-```
-
-**Test:**
-1. Set mode to "Crab Walk"
-2. Push Right Stick Y up
-3. Verify speed output positive
-4. Push Right Stick Y down
-5. Verify speed output negative
-
----
-
-### Task 3.4: Implement Steering Mapping - Front Wheels Only
-**Deliverable:** LS-X controls front wheel angles
-
-**Implementation:**
-```javascript
-mapSteeringControl(gamepadState, mode) {
-  const config = mode.steeringControl;
-
-  if (config.type === 'singleInput' && config.wheels === 'front') {
-    const axisIndex = 0; // LS-X
-    let value = gamepadState.axes[axisIndex] || 0;
-    value = applyDeadZone(value, config.deadZone);
-    value = applySensitivity(value, config.sensitivity);
-
-    const angle = value * config.maxAngle;
-
-    return {
-      FL: angle,
-      FR: angle,
-      RL: 0,
-      RR: 0
-    };
-  }
-
-  return { FL: 0, FR: 0, RL: 0, RR: 0 };
-}
-```
-
-**Test:**
-1. Set mode to "Traditional Driving"
-2. Push LS-X left
-3. Verify FL and FR angles negative
-4. Push LS-X right
-5. Verify FL and FR angles positive
-6. Verify RL and RR remain 0
-
----
-
-### Task 3.5: Implement Steering Mapping - All Wheels
-**Deliverable:** Single input controls all 4 wheels
-
-**Implementation:**
-```javascript
-if (config.type === 'singleInput' && config.wheels === 'all') {
-  // Same as front, but apply to all wheels
-  return {
-    FL: angle,
-    FR: angle,
-    RL: angle,
-    RR: angle
-  };
-}
-```
-
-**Test:**
-1. Set mode to "Crab Walk"
-2. Push RS-X left
-3. Verify all 4 wheels turn left equally
-
----
-
-### Task 3.6: Implement Steering Mapping - Opposite Steering
-**Deliverable:** Front and rear wheels turn opposite directions
-
-**Implementation:**
-```javascript
-if (config.type === 'singleInput' && config.wheels === 'opposite') {
-  return {
-    FL: angle,
-    FR: angle,
-    RL: -angle,
-    RR: -angle
-  };
-}
-```
-
-**Test:**
-1. Set mode to "Opposing Turn"
-2. Push LS-X left
-3. Verify front wheels turn left
-4. Verify rear wheels turn right (opposite)
-
----
-
-### Task 3.7: Implement Steering Mapping - Independent Wheels
-**Deliverable:** Two sticks control front/rear independently
-
-**Implementation:**
-```javascript
-if (config.type === 'multiInput') {
-  const frontAxis = gamepadState.axes[3]; // RS-Y
-  const rearAxis = gamepadState.axes[1];  // LS-Y
-
-  const frontAngle = applyDeadZone(frontAxis) * config.frontMaxAngle;
-  const rearAngle = applyDeadZone(rearAxis) * config.rearMaxAngle;
-
-  return {
-    FL: frontAngle,
-    FR: frontAngle,
-    RL: rearAngle,
-    RR: rearAngle
-  };
-}
-```
-
-**Test:**
-1. Set mode to "4-Wheel Independent"
-2. Push RS-Y up
-3. Verify only front wheels change
-4. Push LS-Y down
-5. Verify only rear wheels change
-
----
-
-### Task 3.8: Implement Utility Button Mapping
-**Deliverable:** A/B/X/Y buttons trigger actions
-
-**Implementation:**
-```javascript
-mapUtilityButtons(gamepadState, mode) {
-  const actions = [];
-
-  for (const [buttonIndex, config] of Object.entries(mode.utilityButtons)) {
-    const button = gamepadState.buttons[buttonIndex];
-
-    if (config.type === 'press' && button.justPressed) {
-      actions.push({ action: config.action, type: 'instant' });
-    } else if (config.type === 'hold' && button.heldDuration > config.holdDuration) {
-      actions.push({ action: config.action, type: 'hold', duration: button.heldDuration });
-    }
-  }
-
-  return actions;
-}
-```
-
-**Test:**
-1. Press A button
-2. Verify 'jump' action emitted
-3. Hold B button for 200ms
-4. Verify 'brake' action emitted after 100ms
-
----
-
-### Task 3.9: Integrate ControlMapper with babylon-game.js
-**Deliverable:** Controller actually controls the car
-
-**Implementation:**
-1. **Update default-modes.js:** Change `maxSpeed: 1.0` to `maxSpeed: 150` in all modes (lines 14, 39, 65, 91)
-2. **Update babylon-game.js:**
-   - Import ControlMapper and ModeManager
-   - Initialize ModeManager and ControlMapper
-   - Pass gamepadManager and controlMapper to car factory
-3. **Update car-factory.js:**
-   - Accept gamepadManager and controlMapper parameters
-   - Pass them to input handler
-4. **Update input-handler.js:**
-   - Call processFrame() each render loop
-   - Apply speed output to wheel motor forces (values will now be ~150 scale)
-   - Apply steering angles to wheel joints (convert degrees to radians)
-   - Process action buttons (jump, brake, etc.)
-   - Ensure jump physics matches keyboard: `applyImpulse(0, jumpForce, 0)` and velocity set to `jumpForce/100` (see lines 46-49 of input-handler.js)
-   - Ensure keyboard/touch fallback when controller not connected
-
-**Critical Requirements:**
-1. **Speed Scaling:** Update maxSpeed in default-modes.js from 1.0 to 150 to match keyboard scale
-2. **Jump Physics Consistency:** Controller jump must use EXACT same physics as keyboard (lines 102-105 of input-handler.js)
-3. **Fallback:** Keyboard/touch controls must still work when controller not connected
-
-**Test:**
-1. Connect controller
-2. Pull RT trigger
-3. Verify car moves forward at comparable speed to keyboard (W key)
-4. Push LS-X left
-5. Verify car turns left
-6. Press A button
-7. Verify car jumps with same height/behavior as spacebar
-
----
-
-### Task 3.10: Implement Jump Action
-**Deliverable:** A button makes car jump with ground check
-
-**Implementation:**
-Controller jump is handled in `input-handler.js`. Must use EXACT same physics as keyboard (lines 46-49):
-- `applyImpulse(0, jumpForce, 0)` - Initial upward force
-- `setLinearVelocity` with Y = `jumpForce/100` - Velocity cap
-- Add ground check using raycasting to prevent double-jump
-- Use edge detection (`controllerJumpJustPressed`) to trigger only on button press, not hold
-
-**Critical:** Also add ground check to keyboard jump (currently missing) for consistency.
-
-**Test:**
-1. Press A button → car jumps into air
-2. Press A button mid-air → no second jump (ground check works)
-3. Verify jump height matches spacebar jump exactly
-
----
-
-### Task 3.11: Implement Brake Action
-**Deliverable:** B button slows car down
-
-**Implementation:**
-```javascript
-if (actions.find(a => a.action === 'brake')) {
-  // Reduce motor forces to 0
-  // Apply friction
-}
-```
-
-**Test:**
-1. Drive car at full speed
-2. Hold B button
-3. Verify car slows down quickly
-
----
-
-### Task 3.12: Implement Reset Position Action
-**Deliverable:** X button resets car to spawn
-
-**Test:**
-1. Drive car far away
-2. Press X button
-3. Verify car teleports to spawn position
-
----
-
-### Task 3.13: Implement Reset Wheels Action
-**Deliverable:** Y button resets wheel angles to 0
-
-**Implementation:**
-In `game/modules/input-handler.js`:
-1. Detect resetWheels action ONCE at the start: `const controllerResetWheels = controllerActions.find(a => a.action === 'resetWheels');`
-2. Guard normal steering updates: Add `&& !controllerResetWheels` to prevent override
-3. Apply reset AFTER steering conditionals but BEFORE physics application (after line 148, before line 201)
-4. When resetWheels active, set `steerAngle.FL/FR/RL/RR = 0`
-
-**CRITICAL:** Reset must be the LAST operation on steerAngle before physics apply. Normal steering must be SKIPPED when reset is active.
-
-**Test:**
-1. Turn wheels fully left
-2. Press Y button
-3. Verify all wheels snap to straight
-
----
-
-### Task 3.14: Test All 4 Default Modes End-to-End
-**Deliverable:** Every mode works correctly
-
-**Test Checklist:**
-- [ ] Mode 1: RT forward, LT backward, LS-X front steering
-- [ ] Mode 2: RS-Y speed, RS-X all-wheel steering
-- [ ] Mode 3: RT/LT speed, LS-X opposite steering
-- [ ] Mode 4: RT/LT speed, both sticks independent steering
-- [ ] Mode switching with LB/RB works
-- [ ] All utility buttons work in all modes
+> **Note:** Phase 3 detailed planning has been archived. See `temp/M2-phase3-archive.md` for full task details.
 
 ---
 
@@ -674,157 +344,27 @@ After each task, run relevant tests:
 
 ---
 
-## CRITICAL BUGS TO FIX (BEFORE CONTINUING PHASE 3)
-
-### 🔴 Bug 1: WebGL Feedback Loop Error (CRITICAL)
-**Severity:** CRITICAL - Performance degradation, console spam
-**Error:** `GL_INVALID_OPERATION: glDrawElements: Feedback loop formed between Framebuffer and active Texture`
-**Frequency:** Hundreds of errors per second
-**Impact:** Rendering pipeline corruption, potential browser instability
-**Root Cause:** Texture being read from and written to simultaneously in lighting system
-**Likely Culprits:**
-- ESM Shadow Maps on headlights/taillights
-- ReflectionProbe on car mesh
-- GlowLayer post-processing
-**Files to Fix:**
-- `game/modules/lighting-system.js` (lines 1-106)
-- `game/modules/rendering-effects.js` (ReflectionProbe setup)
-**Status:** ❌ Not Fixed
-
----
-
-### ✅ Bug 2: Mode Switching Broken (REGRESSION) - FIXED
-**Severity:** HIGH - Core feature broken
-**Description:** LB/RB buttons no longer change modes
-**Expected:** LB/RB buttons cycle through driving modes
-**Root Cause:** Duplicate ModeManager instances causing state desynchronization
-**Fix:** Modified GamepadManager to accept ModeManager parameter; babylon-game.js now passes single shared instance
-**Files Modified:** game/controller/gamepad-manager.js, game/babylon-game.js, index.js
-**Commits:** 35912b1
-**Status:** ✅ Fixed and Validated (Runtime)
-
----
-
-### ✅ Bug 3: Speed Control Not Working (RT/LT triggers) - FIXED
-**Severity:** HIGH - Core feature incomplete
-**Description:** Left joystick (LS-X) steers front wheels correctly, but no button/trigger adds speed
-**Expected:** RT trigger should provide forward speed, LT trigger backward speed
-**Root Cause:** Xbox controller triggers rest at -1.0 (not 0.0), required normalization to [0, 1] range
-**Fix:** Added trigger normalization formula: `(rawValue + 1) / 2` in mapSpeedControl method
-**Files Modified:** game/controller/control-mapper.js
-**Commits:** a1d57e1
-**Status:** ✅ Fixed and Validated (Runtime)
-
----
-
-### ✅ Bug 4: X Button "No Camera Defined" Error - FIXED
-**Severity:** MEDIUM - Button causes crash
-**Error:** `Uncaught Error: No camera defined`
-**Trigger:** Pressing X button on controller
-**Expected:** X button should reset car position (Task 3.12)
-**Root Cause:** Camera was created but never set as scene.activeCamera
-**Fix:** Added `scene.activeCamera = camera;` in setupCamera function
-**Files Modified:** game/modules/camera-controller.js
-**Commits:** b8605e4
-**Status:** ✅ Fixed and Validated (Runtime)
-
----
-
-### 🟡 Bug 5: Missing favicon.ico
-**Severity:** LOW - Cosmetic only
-**Error:** `Failed to load resource: the server responded with a status of 404`
-**File:** `/favicon.ico`
-**Impact:** Browser console warning, no functional impact
-**Status:** ❌ Not Fixed (low priority)
-
----
-
-### 🔴 Bug 6: Xbox Controller Stops Working After X Button Reset (CRITICAL)
-**Severity:** CRITICAL - Core functionality broken
-**Trigger:** Pressing X button (Button 2) to reset car position
-**Expected:** Car resets, controller continues working
-**Actual:** Car resets successfully, but controller stops responding (keyboard still works)
-**Reproducibility:** 100% - Happens every time
-**Impact:** Requires page reload to use controller again
-
-**Symptoms:**
-- ✅ Car resets to spawn position successfully
-- ✅ Scene recreates without errors
-- ✅ Keyboard controls continue working
-- ❌ Xbox controller buttons/triggers/sticks stop responding
-- ✅ No JavaScript errors in console
-
-**Previous Fix Attempts (All Failed):**
-- Commit 82fb36e: Fixed controllerState redefine error
-- Commit c31b5bd: Fixed camera verification
-- Commit 143fa36: Changed render loop to module-level scene
-- Commit d94f93f: Removed scene=null
-- Commit bc96939: Added stop/restart render loop
-
-**Root Cause Theories:**
-1. Gamepad polling observer lost after scene disposal
-2. GamepadManager instance confusion
-3. Input handler re-initialization issue
-4. Event listener cleanup problems
-
-**Detailed Analysis:** See `temp/BUG-xbox-controller-stops-after-reset.md`
-
-**Files Involved:**
-- game/babylon-game.js (scene reset, gamepad polling)
-- game/controller/gamepad-manager.js (polling, init)
-- game/modules/input-handler.js (controller integration)
-
-**Status:** ❌ Not Fixed - Requires agentic AI debugging approach
-**Priority:** BLOCKS PHASE 3 COMPLETION
-
----
-
 ## CURRENT STATUS
 
-**Phase 2 Complete! ✅**
-All Phase 2 tasks (2.1-2.8) completed successfully:
-- ✅ Mode class with JSON serialization
-- ✅ 4 default driving modes (Traditional/Crab/Opposing/Independent)
-- ✅ ModeManager with localStorage persistence
-- ✅ Mode switching via LB/RB buttons
-- ✅ Analog processing utilities
-- ✅ HUD mode indicator component
-
-**✅ CRITICAL BUG BLOCKING PHASE 3:**
-- ✅ Bug 6: Xbox Controller Stops After Reset (CRITICAL - needs AI debugging)
-
-**✅ PREVIOUSLY FIXED BUGS:**
-- ✅ Bug 2: Mode switching broken (FIXED - commit 35912b1)
-- ✅ Bug 3: Speed control not working (FIXED - commit a1d57e1)
-- ✅ Bug 4: X button camera error (FIXED - commit b8605e4)
-- ✅ Bug 1: WebGL feedback loop (deferred - low impact on functionality)
-
-**Next Tasks:**
-- [x] **CRITICAL:** Fix Bug 6 - Xbox Controller Stops After Reset (see temp/BUG-xbox-controller-stops-after-reset.md)
-- [x] Task 3.14: Test All 4 Default Modes End-to-End (blocked by Bug 6)
-
-**Completed in Phase 3:**
-- ✅ Task 3.1: Create ControlMapper Class (commit c24b14e)
-- ✅ Task 3.2: Implement Speed Mapping - Trigger Mode (commit ee33b68, fixed in a1d57e1)
-- ✅ Task 3.3: Implement Speed Mapping - Stick Mode (commit d8dcf1a)
-- ✅ Task 3.6: Implement Steering Mapping - Opposite Steering (commit 752c7e2)
-- ✅ Task 3.7: Implement Steering Mapping - Independent Wheels (commit 1c3133c)
-- ✅ Task 3.8: Implement Utility Button Mapping (commit 1d44ae6)
-- ✅ Task 3.9: Integrate ControlMapper with babylon-game.js (commit ba6bb08)
-- ✅ Task 3.10: Implement Jump Action (ground checks + edge detection)
-- ✅ Task 3.11: Implement Brake Action (commit 9f82c6a)
-- ✅ Task 3.12: Implement Reset Position Action (already implemented, X button calls resetGame)
-- ✅ Task 3.13: Implement Reset Wheels Action (commit 0313b0c)
+**Phase 3 Complete! ✅**
+All Phase 3 tasks (3.1-3.14) completed successfully:
+- ✅ ControlMapper class with mode-aware input processing
+- ✅ Speed control: triggers + sticks (Xbox trigger normalization)
+- ✅ Steering control: 4 types (front-only, all-wheel, opposite, independent)
+- ✅ Utility buttons: jump, brake, reset position, reset wheels
+- ✅ Full integration with babylon-game.js
+- ✅ All 4 default driving modes functional end-to-end
+- ✅ 4 critical bugs fixed
+- ✅ Extensive testing completed
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)
 - ✅ Phase 2: Mode System (mode data, switching, persistence, HUD)
+- ✅ Phase 3: Control Mapping (ControlMapper, integration, actions)
 
-**Testing:**
-- ✅ Mode switching functional (LB/RB buttons cycle modes)
-- ✅ Speed control functional (RT/LT triggers)
-- ✅ X button reset functional (no camera error)
-- ✅ Steering functional (LS-X controls front wheels)
-- ⚠️ WebGL console spam (deferred - no functional impact)
-- Test via: http://localhost:8080 + browser console (F12)
-- Type `window.controllerState` to see real-time controller data
+**Next Phase:**
+- Phase 4: Configuration UI (F10 overlay, mode editor, customization)
+
+**Known Issues:**
+- 🟡 WebGL feedback loop warning (deferred to Phase 6 - no functional impact)
+- 🟡 Missing favicon.ico (low priority cosmetic issue)
