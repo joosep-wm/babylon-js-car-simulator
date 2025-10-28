@@ -79,4 +79,25 @@ export class ModeManager {
     this._syncKeyboardSteeringMode();
     return this.getCurrentMode();
   }
+
+  reorderModes(fromIndex, toIndex) {
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || fromIndex >= this.modes.length) return;
+    if (toIndex < 0 || toIndex >= this.modes.length) return;
+
+    const movedMode = this.modes[fromIndex];
+    this.modes.splice(fromIndex, 1);
+    this.modes.splice(toIndex, 0, movedMode);
+
+    if (this.currentIndex === fromIndex) {
+      this.currentIndex = toIndex;
+    } else if (fromIndex < this.currentIndex && toIndex >= this.currentIndex) {
+      this.currentIndex--;
+    } else if (fromIndex > this.currentIndex && toIndex <= this.currentIndex) {
+      this.currentIndex++;
+    }
+
+    this.saveModes();
+    console.log('🎮 Modes reordered:', this.modes.map(m => m.name));
+  }
 }

@@ -5,7 +5,9 @@ export const ControllerConfigUI = {
     data() {
         return {
             visible: false,
-            refreshKey: 0
+            refreshKey: 0,
+            draggedIndex: null,
+            dragOverIndex: null
         };
     },
     computed: {
@@ -59,6 +61,44 @@ export const ControllerConfigUI = {
         },
         deleteMode(index) {
             console.log('Delete mode:', index);
+        },
+        handleDragStart(e, index) {
+            this.draggedIndex = index;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', index);
+            e.target.style.opacity = '0.4';
+        },
+        handleDragEnd(e) {
+            e.target.style.opacity = '1';
+            this.draggedIndex = null;
+            this.dragOverIndex = null;
+        },
+        handleDragOver(e, index) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.dragOverIndex = index;
+        },
+        handleDragEnter(e, index) {
+            e.preventDefault();
+            this.dragOverIndex = index;
+        },
+        handleDragLeave() {
+            this.dragOverIndex = null;
+        },
+        handleDrop(e, toIndex) {
+            e.preventDefault();
+            const fromIndex = this.draggedIndex;
+
+            if (fromIndex !== null && fromIndex !== toIndex) {
+                const manager = getModeManager();
+                if (manager) {
+                    manager.reorderModes(fromIndex, toIndex);
+                    this.refreshKey++;
+                }
+            }
+
+            this.draggedIndex = null;
+            this.dragOverIndex = null;
         }
     },
     template: `
@@ -75,7 +115,19 @@ export const ControllerConfigUI = {
                             <div
                                 v-for="(mode, index) in modes"
                                 :key="index"
-                                :class="['mode-item', { 'mode-active': index === activeModeIndex }]"
+                                :class="[
+                                    'mode-item',
+                                    { 'mode-active': index === activeModeIndex },
+                                    { 'mode-dragging': draggedIndex === index },
+                                    { 'mode-drag-over': dragOverIndex === index }
+                                ]"
+                                draggable="true"
+                                @dragstart="handleDragStart($event, index)"
+                                @dragend="handleDragEnd"
+                                @dragover="handleDragOver($event, index)"
+                                @dragenter="handleDragEnter($event, index)"
+                                @dragleave="handleDragLeave"
+                                @drop="handleDrop($event, index)"
                             >
                                 <div class="mode-info">
                                     <div class="mode-name">{{ mode.name }}</div>
