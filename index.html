@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/mobile-controls.css">
     <link rel="stylesheet" href="css/desktop-controls.css">
     <link rel="stylesheet" href="css/mode-indicator.css">
+    <link rel="stylesheet" href="css/controller-config.css">
 </head>
 
 <body>
@@ -41,6 +42,10 @@
         <mobile-controls :is-touch-device="isTouchDevice" @update-touch-controls="onTouchControlsUpdate"
             @reset-game="onMobileReset">
         </mobile-controls>
+
+        <!-- Controller Config UI Component -->
+        <controller-config-ui>
+        </controller-config-ui>
     </div>
 </body>
 
