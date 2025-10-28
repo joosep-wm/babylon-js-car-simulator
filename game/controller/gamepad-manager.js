@@ -44,9 +44,13 @@ export class GamepadManager {
       this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
     });
 
-    Object.defineProperty(window, 'controllerState', {
-      get: () => this.getGamepadState()
-    });
+    // Only define controllerState if it doesn't exist yet (prevents error on scene reset)
+    if (!window.hasOwnProperty('controllerState')) {
+      Object.defineProperty(window, 'controllerState', {
+        get: () => this.getGamepadState(),
+        configurable: true  // Allow redefinition if needed
+      });
+    }
   }
 
   addEventListener(type, callback) {
