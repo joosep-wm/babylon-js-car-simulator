@@ -134,13 +134,15 @@ export function initializeGame(vueApp) {
 export async function resetGame(vueApp) {
     console.log("🔄 Resetting game using Babylon.js...");
 
+    // Stop render loop before disposing scene
+    engine.stopRenderLoop();
+
     // Dispose the current scene completely
     if (scene) {
         scene.dispose();
     }
 
     // Create a fresh scene (updates module-level scene variable)
-    // The existing render loop will automatically use the new scene
     await createScene(vueApp);
 
     // Verify camera is set
@@ -148,6 +150,13 @@ export async function resetGame(vueApp) {
         console.error("❌ No active camera after scene creation!");
         return;
     }
+
+    // Restart render loop with module-level scene
+    engine.runRenderLoop(() => {
+        if (scene) {
+            scene.render();
+        }
+    });
 
     // Re-focus canvas for immediate input
     setTimeout(() => {
