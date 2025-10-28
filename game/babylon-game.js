@@ -94,10 +94,13 @@ export function initializeGame(vueApp) {
     engine = new BABYLON.Engine(canvas, true);
 
     // Create the complete game scene (async operation)
-    createScene(vueApp).then(sceneInstance => {
-        // Start the render loop
+    createScene(vueApp).then(() => {
+        // Start the render loop using module-level scene variable
+        // This ensures render loop always uses the current scene (important for reset functionality)
         engine.runRenderLoop(() => {
-            sceneInstance.render();
+            if (scene) {
+                scene.render();
+            }
         });
 
         // Handle window resize events
@@ -131,27 +134,21 @@ export function initializeGame(vueApp) {
 export async function resetGame(vueApp) {
     console.log("🔄 Resetting game using Babylon.js...");
 
-    // Stop the render loop
-    engine.stopRenderLoop();
-
     // Dispose the current scene completely
     if (scene) {
         scene.dispose();
+        scene = null;  // Temporarily null to prevent render errors during recreation
     }
 
-    // Create a fresh scene
+    // Create a fresh scene (updates module-level scene variable)
+    // The existing render loop will automatically use the new scene
     await createScene(vueApp);
 
-    // Verify camera is set before starting render loop
-    if (!scene.activeCamera) {
+    // Verify camera is set
+    if (!scene || !scene.activeCamera) {
         console.error("❌ No active camera after scene creation!");
         return;
     }
-
-    // Restart the render loop with the new scene
-    engine.runRenderLoop(() => {
-        scene.render();
-    });
 
     // Re-focus canvas for immediate input
     setTimeout(() => {
