@@ -73,7 +73,7 @@
 ## PHASE 4: CONFIGURATION UI (Week 2-3)
 **Goal:** Visual mode editor
 
-### Task 4.1: Create Controller Config UI Component Shell
+### Task 4.1: Create Controller Config UI Component Shell ✅ COMPLETE
 **Deliverable:** Empty Vue overlay component
 
 **Implementation:**
@@ -82,60 +82,51 @@
 - F10 hotkey to toggle overlay
 - Basic modal layout
 
-**Test:**
-1. Press F10
-2. Verify overlay appears
-3. Press F10 again
-4. Verify overlay closes
+**Status:** Completed 2025-10-28 | Commit: fa22bad
 
 ---
 
-### Task 4.2: Create Mode List View
-**Deliverable:** Display all modes in list
+### Task 4.2: Create Mode List View ✅ COMPLETE
+**Deliverable:** Display all modes in list with reactive updates
 
 **Implementation:**
 - Show mode name and description
 - Active mode highlighted
 - Edit button per mode
 - Delete button per mode
+- Vue reactivity using refreshKey + 100ms polling (technical debt for Phase 6)
 
-**Test:**
-1. Open config UI
-2. Verify 4 default modes listed
-3. Verify "Traditional Driving" highlighted as active
+**Status:** Completed 2025-10-28 | Commit: b9e2094
 
 ---
 
-### Task 4.3: Implement Mode Reordering
+### Task 4.3: Implement Mode Reordering ✅ COMPLETE
 **Deliverable:** Drag-to-reorder modes
 
-**Test:**
-1. Drag "Crab Walk" to position 1
-2. Switch modes with RB
-3. Verify cycle order changed
+**Implementation:**
+- Full drag-and-drop with visual feedback
+- ModeManager.reorderModes() method
+- Active mode tracking during reorder
+- localStorage persistence
+
+**Status:** Completed 2025-10-28 | Commit: a41f541
 
 ---
 
-### Task 4.4: Create Mode Editor Component
+### Task 4.4: Create Mode Editor Component ✅ COMPLETE
 **Deliverable:** Detailed mode configuration screen with working Save
 
 **Implementation:**
 - Editor UI with editable name and description fields
 - Placeholder sections for speed/steering/utility (content in Tasks 4.5-4.7)
-- **CRITICAL:** Save button must persist name/description changes to ModeManager
+- Working Save functionality:
   - Import Mode class for object reconstruction
   - Update mode in ModeManager.modes array
   - Call ModeManager.saveModes() to persist to localStorage
   - Refresh UI after save
 - Cancel button discards changes and returns to list
 
-**Test:**
-1. Click "Edit" on a mode
-2. Verify editor screen opens
-3. Change mode name from "Traditional Driving" to "Test Mode"
-4. Click "Save"
-5. Verify mode list shows "Test Mode"
-6. Refresh page and verify name persists
+**Status:** Completed 2025-10-28 | Commit: b625060
 
 ---
 
@@ -359,25 +350,29 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 3 Complete! ✅**
-All Phase 3 tasks (3.1-3.14) completed successfully:
-- ✅ ControlMapper class with mode-aware input processing
-- ✅ Speed control: triggers + sticks (Xbox trigger normalization)
-- ✅ Steering control: 4 types (front-only, all-wheel, opposite, independent)
-- ✅ Utility buttons: jump, brake, reset position, reset wheels
-- ✅ Full integration with babylon-game.js
-- ✅ All 4 default driving modes functional end-to-end
-- ✅ 4 critical bugs fixed
-- ✅ Extensive testing completed
+**Phase 4 In Progress - 4/12 tasks complete** 🚧
+
+**Completed Tasks (2025-10-28):**
+- ✅ Task 4.1: Controller Config UI Component Shell (fa22bad)
+- ✅ Task 4.2: Mode List View with reactive updates (b9e2094)
+- ✅ Task 4.3: Mode Reordering with drag-and-drop (a41f541)
+- ✅ Task 4.4: Mode Editor Component with working Save (b625060)
+
+**In Progress:**
+- 🔄 Phase 4: Configuration UI (4/12 tasks done)
+
+**Next Up:**
+- 📝 Task 4.5: Implement Speed Control Editor
+- 📝 Task 4.6: Implement Steering Control Editor
+- 📝 Task 4.7: Implement Utility Button Editor
+- 📝 Task 4.8: Create Input Binding Dialog
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)
 - ✅ Phase 2: Mode System (mode data, switching, persistence, HUD)
 - ✅ Phase 3: Control Mapping (ControlMapper, integration, actions)
 
-**Next Phase:**
-- Phase 4: Configuration UI (F10 overlay, mode editor, customization)
-
 **Known Issues:**
 - 🟡 WebGL feedback loop warning (deferred to Phase 6 - no functional impact)
 - 🟡 Missing favicon.ico (low priority cosmetic issue)
+- 🟡 Polling vs events in mode list (Task 4.2 technical debt - deferred to Phase 6)
