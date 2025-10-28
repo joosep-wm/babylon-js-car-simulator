@@ -1,4 +1,20 @@
-import { getModeManager } from '../game/babylon-game.js';
+import { Mode } from '../game/controller/mode-manager.js';
+
+// Helper function to get ModeManager - tries multiple approaches
+function getModeManager() {
+    // Try window global first
+    if (window.getModeManager) {
+        return window.getModeManager();
+    }
+
+    // Try importing dynamically (handles cache issues)
+    if (window.getGamepadManager) {
+        const gamepadManager = window.getGamepadManager();
+        return gamepadManager?.modeManager || null;
+    }
+
+    return null;
+}
 
 export const ControllerConfigUI = {
     name: 'ControllerConfigUI',
@@ -7,7 +23,9 @@ export const ControllerConfigUI = {
             visible: false,
             refreshKey: 0,
             draggedIndex: null,
-            dragOverIndex: null
+            dragOverIndex: null,
+            editingModeIndex: null,
+            editingMode: null
         };
     },
     computed: {
@@ -57,7 +75,33 @@ export const ControllerConfigUI = {
             }
         },
         editMode(index) {
-            console.log('Edit mode:', index);
+            const manager = getModeManager();
+            if (!manager) return;
+
+            this.editingModeIndex = index;
+            this.editingMode = JSON.parse(JSON.stringify(manager.modes[index]));
+            console.log('Editing mode:', this.editingMode.name);
+        },
+        saveMode() {
+            const manager = getModeManager();
+            if (!manager || this.editingModeIndex === null) return;
+
+            const reconstructedMode = new Mode(this.editingMode);
+            reconstructedMode.modifiedAt = Date.now();
+
+            manager.modes[this.editingModeIndex] = reconstructedMode;
+            manager.saveModes();
+
+            this.refreshKey++;
+            this.editingModeIndex = null;
+            this.editingMode = null;
+
+            console.log('Mode saved successfully');
+        },
+        cancelEdit() {
+            this.editingModeIndex = null;
+            this.editingMode = null;
+            console.log('Edit cancelled');
         },
         deleteMode(index) {
             console.log('Delete mode:', index);
@@ -105,11 +149,12 @@ export const ControllerConfigUI = {
         <div class="controller-config-overlay" v-if="visible" @click.self="closeOverlay">
             <div class="controller-config-modal">
                 <div class="controller-config-header">
-                    <h2>Controller Configuration</h2>
+                    <h2>{{ editingModeIndex !== null ? 'Edit Mode' : 'Controller Configuration' }}</h2>
                     <button class="close-button" @click="closeOverlay">✕</button>
                 </div>
                 <div class="controller-config-content">
-                    <div class="mode-list-section">
+                    <!-- Mode List View -->
+                    <div v-if="editingModeIndex === null" class="mode-list-section">
                         <h3>Control Modes</h3>
                         <div class="mode-list">
                             <div
@@ -137,6 +182,57 @@ export const ControllerConfigUI = {
                                     <button class="mode-button mode-edit" @click="editMode(index)">Edit</button>
                                     <button class="mode-button mode-delete" @click="deleteMode(index)">Delete</button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode Editor View -->
+                    <div v-else-if="editingMode" class="mode-editor-section">
+                        <div class="editor-navigation">
+                            <button class="back-button" @click="cancelEdit">← Back to Modes</button>
+                        </div>
+
+                        <div class="editor-form">
+                            <div class="form-group">
+                                <label for="mode-name">Mode Name</label>
+                                <input
+                                    id="mode-name"
+                                    type="text"
+                                    v-model="editingMode.name"
+                                    class="form-input"
+                                    placeholder="Enter mode name"
+                                />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="mode-description">Description</label>
+                                <textarea
+                                    id="mode-description"
+                                    v-model="editingMode.description"
+                                    class="form-textarea"
+                                    placeholder="Enter mode description"
+                                    rows="3"
+                                ></textarea>
+                            </div>
+
+                            <div class="editor-section">
+                                <h4>Speed Control</h4>
+                                <p class="placeholder-text">Configuration coming in Task 4.5</p>
+                            </div>
+
+                            <div class="editor-section">
+                                <h4>Steering Control</h4>
+                                <p class="placeholder-text">Configuration coming in Task 4.6</p>
+                            </div>
+
+                            <div class="editor-section">
+                                <h4>Utility Buttons</h4>
+                                <p class="placeholder-text">Configuration coming in Task 4.7</p>
+                            </div>
+
+                            <div class="editor-actions">
+                                <button class="action-button action-cancel" @click="cancelEdit">Cancel</button>
+                                <button class="action-button action-save" @click="saveMode">Save</button>
                             </div>
                         </div>
                     </div>

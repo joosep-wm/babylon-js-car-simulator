@@ -117,12 +117,25 @@
 ---
 
 ### Task 4.4: Create Mode Editor Component
-**Deliverable:** Detailed mode configuration screen
+**Deliverable:** Detailed mode configuration screen with working Save
+
+**Implementation:**
+- Editor UI with editable name and description fields
+- Placeholder sections for speed/steering/utility (content in Tasks 4.5-4.7)
+- **CRITICAL:** Save button must persist name/description changes to ModeManager
+  - Import Mode class for object reconstruction
+  - Update mode in ModeManager.modes array
+  - Call ModeManager.saveModes() to persist to localStorage
+  - Refresh UI after save
+- Cancel button discards changes and returns to list
 
 **Test:**
 1. Click "Edit" on a mode
 2. Verify editor screen opens
-3. Verify all mode properties shown
+3. Change mode name from "Traditional Driving" to "Test Mode"
+4. Click "Save"
+5. Verify mode list shows "Test Mode"
+6. Refresh page and verify name persists
 
 ---
 
