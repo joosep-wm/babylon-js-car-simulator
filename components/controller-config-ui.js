@@ -25,7 +25,8 @@ export const ControllerConfigUI = {
             draggedIndex: null,
             dragOverIndex: null,
             editingModeIndex: null,
-            editingMode: null
+            editingMode: null,
+            isCreatingNewMode: false
         };
     },
     computed: {
@@ -185,14 +186,24 @@ export const ControllerConfigUI = {
             manager.saveModes();
 
             this.refreshKey++;
+            this.isCreatingNewMode = false;
             this.editingModeIndex = null;
             this.editingMode = null;
 
             console.log('Mode saved successfully');
         },
         cancelEdit() {
+            const manager = getModeManager();
+
+            if (this.isCreatingNewMode && this.editingModeIndex !== null && manager) {
+                manager.modes.splice(this.editingModeIndex, 1);
+                console.log('Cancelled new mode creation - mode discarded');
+            }
+
+            this.isCreatingNewMode = false;
             this.editingModeIndex = null;
             this.editingMode = null;
+            this.refreshKey++;
             console.log('Edit cancelled');
         },
         duplicateMode(index) {
@@ -277,12 +288,16 @@ export const ControllerConfigUI = {
             });
 
             manager.modes.push(newMode);
-            manager.saveModes();
 
-            const newIndex = manager.modes.length - 1;
-            this.editMode(newIndex);
+            this.isCreatingNewMode = true;
+            this.editingModeIndex = manager.modes.length - 1;
+            this.editingMode = JSON.parse(JSON.stringify(newMode));
 
-            console.log('New mode created:', newMode.name);
+            this.migrateSpeedControlSource();
+            this.ensureDefaultMaxSpeed();
+            this.migrateUtilityButtons();
+
+            console.log('Creating new mode (unsaved draft):', newMode.name);
         },
         handleDragStart(e, index) {
             this.draggedIndex = index;
