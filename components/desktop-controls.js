@@ -156,18 +156,29 @@ export const DesktopControls = {
                 resetWheels: 'Reset Wheels'
             };
 
+            // Build reverse map: action -> button index
+            const actionToButton = {};
             Object.entries(this.currentMode.utilityButtons).forEach(([buttonIndex, config]) => {
-                const button = buttonMap[buttonIndex];
                 const actionName = typeof config === 'string' ? config : config.action;
-                const label = actionLabels[actionName];
-                if (button && label) {
-                    hints.push({
-                        button,
-                        label,
-                        active: this.controllerButtonStates[buttonIndex] || false,
-                        buttonIndex,
-                        category: 'utility'
-                    });
+                actionToButton[actionName] = buttonIndex;
+            });
+
+            // Display hints in consistent order: jump, brake, resetPosition, resetWheels
+            const actionOrder = ['jump', 'brake', 'resetPosition', 'resetWheels'];
+            actionOrder.forEach(actionName => {
+                const buttonIndex = actionToButton[actionName];
+                if (buttonIndex !== undefined) {
+                    const button = buttonMap[buttonIndex];
+                    const label = actionLabels[actionName];
+                    if (button && label) {
+                        hints.push({
+                            button,
+                            label,
+                            active: this.controllerButtonStates[buttonIndex] || false,
+                            buttonIndex,
+                            category: 'utility'
+                        });
+                    }
                 }
             });
         },
