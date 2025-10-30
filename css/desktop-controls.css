@@ -129,3 +129,74 @@
 .key-display.active {
     animation: keyPress 0.1s ease;
 }
+
+/* Controller Button Styles */
+.key-display.controller-button {
+    background: linear-gradient(145deg, rgba(55, 65, 81, 0.8), rgba(75, 85, 99, 0.6));
+    border: 2px solid rgba(148, 163, 184, 0.3);
+    color: white;
+    width: 45px;
+}
+
+.key-display.controller-button.a {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    border-color: rgba(52, 211, 153, 0.4);
+    color: #064e3b;
+}
+
+.key-display.controller-button.a.active {
+    background: linear-gradient(135deg, #059669, #10b981);
+    border-color: rgba(16, 185, 129, 0.6);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+.key-display.controller-button.b {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    border-color: rgba(248, 113, 113, 0.4);
+    color: #7f1d1d;
+}
+
+.key-display.controller-button.b.active {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    border-color: rgba(239, 68, 68, 0.6);
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+}
+
+.key-display.controller-button.x {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    border-color: rgba(96, 165, 250, 0.4);
+    color: #1e3a8a;
+}
+
+.key-display.controller-button.x.active {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+.key-display.controller-button.y {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    border-color: rgba(251, 191, 36, 0.4);
+    color: #92400e;
+}
+
+.key-display.controller-button.y.active {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    border-color: rgba(245, 158, 11, 0.6);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+}
+
+.key-display.controller-button.lt,
+.key-display.controller-button.rt {
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+    border-color: rgba(167, 139, 250, 0.4);
+    color: #3c1a78;
+    width: 50px;
+}
+
+.key-display.controller-button.lt.active,
+.key-display.controller-button.rt.active {
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    border-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
