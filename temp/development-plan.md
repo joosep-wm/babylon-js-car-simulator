@@ -156,24 +156,28 @@
 
 ---
 
-### Task 5.4: Replace Keyboard Hints with Xbox Controller Hints
+### Task 5.4: Replace Keyboard Hints with Xbox Controller Hints ✅
+**Status:** Complete (2025-10-30, commit: c3c5692)
 **Issue:** Bottom control hints show keyboard controls instead of Xbox controller controls
 
 **Deliverable:** Dynamic hints that reflect current mode's Xbox button mappings
 
 **Implementation:**
-- Hide keyboard control hints when Xbox controller connected
-- Show Xbox button hints based on current mode configuration
-- Display actual button mappings from mode (e.g., "A: Jump" or "B: Jump" depending on config)
-- Update hints when switching modes
+- Modified desktop-controls component to be controller-aware
+- Added reactive controller connection state tracking via gamepad events
+- Dynamically builds Xbox button hints from current mode's utility button config
+- Shows Xbox buttons (A/B/X/Y) with color-coded styling when controller connected
+- Shows keyboard hints (WASD/Space/B/Enter) when no controller
+- Automatically updates hints when switching modes with LB/RB
+- Reduced console spam by only updating mode when state changes
 
-**Test:**
-1. Connect Xbox controller
-2. Verify keyboard hints hidden
-3. Verify Xbox button hints display
-4. Verify hints match current mode configuration
-5. Switch modes and verify hints update
-6. Disconnect controller and verify keyboard hints return
+**Test Results:**
+1. ✅ Xbox controller connection hides keyboard hints
+2. ✅ Xbox button hints display with correct labels (A: Jump, B: Brake, X: Reset Car, Y: Reset Wheels)
+3. ✅ Hints match "Traditional Driving" mode configuration
+4. ✅ Mode switching updates hints (verified via logs)
+5. ✅ Controller disconnection restores keyboard hints
+6. ✅ Visual styling matches Xbox button colors (green A, red B, blue X, yellow Y)
 
 ---
 
@@ -212,15 +216,15 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 5 In Progress - 3/5 tasks complete** 🚧
+**Phase 5 In Progress - 4/5 tasks complete** 🚧
 
 **Completed:**
 - ✅ Task 5.1: Fix Steering Mode Display on Debug Screen (commit: daec72d)
 - ✅ Task 5.2: Remove Old Modes (commit: a3468a8)
 - ✅ Task 5.3: Set Default Max Angle to 25 Degrees (commit: fefefa0)
+- ✅ Task 5.4: Replace Keyboard Hints with Xbox Controller Hints (commit: c3c5692)
 
 **Next Up:**
-- 📝 Task 5.4: Replace Keyboard Hints with Xbox Controller Hints
 - 📝 Task 5.5: Add F10 Hint to Mode HUD
 
 **Completed Phases:**

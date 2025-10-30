@@ -8,7 +8,7 @@ export const ModeIndicator = {
     },
     template: `
         <div class="mode-indicator">
-            <div class="mode-label">Mode</div>
+            <div class="mode-label">Mode (F10 to edit)</div>
             <div class="mode-name">{{ modeName }}</div>
         </div>
     `
