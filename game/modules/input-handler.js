@@ -1,4 +1,5 @@
 // input-handler.js - Keyboard and touch controls
+// v2.0 - Updated to use ModeManager for debug overlay
 
 import { updateSteering, cycleSteerMode, getCurrentModeName } from './steering-system.js';
 import { toggleDebugOverlay, updateDebugOverlay } from './debug-overlay.js';
@@ -6,6 +7,7 @@ import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';
 
 export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper) {
+    const modeManager = gamepadManager?.modeManager;
     let forwardPressed = false;
     let backPressed = false;
     let leftPressed = false;
@@ -221,6 +223,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         motorJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RL);
         motorJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RR);
 
-        updateDebugOverlay(steerAngle, wheelSpeed, getCurrentModeName());
+        const currentModeName = modeManager?.getCurrentMode()?.name || getCurrentModeName();
+        updateDebugOverlay(steerAngle, wheelSpeed, currentModeName);
     });
 }
