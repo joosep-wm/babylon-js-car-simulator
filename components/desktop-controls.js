@@ -102,7 +102,7 @@ export const DesktopControls = {
             if (steeringControl.type === 'singleInput') {
                 const stickName = this.getStickDisplayName(steeringControl.input);
                 const wheelsDesc = steeringControl.wheels === 'front' ? 'Front' :
-                                   steeringControl.wheels === 'all' ? 'All Wheels' : 'Wheels';
+                                   steeringControl.wheels === 'all' ? 'All Wheel Same Side' : 'Wheels';
                 hints.push({
                     button: stickName,
                     label: `Steer ${wheelsDesc}`,
@@ -160,7 +160,8 @@ export const DesktopControls = {
             const actionToButton = {};
             Object.entries(this.currentMode.utilityButtons).forEach(([buttonIndex, config]) => {
                 const actionName = typeof config === 'string' ? config : config.action;
-                actionToButton[actionName] = buttonIndex;
+                // Convert string key to number (JSON.parse makes object keys strings)
+                actionToButton[actionName] = parseInt(buttonIndex, 10);
             });
 
             // Display hints in consistent order: jump, brake, resetPosition, resetWheels
