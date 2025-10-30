@@ -40,56 +40,31 @@ export const ControllerConfigUI = {
             const manager = getModeManager();
             return manager ? manager.currentIndex : 0;
         },
-        steeringType: {
-            get() {
-                if (!this.editingMode) return 'front-only';
-                const config = this.editingMode.steeringControl;
+        wheelGroupValidationError() {
+            if (!this.editingMode || !this.editingMode.steeringControl.wheelGroups) return null;
 
-                if (config.type === 'multiInput') return 'independent';
-                if (config.type === 'opposing') return 'opposite';
-                if (config.type === 'singleInput' && config.wheels === 'all') return 'all-wheel';
-                if (config.type === 'singleInput' && config.wheels === 'opposite') return 'opposite';
-                return 'front-only';
-            },
-            set(value) {
-                if (!this.editingMode) return;
+            const groups = this.editingMode.steeringControl.wheelGroups;
+            const frontOrBack = groups.front.enabled || groups.back.enabled;
+            const allSame = groups.allSame.enabled;
+            const allOpposite = groups.allOpposite.enabled;
 
-                if (value === 'front-only') {
-                    this.editingMode.steeringControl.type = 'singleInput';
-                    this.editingMode.steeringControl.wheels = 'front';
-                } else if (value === 'all-wheel') {
-                    this.editingMode.steeringControl.type = 'singleInput';
-                    this.editingMode.steeringControl.wheels = 'all';
-                } else if (value === 'opposite') {
-                    this.editingMode.steeringControl.type = 'opposing';
-                    delete this.editingMode.steeringControl.wheels;
-                } else if (value === 'independent') {
-                    this.editingMode.steeringControl.type = 'multiInput';
-                    delete this.editingMode.steeringControl.wheels;
-                }
+            // Check for no groups enabled
+            if (!frontOrBack && !allSame && !allOpposite) {
+                return 'At least one wheel group must be enabled';
             }
-        },
-        steeringMaxAngle: {
-            get() {
-                if (!this.editingMode) return 45;
-                const config = this.editingMode.steeringControl;
 
-                return config.maxAngle || config.frontMaxAngle || config.frontWheelsMaxAngle || 45;
-            },
-            set(value) {
-                if (!this.editingMode) return;
-                const config = this.editingMode.steeringControl;
-
-                if (config.type === 'multiInput') {
-                    config.frontMaxAngle = value;
-                    config.rearMaxAngle = value;
-                } else if (config.type === 'opposing') {
-                    config.frontWheelsMaxAngle = value;
-                    config.rearWheelsMaxAngle = value;
-                } else {
-                    config.maxAngle = value;
-                }
+            // Check for invalid combinations
+            if (frontOrBack && allSame) {
+                return 'Cannot combine Front/Back with All Same Direction';
             }
+            if (frontOrBack && allOpposite) {
+                return 'Cannot combine Front/Back with All Opposite Direction';
+            }
+            if (allSame && allOpposite) {
+                return 'Cannot combine All Same with All Opposite Direction';
+            }
+
+            return null;
         }
     },
     mounted() {
@@ -136,6 +111,7 @@ export const ControllerConfigUI = {
             this.migrateSpeedControlSource();
             this.ensureDefaultMaxSpeed();
             this.migrateUtilityButtons();
+            this.migrateSteeringWheelGroups();
 
             console.log('Editing mode:', this.editingMode.name);
         },
@@ -175,9 +151,66 @@ export const ControllerConfigUI = {
                 }
             }
         },
+        migrateSteeringWheelGroups() {
+            const config = this.editingMode.steeringControl;
+
+            // Initialize globalParams if not present
+            if (!config.globalParams) {
+                config.globalParams = {
+                    maxAngle: config.maxAngle || config.frontMaxAngle || config.frontWheelsMaxAngle || 45,
+                    sensitivity: config.sensitivity || 1.0,
+                    deadZone: config.deadZone || 0.15
+                };
+            }
+
+            // Initialize wheelGroups if not present - migrate from old structure
+            if (!config.wheelGroups) {
+                config.wheelGroups = {
+                    front: { enabled: false, axis: 'LS-X' },
+                    back: { enabled: false, axis: 'LS-X' },
+                    allSame: { enabled: false, axis: 'LS-X' },
+                    allOpposite: { enabled: false, axis: 'LS-X' }
+                };
+
+                // Migrate old structure to new wheelGroups
+                if (config.type === 'singleInput' && config.wheels === 'front') {
+                    config.wheelGroups.front.enabled = true;
+                    config.wheelGroups.front.axis = config.input || 'LS-X';
+                } else if (config.type === 'singleInput' && config.wheels === 'back') {
+                    config.wheelGroups.back.enabled = true;
+                    config.wheelGroups.back.axis = config.input || 'LS-X';
+                } else if (config.type === 'singleInput' && config.wheels === 'all') {
+                    config.wheelGroups.allSame.enabled = true;
+                    config.wheelGroups.allSame.axis = config.input || 'LS-X';
+                } else if (config.type === 'singleInput' && config.wheels === 'opposite') {
+                    config.wheelGroups.allOpposite.enabled = true;
+                    config.wheelGroups.allOpposite.axis = config.input || 'LS-X';
+                } else if (config.type === 'opposing') {
+                    config.wheelGroups.allOpposite.enabled = true;
+                    config.wheelGroups.allOpposite.axis = config.input || 'LS-X';
+                } else if (config.type === 'multiInput') {
+                    config.wheelGroups.front.enabled = true;
+                    config.wheelGroups.back.enabled = true;
+                    config.wheelGroups.front.axis = config.frontInput || 'LS-X';
+                    config.wheelGroups.back.axis = config.rearInput || 'RS-X';
+                }
+            }
+        },
         saveMode() {
             const manager = getModeManager();
             if (!manager || this.editingModeIndex === null) return;
+
+            // Validate wheel groups before saving
+            if (this.wheelGroupValidationError) {
+                alert('Cannot save: ' + this.wheelGroupValidationError);
+                return;
+            }
+
+            // Sync speed control source to type field for backward compatibility
+            this.syncSpeedControlToOldStructure();
+
+            // Sync wheelGroups back to old data structure for backward compatibility
+            this.syncWheelGroupsToOldStructure();
 
             const reconstructedMode = new Mode(this.editingMode);
             reconstructedMode.modifiedAt = Date.now();
@@ -191,6 +224,60 @@ export const ControllerConfigUI = {
             this.editingMode = null;
 
             console.log('Mode saved successfully');
+        },
+        syncSpeedControlToOldStructure() {
+            const config = this.editingMode.speedControl;
+
+            // Map source to type for control-mapper compatibility
+            if (config.source === 'triggers') {
+                config.type = 'triggers';
+            } else if (config.source === 'rightStickY' || config.source === 'leftStickY') {
+                config.type = 'stick';
+                config.input = config.source === 'rightStickY' ? 'RS-Y' : 'LS-Y';
+            }
+        },
+        syncWheelGroupsToOldStructure() {
+            const config = this.editingMode.steeringControl;
+            const groups = config.wheelGroups;
+            const globalParams = config.globalParams;
+
+            // Update old structure from wheelGroups
+            config.maxAngle = globalParams.maxAngle;
+            config.sensitivity = globalParams.sensitivity;
+            config.deadZone = globalParams.deadZone;
+
+            if (groups.front.enabled && groups.back.enabled) {
+                // Independent mode
+                config.type = 'multiInput';
+                config.frontInput = groups.front.axis;
+                config.rearInput = groups.back.axis;
+                config.frontMaxAngle = globalParams.maxAngle;
+                config.rearMaxAngle = globalParams.maxAngle;
+                delete config.wheels;
+                delete config.input;
+            } else if (groups.allOpposite.enabled) {
+                // Opposite mode
+                config.type = 'opposing';
+                config.input = groups.allOpposite.axis;
+                config.frontWheelsMaxAngle = globalParams.maxAngle;
+                config.rearWheelsMaxAngle = globalParams.maxAngle;
+                delete config.wheels;
+            } else if (groups.allSame.enabled) {
+                // All wheel same direction
+                config.type = 'singleInput';
+                config.wheels = 'all';
+                config.input = groups.allSame.axis;
+            } else if (groups.front.enabled) {
+                // Front only
+                config.type = 'singleInput';
+                config.wheels = 'front';
+                config.input = groups.front.axis;
+            } else if (groups.back.enabled) {
+                // Back only
+                config.type = 'singleInput';
+                config.wheels = 'back';
+                config.input = groups.back.axis;
+            }
         },
         cancelEdit() {
             const manager = getModeManager();
@@ -296,6 +383,7 @@ export const ControllerConfigUI = {
             this.migrateSpeedControlSource();
             this.ensureDefaultMaxSpeed();
             this.migrateUtilityButtons();
+            this.migrateSteeringWheelGroups();
 
             console.log('Creating new mode (unsaved draft):', newMode.name);
         },
@@ -541,32 +629,159 @@ export const ControllerConfigUI = {
                             <div class="editor-section">
                                 <h4>Steering Control</h4>
                                 <div class="steering-control-config">
-                                    <div class="form-group">
-                                        <label for="steering-type">Steering Type</label>
-                                        <select
-                                            id="steering-type"
-                                            v-model="steeringType"
-                                            class="form-select"
-                                        >
-                                            <option value="front-only">Front Only</option>
-                                            <option value="all-wheel">All Wheel</option>
-                                            <option value="opposite">Opposite</option>
-                                            <option value="independent">Independent</option>
-                                        </select>
+                                    <!-- Global Parameters -->
+                                    <div class="steering-subsection">
+                                        <h5 class="subsection-title">Global Parameters</h5>
+                                        <div class="form-group">
+                                            <label for="global-max-angle">Max Angle</label>
+                                            <div class="slider-group">
+                                                <input
+                                                    id="global-max-angle"
+                                                    type="range"
+                                                    min="0"
+                                                    max="90"
+                                                    step="5"
+                                                    v-model.number="editingMode.steeringControl.globalParams.maxAngle"
+                                                    class="form-slider"
+                                                />
+                                                <span class="slider-value">{{ editingMode.steeringControl.globalParams.maxAngle }}°</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="global-sensitivity">Sensitivity</label>
+                                            <div class="slider-group">
+                                                <input
+                                                    id="global-sensitivity"
+                                                    type="range"
+                                                    min="0.1"
+                                                    max="3.0"
+                                                    step="0.1"
+                                                    v-model.number="editingMode.steeringControl.globalParams.sensitivity"
+                                                    class="form-slider"
+                                                />
+                                                <span class="slider-value">{{ editingMode.steeringControl.globalParams.sensitivity.toFixed(1) }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="global-deadzone">Dead Zone</label>
+                                            <div class="slider-group">
+                                                <input
+                                                    id="global-deadzone"
+                                                    type="range"
+                                                    min="0"
+                                                    max="0.5"
+                                                    step="0.05"
+                                                    v-model.number="editingMode.steeringControl.globalParams.deadZone"
+                                                    class="form-slider"
+                                                />
+                                                <span class="slider-value">{{ editingMode.steeringControl.globalParams.deadZone.toFixed(2) }}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="max-angle">Max Steering Angle</label>
-                                        <div class="slider-group">
-                                            <input
-                                                id="max-angle"
-                                                type="range"
-                                                min="0"
-                                                max="90"
-                                                step="5"
-                                                v-model.number="steeringMaxAngle"
-                                                class="form-slider"
-                                            />
-                                            <span class="slider-value">{{ steeringMaxAngle }}°</span>
+
+                                    <!-- Wheel Groups -->
+                                    <div class="steering-subsection">
+                                        <h5 class="subsection-title">Wheel Groups</h5>
+
+                                        <!-- Front Wheels -->
+                                        <div class="wheel-group-row">
+                                            <label class="checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    v-model="editingMode.steeringControl.wheelGroups.front.enabled"
+                                                    class="checkbox-input"
+                                                />
+                                                <span>FRONT WHEELS</span>
+                                            </label>
+                                            <select
+                                                v-model="editingMode.steeringControl.wheelGroups.front.axis"
+                                                :disabled="!editingMode.steeringControl.wheelGroups.front.enabled"
+                                                class="form-select axis-select"
+                                            >
+                                                <option value="LS-X">LS-X (Left Stick X)</option>
+                                                <option value="LS-Y">LS-Y (Left Stick Y)</option>
+                                                <option value="RS-X">RS-X (Right Stick X)</option>
+                                                <option value="RS-Y">RS-Y (Right Stick Y)</option>
+                                                <option value="LT+RT">LT+RT (Triggers)</option>
+                                                <option value="None">None</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Back Wheels -->
+                                        <div class="wheel-group-row">
+                                            <label class="checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    v-model="editingMode.steeringControl.wheelGroups.back.enabled"
+                                                    class="checkbox-input"
+                                                />
+                                                <span>BACK WHEELS</span>
+                                            </label>
+                                            <select
+                                                v-model="editingMode.steeringControl.wheelGroups.back.axis"
+                                                :disabled="!editingMode.steeringControl.wheelGroups.back.enabled"
+                                                class="form-select axis-select"
+                                            >
+                                                <option value="LS-X">LS-X (Left Stick X)</option>
+                                                <option value="LS-Y">LS-Y (Left Stick Y)</option>
+                                                <option value="RS-X">RS-X (Right Stick X)</option>
+                                                <option value="RS-Y">RS-Y (Right Stick Y)</option>
+                                                <option value="LT+RT">LT+RT (Triggers)</option>
+                                                <option value="None">None</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- All Same Direction -->
+                                        <div class="wheel-group-row">
+                                            <label class="checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    v-model="editingMode.steeringControl.wheelGroups.allSame.enabled"
+                                                    class="checkbox-input"
+                                                />
+                                                <span>ALL SAME DIRECTION</span>
+                                            </label>
+                                            <select
+                                                v-model="editingMode.steeringControl.wheelGroups.allSame.axis"
+                                                :disabled="!editingMode.steeringControl.wheelGroups.allSame.enabled"
+                                                class="form-select axis-select"
+                                            >
+                                                <option value="LS-X">LS-X (Left Stick X)</option>
+                                                <option value="LS-Y">LS-Y (Left Stick Y)</option>
+                                                <option value="RS-X">RS-X (Right Stick X)</option>
+                                                <option value="RS-Y">RS-Y (Right Stick Y)</option>
+                                                <option value="LT+RT">LT+RT (Triggers)</option>
+                                                <option value="None">None</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- All Opposite Direction -->
+                                        <div class="wheel-group-row">
+                                            <label class="checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    v-model="editingMode.steeringControl.wheelGroups.allOpposite.enabled"
+                                                    class="checkbox-input"
+                                                />
+                                                <span>ALL OPPOSITE DIRECTION</span>
+                                            </label>
+                                            <select
+                                                v-model="editingMode.steeringControl.wheelGroups.allOpposite.axis"
+                                                :disabled="!editingMode.steeringControl.wheelGroups.allOpposite.enabled"
+                                                class="form-select axis-select"
+                                            >
+                                                <option value="LS-X">LS-X (Left Stick X)</option>
+                                                <option value="LS-Y">LS-Y (Left Stick Y)</option>
+                                                <option value="RS-X">RS-X (Right Stick X)</option>
+                                                <option value="RS-Y">RS-Y (Right Stick Y)</option>
+                                                <option value="LT+RT">LT+RT (Triggers)</option>
+                                                <option value="None">None</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Validation Error -->
+                                        <div v-if="wheelGroupValidationError" class="validation-error">
+                                            {{ wheelGroupValidationError }}
                                         </div>
                                     </div>
                                 </div>

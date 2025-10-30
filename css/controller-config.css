@@ -670,3 +670,99 @@
     font-weight: 700;
     line-height: 1;
 }
+
+/* Steering Control Subsections */
+.steering-subsection {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.3));
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.steering-subsection:last-child {
+    margin-bottom: 0;
+}
+
+.subsection-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #a78bfa;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Wheel Group Rows */
+.wheel-group-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.3), rgba(30, 41, 59, 0.2));
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.wheel-group-row:last-child {
+    margin-bottom: 0;
+}
+
+.wheel-group-row:hover {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.5), rgba(30, 41, 59, 0.4));
+    border-color: rgba(148, 163, 184, 0.2);
+}
+
+.checkbox-label {
+    flex: 0 0 200px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label span {
+    font-weight: 600;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+}
+
+.checkbox-input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: rgba(139, 92, 246, 0.9);
+}
+
+.axis-select {
+    flex: 1;
+}
+
+.axis-select:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Validation Error */
+.validation-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: #fca5a5;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.validation-error:before {
+    content: '⚠';
+    font-size: 1.125rem;
+}

@@ -84,6 +84,22 @@ export class ControlMapper {
       };
     }
 
+    if (config.type === 'singleInput' && config.wheels === 'back') {
+      const axisIndex = config.input === 'RS-X' ? 2 : 0;  // RS-X → axis 2, LS-X → axis 0
+      let value = gamepadState.axes[axisIndex] || 0;
+      value = applyDeadZone(value, config.deadZone);
+      value = applySensitivity(value, config.sensitivity);
+
+      const angle = -value * config.maxAngle;  // Inverted for natural steering
+
+      return {
+        FL: 0,
+        FR: 0,
+        RL: angle,
+        RR: angle
+      };
+    }
+
     if (config.type === 'singleInput' && config.wheels === 'all') {
       const axisIndex = config.input === 'RS-X' ? 2 : 0;  // RS-X → axis 2, LS-X → axis 0
       let value = gamepadState.axes[axisIndex] || 0;
