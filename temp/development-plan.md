@@ -115,15 +115,24 @@
 
 ---
 
-### Task 5.2: Remove Old Modes
+### Task 5.2: Remove Old Modes ✅
+**Status:** Complete (2025-10-30, commit: a3468a8)
 **Issue:** Old/unused mode definitions cluttering the codebase
 
 **Deliverable:** Clean up legacy mode code
 
-**Test:**
-1. Game still works with current modes
-2. No console errors
-3. All existing modes still functional
+**Implementation:**
+- Removed unused imports from babylon-game.js: SteerMode, modeNames, getSteerMode, cycleSteerMode
+- Removed unused import from input-handler.js: cycleSteerMode
+- Removed unused functions from steering-system.js: getSteerMode(), cycleSteerMode()
+- Kept essential functions for keyboard fallback: setSteerMode(), getCurrentModeName(), updateSteering()
+
+**Test Results:**
+1. ✅ Game works with current modes
+2. ✅ No console errors (only expected 404 for favicon)
+3. ✅ All existing modes functional
+4. ✅ Debug overlay displays mode name correctly
+5. ✅ Keyboard controls work properly
 
 ---
 
@@ -195,13 +204,13 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 5 In Progress - 1/5 tasks complete** 🚧
+**Phase 5 In Progress - 2/5 tasks complete** 🚧
 
 **Completed:**
 - ✅ Task 5.1: Fix Steering Mode Display on Debug Screen (commit: daec72d)
+- ✅ Task 5.2: Remove Old Modes (commit: a3468a8)
 
 **Next Up:**
-- 📝 Task 5.2: Remove Old Modes
 - 📝 Task 5.3: Set Default Max Angle to 25 Degrees
 - 📝 Task 5.4: Replace Keyboard Hints with Xbox Controller Hints
 - 📝 Task 5.5: Add F10 Hint to Mode HUD
@@ -213,7 +222,6 @@ After each task, run relevant tests:
 - ✅ Phase 4: Configuration UI (mode editor, add/duplicate/export/import)
 
 **Known Issues:**
-- 🟡 Steering mode not displayed on debug screen
-- 🟡 Old unused modes in codebase
 - 🟡 Default max angle should be 25° instead of current default
 - 🟡 Keyboard hints shown instead of Xbox controller hints
+- 🟡 Mode HUD missing F10 hint
