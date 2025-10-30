@@ -92,13 +92,26 @@
 ### Task 5.1: Fix Steering Mode Display on Debug Screen
 **Issue:** Debug screen not showing the mode name from dialog
 
-**Deliverable:** Debug overlay (F11) displays the current steering mode name
+**Deliverable:** Debug overlay (F11) displays the current steering mode name (both with and without controller)
+
+**Architecture Fix Required:**
+- Pass `modeManager` as independent parameter to `InitKeyboardControls()`, not via `gamepadManager`
+- This ensures mode names display even when no controller is connected
+- Modes should be a global concept, not coupled to controller connectivity
+
+**Implementation Steps:**
+1. Find where `InitKeyboardControls` is called in `babylon-game.js`
+2. Pass `gamepadManager.modeManager` as a separate parameter
+3. Update `InitKeyboardControls` function signature to accept `modeManager` parameter
+4. Use `modeManager?.getCurrentMode()?.name` in debug overlay update
+5. Add fallback to `getCurrentModeName()` for safety
 
 **Test:**
-1. Open debug overlay with F11
-2. Verify steering mode displays correct name
-3. Switch modes with LB/RB
+1. Open debug overlay with F11 (without controller)
+2. Verify steering mode displays "Traditional Driving" (not "Front-Wheel")
+3. Connect controller and switch modes with LB/RB
 4. Verify mode name updates correctly
+5. Disconnect controller - mode name should still display
 
 ---
 

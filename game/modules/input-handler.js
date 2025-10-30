@@ -5,7 +5,7 @@ import { toggleDebugOverlay, updateDebugOverlay } from './debug-overlay.js';
 import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';
 
-export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper) {
+export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper, modeManager) {
     let forwardPressed = false;
     let backPressed = false;
     let leftPressed = false;
@@ -221,6 +221,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         motorJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RL);
         motorJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RR);
 
-        updateDebugOverlay(steerAngle, wheelSpeed, getCurrentModeName());
+        const modeName = modeManager?.getCurrentMode()?.name || getCurrentModeName();
+        updateDebugOverlay(steerAngle, wheelSpeed, modeName);
     });
 }

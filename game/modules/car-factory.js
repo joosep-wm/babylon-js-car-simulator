@@ -12,7 +12,7 @@ import {
 } from './physics-config.js';
 import { createTaillights, createHeadlights } from './lighting-system.js';
 
-export async function CreateCar(vueApp, scene, tyreMaterial, initKeyboardControls, gamepadManager, controlMapper) {
+export async function CreateCar(vueApp, scene, tyreMaterial, initKeyboardControls, gamepadManager, controlMapper, modeManager) {
     const customCarBody = await importCustomCar(scene);
 
     let carFrame;
@@ -55,7 +55,7 @@ export async function CreateCar(vueApp, scene, tyreMaterial, initKeyboardControl
         console.log('Steering joints:', steeringJoints);
         console.log('Motor joints:', motorJoints);
 
-        initKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper);
+        initKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper, modeManager);
 
         return carFrame;
     }
@@ -105,7 +105,7 @@ export async function CreateCar(vueApp, scene, tyreMaterial, initKeyboardControl
     console.log('Steering joints:', steeringJoints);
     console.log('Motor joints:', motorJoints);
 
-    initKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper);
+    initKeyboardControls(poweredWheelMotorA, poweredWheelMotorB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper, modeManager);
 
     createTaillights(carFrame, scene);
     createHeadlights(carFrame, scene);

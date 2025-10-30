@@ -254,7 +254,7 @@ async function createScene(vueApp) {
     tyreMaterial = InitTyreMaterial(scene);
 
     // Create car with all components (body, wheels, physics)
-    const carF = await CreateCar(vueApp, scene, tyreMaterial, InitKeyboardControls, gamepadManager, controlMapper);
+    const carF = await CreateCar(vueApp, scene, tyreMaterial, InitKeyboardControls, gamepadManager, controlMapper, modeManager);
 
     // Setup follow camera attached to car
     const camera = setupCamera(scene, carF);
