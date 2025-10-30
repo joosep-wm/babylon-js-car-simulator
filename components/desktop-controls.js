@@ -50,6 +50,10 @@ export const DesktopControls = {
                 return [];
             }
 
+            // Include the mode in the computation to ensure Vue tracks changes
+            // This forces re-computation when mode object changes
+            const mode = JSON.stringify(this.currentMode);
+
             const hints = [];
 
             this.addSpeedControlHints(hints);
