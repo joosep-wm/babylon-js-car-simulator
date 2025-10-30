@@ -18,8 +18,8 @@ export class Mode {
       8: 'toggleHUD',
       9: 'openMenu'
     };
-    this.createdAt = config.createdAt || Date.now();
-    this.modifiedAt = config.modifiedAt || Date.now();
+    this.createdAt = config.createdAt || new Date().toISOString();
+    this.modifiedAt = config.modifiedAt || new Date().toISOString();
   }
 
   toJSON() {
@@ -76,6 +76,14 @@ export class ModeManager {
   previousMode() {
     this.currentIndex = (this.currentIndex - 1 + this.modes.length) % this.modes.length;
     console.log('🎮 Switched to:', this.getCurrentMode().name);
+    this._syncKeyboardSteeringMode();
+    return this.getCurrentMode();
+  }
+
+  setActiveMode(index) {
+    if (index < 0 || index >= this.modes.length) return;
+    this.currentIndex = index;
+    console.log('🎮 Active mode set to:', this.getCurrentMode().name);
     this._syncKeyboardSteeringMode();
     return this.getCurrentMode();
   }

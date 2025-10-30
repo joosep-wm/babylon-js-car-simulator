@@ -275,15 +275,29 @@
 
 ---
 
-### Task 4.12: Implement Export/Import Profiles
-**Deliverable:** Save config to JSON file
+### Task 4.12: Implement Export/Import Profiles ✅ COMPLETE
+**Deliverable:** Save config to JSON file and restore from JSON file
 
-**Test:**
-1. Click "Export"
-2. Verify JSON file downloads
-3. Delete all modes
-4. Click "Import"
-5. Verify modes restored from file
+**Implementation:**
+- Added Export Profiles button (blue gradient) that downloads JSON with timestamp
+- Added Import Profiles button (green gradient) with hidden file input
+- JSON structure includes: version, exportDate, modeCount, modes array
+- Full validation: checks for modes array, rejects empty arrays, validates JSON format
+- Reconstructs Mode instances from JSON using Mode class constructor
+- Resets to first mode after import and saves to localStorage
+- User-friendly alerts for success and error cases
+
+**Test Results:**
+✓ Export button downloads properly formatted JSON file
+✓ JSON includes all mode data (speed, steering, utility buttons, timestamps)
+✓ Import button opens file picker with .json filter
+✓ Successfully imported 2 modes from backup file
+✓ Invalid JSON rejected with error: "Invalid profile file format"
+✓ Empty modes array rejected with error: "Cannot import: profile file contains no modes"
+✓ UI refreshes immediately after import
+✓ localStorage persistence works correctly
+
+**Status:** Completed 2025-10-30 | Commit: fdca137
 
 ---
 
@@ -418,7 +432,7 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 4 In Progress - 9/12 tasks complete** 🚧
+**Phase 4 In Progress - 10/12 tasks complete** 🚧
 
 **Completed Tasks:**
 - ✅ Task 4.1: Controller Config UI Component Shell (fa22bad) - 2025-10-28
@@ -430,13 +444,13 @@ After each task, run relevant tests:
 - ✅ Task 4.7: Utility Button Editor (76f771f) - 2025-10-30
 - ✅ Task 4.9: Add New Mode functionality - 2025-10-30
 - ✅ Task 4.10: Implement Duplicate Mode - 2025-10-30
+- ✅ Task 4.12: Export/Import Profiles (fdca137) - 2025-10-30
 
 **In Progress:**
-- 🔄 Phase 4: Configuration UI (9/12 tasks done)
+- 🔄 Phase 4: Configuration UI (10/12 tasks done)
 
 **Next Up:**
 - 📝 Task 4.11: Implement Delete Mode
-- 📝 Task 4.12: Implement Export/Import Profiles
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)

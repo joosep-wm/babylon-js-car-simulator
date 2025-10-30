@@ -203,8 +203,8 @@ export const ControllerConfigUI = {
             const modeConfig = JSON.parse(JSON.stringify(originalMode));
 
             modeConfig.name = `${originalMode.name} Copy`;
-            modeConfig.createdAt = Date.now();
-            modeConfig.modifiedAt = Date.now();
+            modeConfig.createdAt = new Date().toISOString();
+            modeConfig.modifiedAt = new Date().toISOString();
 
             const duplicatedMode = new Mode(modeConfig);
 
