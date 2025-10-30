@@ -38,6 +38,57 @@ export const ControllerConfigUI = {
             this.refreshKey;
             const manager = getModeManager();
             return manager ? manager.currentIndex : 0;
+        },
+        steeringType: {
+            get() {
+                if (!this.editingMode) return 'front-only';
+                const config = this.editingMode.steeringControl;
+
+                if (config.type === 'multiInput') return 'independent';
+                if (config.type === 'opposing') return 'opposite';
+                if (config.type === 'singleInput' && config.wheels === 'all') return 'all-wheel';
+                if (config.type === 'singleInput' && config.wheels === 'opposite') return 'opposite';
+                return 'front-only';
+            },
+            set(value) {
+                if (!this.editingMode) return;
+
+                if (value === 'front-only') {
+                    this.editingMode.steeringControl.type = 'singleInput';
+                    this.editingMode.steeringControl.wheels = 'front';
+                } else if (value === 'all-wheel') {
+                    this.editingMode.steeringControl.type = 'singleInput';
+                    this.editingMode.steeringControl.wheels = 'all';
+                } else if (value === 'opposite') {
+                    this.editingMode.steeringControl.type = 'opposing';
+                    delete this.editingMode.steeringControl.wheels;
+                } else if (value === 'independent') {
+                    this.editingMode.steeringControl.type = 'multiInput';
+                    delete this.editingMode.steeringControl.wheels;
+                }
+            }
+        },
+        steeringMaxAngle: {
+            get() {
+                if (!this.editingMode) return 45;
+                const config = this.editingMode.steeringControl;
+
+                return config.maxAngle || config.frontMaxAngle || config.frontWheelsMaxAngle || 45;
+            },
+            set(value) {
+                if (!this.editingMode) return;
+                const config = this.editingMode.steeringControl;
+
+                if (config.type === 'multiInput') {
+                    config.frontMaxAngle = value;
+                    config.rearMaxAngle = value;
+                } else if (config.type === 'opposing') {
+                    config.frontWheelsMaxAngle = value;
+                    config.rearWheelsMaxAngle = value;
+                } else {
+                    config.maxAngle = value;
+                }
+            }
         }
     },
     mounted() {
@@ -270,7 +321,36 @@ export const ControllerConfigUI = {
 
                             <div class="editor-section">
                                 <h4>Steering Control</h4>
-                                <p class="placeholder-text">Configuration coming in Task 4.6</p>
+                                <div class="steering-control-config">
+                                    <div class="form-group">
+                                        <label for="steering-type">Steering Type</label>
+                                        <select
+                                            id="steering-type"
+                                            v-model="steeringType"
+                                            class="form-select"
+                                        >
+                                            <option value="front-only">Front Only</option>
+                                            <option value="all-wheel">All Wheel</option>
+                                            <option value="opposite">Opposite</option>
+                                            <option value="independent">Independent</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="max-angle">Max Steering Angle</label>
+                                        <div class="slider-group">
+                                            <input
+                                                id="max-angle"
+                                                type="range"
+                                                min="0"
+                                                max="90"
+                                                step="5"
+                                                v-model.number="steeringMaxAngle"
+                                                class="form-slider"
+                                            />
+                                            <span class="slider-value">{{ steeringMaxAngle }}°</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="editor-section">

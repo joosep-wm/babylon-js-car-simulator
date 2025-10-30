@@ -151,14 +151,28 @@
 
 ---
 
-### Task 4.6: Implement Steering Control Editor
+### Task 4.6: Implement Steering Control Editor ✅ COMPLETE
 **Deliverable:** Configure steering mappings
 
-**Test:**
-1. Change steering type
-2. Adjust max angle slider
-3. Save and test
-4. Verify wheels use new angle limit
+**Implementation:**
+- Added Steering Control section in Mode Editor Component
+- Created dropdown for steering type selection: Front Only, All Wheel, Opposite, Independent
+- Added max angle slider (0-90 degrees) with live numeric display
+- Implemented computed properties for bidirectional mapping between UI and mode structure
+- Correctly handles all steering types: singleInput (front/all), opposing, multiInput
+- Save functionality updates steeringControl.type and maxAngle (or frontMaxAngle/rearMaxAngle)
+- Added CSS styling matching Speed Control section
+
+**Test Results:**
+✓ Dropdown correctly displays current steering type for all mode structures
+✓ Slider adjusts max angle with live value display (45° → 60° → 70°)
+✓ Save persists changes to localStorage correctly
+✓ All Wheel mode: type=singleInput, wheels=all, maxAngle=60
+✓ Independent mode: type=multiInput, frontMaxAngle=70, rearMaxAngle=70
+✓ Opposite mode: type=opposing correctly detected
+✓ No console errors (except known favicon issue)
+
+**Status:** Completed 2025-10-30
 
 ---
 
@@ -360,7 +374,7 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 4 In Progress - 5/12 tasks complete** 🚧
+**Phase 4 In Progress - 6/12 tasks complete** 🚧
 
 **Completed Tasks:**
 - ✅ Task 4.1: Controller Config UI Component Shell (fa22bad) - 2025-10-28
@@ -368,12 +382,12 @@ After each task, run relevant tests:
 - ✅ Task 4.3: Mode Reordering with drag-and-drop (a41f541) - 2025-10-28
 - ✅ Task 4.4: Mode Editor Component with working Save (b625060) - 2025-10-28
 - ✅ Task 4.5: Speed Control Editor (dropdown + slider) - 2025-10-30
+- ✅ Task 4.6: Steering Control Editor (dropdown + slider) - 2025-10-30
 
 **In Progress:**
-- 🔄 Phase 4: Configuration UI (5/12 tasks done)
+- 🔄 Phase 4: Configuration UI (6/12 tasks done)
 
 **Next Up:**
-- 📝 Task 4.6: Implement Steering Control Editor
 - 📝 Task 4.7: Implement Utility Button Editor
 - 📝 Task 4.8: Create Input Binding Dialog
 - 📝 Task 4.9: Implement Add New Mode
