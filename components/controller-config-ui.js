@@ -362,7 +362,7 @@ export const ControllerConfigUI = {
                     type: 'singleInput',
                     input: 'LS-X',
                     wheels: 'front',
-                    maxAngle: 45,
+                    maxAngle: 25,
                     sensitivity: 1.0,
                     deadZone: 0.15
                 },
