@@ -195,6 +195,26 @@ export const ControllerConfigUI = {
             this.editingMode = null;
             console.log('Edit cancelled');
         },
+        duplicateMode(index) {
+            const manager = getModeManager();
+            if (!manager) return;
+
+            const originalMode = manager.modes[index];
+            const modeConfig = JSON.parse(JSON.stringify(originalMode));
+
+            modeConfig.name = `${originalMode.name} Copy`;
+            modeConfig.createdAt = Date.now();
+            modeConfig.modifiedAt = Date.now();
+
+            const duplicatedMode = new Mode(modeConfig);
+
+            manager.modes.push(duplicatedMode);
+            manager.saveModes();
+
+            this.refreshKey++;
+
+            console.log('Mode duplicated:', duplicatedMode.name);
+        },
         deleteMode(index) {
             console.log('Delete mode:', index);
         },
@@ -312,6 +332,7 @@ export const ControllerConfigUI = {
                                 </div>
                                 <div class="mode-actions">
                                     <button class="mode-button mode-edit" @click="editMode(index)">Edit</button>
+                                    <button class="mode-button mode-duplicate" @click="duplicateMode(index)">Duplicate</button>
                                     <button class="mode-button mode-delete" @click="deleteMode(index)">Delete</button>
                                 </div>
                             </div>

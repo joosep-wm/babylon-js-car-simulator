@@ -227,6 +227,21 @@
     transform: scale(0.95);
 }
 
+.mode-duplicate {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(124, 58, 237, 0.7));
+    color: white;
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.mode-duplicate:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 1), rgba(124, 58, 237, 0.9));
+    transform: scale(1.05);
+}
+
+.mode-duplicate:active {
+    transform: scale(0.95);
+}
+
 .mode-delete {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.7));
     color: white;
