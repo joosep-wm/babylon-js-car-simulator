@@ -136,15 +136,23 @@
 
 ---
 
-### Task 5.3: Set Default Max Angle to 25 Degrees
+### Task 5.3: Set Default Max Angle to 25 Degrees ✅
+**Status:** Complete (2025-10-30, commit: fefefa0)
 **Issue:** Default steering angle should be 25 degrees
 
 **Deliverable:** New modes default to 25° max steering angle
 
-**Test:**
-1. Create new mode
-2. Verify default max angle is 25°
-3. Existing modes unchanged
+**Implementation:**
+- Changed default maxAngle from 45 to 25 in `addNewMode()` method in `components/controller-config-ui.js`
+- Only affects newly created modes via F10 config UI
+- Existing modes retain their original 45° settings
+
+**Test Results:**
+1. ✅ New mode defaults to 25° max steering angle
+2. ✅ UI correctly displays 25° in mode editor
+3. ✅ Existing modes unchanged at 45°
+4. ✅ No console errors
+5. ✅ Mode editor functionality intact
 
 ---
 
@@ -204,14 +212,14 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 5 In Progress - 2/5 tasks complete** 🚧
+**Phase 5 In Progress - 3/5 tasks complete** 🚧
 
 **Completed:**
 - ✅ Task 5.1: Fix Steering Mode Display on Debug Screen (commit: daec72d)
 - ✅ Task 5.2: Remove Old Modes (commit: a3468a8)
+- ✅ Task 5.3: Set Default Max Angle to 25 Degrees (commit: fefefa0)
 
 **Next Up:**
-- 📝 Task 5.3: Set Default Max Angle to 25 Degrees
 - 📝 Task 5.4: Replace Keyboard Hints with Xbox Controller Hints
 - 📝 Task 5.5: Add F10 Hint to Mode HUD
 
