@@ -130,14 +130,24 @@
 
 ---
 
-### Task 4.5: Implement Speed Control Editor
+### Task 4.5: Implement Speed Control Editor ✅ COMPLETE
 **Deliverable:** Dropdown + sliders for speed config
 
-**Test:**
-1. Change speed input from "RT/LT" to "Right Stick Y"
-2. Adjust max speed slider
-3. Save and test in-game
-4. Verify speed source changed
+**Implementation:**
+- Added Speed Control section with dropdown for speed input source (triggers/rightStickY/leftStickY)
+- Added max speed slider (0-200 range) with live numeric display
+- Implemented backward compatibility migration (type → source)
+- Default maxSpeed to 100 for modes without maxSpeed
+- Full CSS styling for select dropdown and range slider
+
+**Test Results:**
+✓ Dropdown changes speed source correctly
+✓ Slider adjusts max speed with live value display
+✓ Save persists changes to localStorage
+✓ Backward compatibility works (triggers → triggers, analog → rightStickY)
+✓ No console errors (except known favicon issue)
+
+**Status:** Completed 2025-10-30
 
 ---
 
@@ -350,22 +360,23 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 4 In Progress - 4/12 tasks complete** 🚧
+**Phase 4 In Progress - 5/12 tasks complete** 🚧
 
-**Completed Tasks (2025-10-28):**
-- ✅ Task 4.1: Controller Config UI Component Shell (fa22bad)
-- ✅ Task 4.2: Mode List View with reactive updates (b9e2094)
-- ✅ Task 4.3: Mode Reordering with drag-and-drop (a41f541)
-- ✅ Task 4.4: Mode Editor Component with working Save (b625060)
+**Completed Tasks:**
+- ✅ Task 4.1: Controller Config UI Component Shell (fa22bad) - 2025-10-28
+- ✅ Task 4.2: Mode List View with reactive updates (b9e2094) - 2025-10-28
+- ✅ Task 4.3: Mode Reordering with drag-and-drop (a41f541) - 2025-10-28
+- ✅ Task 4.4: Mode Editor Component with working Save (b625060) - 2025-10-28
+- ✅ Task 4.5: Speed Control Editor (dropdown + slider) - 2025-10-30
 
 **In Progress:**
-- 🔄 Phase 4: Configuration UI (4/12 tasks done)
+- 🔄 Phase 4: Configuration UI (5/12 tasks done)
 
 **Next Up:**
-- 📝 Task 4.5: Implement Speed Control Editor
 - 📝 Task 4.6: Implement Steering Control Editor
 - 📝 Task 4.7: Implement Utility Button Editor
 - 📝 Task 4.8: Create Input Binding Dialog
+- 📝 Task 4.9: Implement Add New Mode
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)

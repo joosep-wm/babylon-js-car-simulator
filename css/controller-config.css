@@ -394,3 +394,101 @@
 .action-save:active {
     transform: scale(0.95);
 }
+
+.speed-control-config {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-select {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.5));
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: #f1f5f9;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.7));
+}
+
+.form-select:hover {
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+.form-select option {
+    background: rgba(15, 23, 42, 1);
+    color: #f1f5f9;
+}
+
+.slider-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.form-slider {
+    flex: 1;
+    height: 6px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.5));
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.form-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(124, 58, 237, 0.8));
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-slider::-webkit-slider-thumb:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 1), rgba(124, 58, 237, 0.9));
+    transform: scale(1.1);
+}
+
+.form-slider::-webkit-slider-thumb:active {
+    transform: scale(0.95);
+}
+
+.form-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(124, 58, 237, 0.8));
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-slider::-moz-range-thumb:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 1), rgba(124, 58, 237, 0.9));
+    transform: scale(1.1);
+}
+
+.form-slider::-moz-range-thumb:active {
+    transform: scale(0.95);
+}
+
+.slider-value {
+    min-width: 50px;
+    text-align: right;
+    font-weight: 600;
+    color: #c4b5fd;
+    font-size: 1.125rem;
+}

@@ -80,7 +80,27 @@ export const ControllerConfigUI = {
 
             this.editingModeIndex = index;
             this.editingMode = JSON.parse(JSON.stringify(manager.modes[index]));
+
+            this.migrateSpeedControlSource();
+            this.ensureDefaultMaxSpeed();
+
             console.log('Editing mode:', this.editingMode.name);
+        },
+        migrateSpeedControlSource() {
+            if (!this.editingMode.speedControl.source) {
+                if (this.editingMode.speedControl.type === 'triggers') {
+                    this.editingMode.speedControl.source = 'triggers';
+                } else if (this.editingMode.speedControl.type === 'analog') {
+                    this.editingMode.speedControl.source = 'rightStickY';
+                } else {
+                    this.editingMode.speedControl.source = 'triggers';
+                }
+            }
+        },
+        ensureDefaultMaxSpeed() {
+            if (!this.editingMode.speedControl.maxSpeed) {
+                this.editingMode.speedControl.maxSpeed = 100;
+            }
         },
         saveMode() {
             const manager = getModeManager();
@@ -217,7 +237,35 @@ export const ControllerConfigUI = {
 
                             <div class="editor-section">
                                 <h4>Speed Control</h4>
-                                <p class="placeholder-text">Configuration coming in Task 4.5</p>
+                                <div class="speed-control-config">
+                                    <div class="form-group">
+                                        <label for="speed-source">Speed Input Source</label>
+                                        <select
+                                            id="speed-source"
+                                            v-model="editingMode.speedControl.source"
+                                            class="form-select"
+                                        >
+                                            <option value="triggers">RT/LT (Triggers)</option>
+                                            <option value="rightStickY">Right Stick Y</option>
+                                            <option value="leftStickY">Left Stick Y</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="max-speed">Max Speed</label>
+                                        <div class="slider-group">
+                                            <input
+                                                id="max-speed"
+                                                type="range"
+                                                min="0"
+                                                max="200"
+                                                step="5"
+                                                v-model.number="editingMode.speedControl.maxSpeed"
+                                                class="form-slider"
+                                            />
+                                            <span class="slider-value">{{ editingMode.speedControl.maxSpeed }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="editor-section">
