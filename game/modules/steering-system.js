@@ -8,17 +8,8 @@ const steeringMultiplierWhenReleased = 0.99;
 
 let steerMode = SteerMode.FRONT;
 
-export function getSteerMode() {
-    return steerMode;
-}
-
 export function setSteerMode(mode) {
     steerMode = mode;
-}
-
-export function cycleSteerMode() {
-    steerMode = (steerMode + 1) % 4;
-    return steerMode;
 }
 
 export function getCurrentModeName() {

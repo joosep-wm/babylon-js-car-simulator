@@ -1,6 +1,6 @@
 // input-handler.js - Keyboard and touch controls
 
-import { updateSteering, cycleSteerMode, getCurrentModeName } from './steering-system.js';
+import { updateSteering, getCurrentModeName } from './steering-system.js';
 import { toggleDebugOverlay, updateDebugOverlay } from './debug-overlay.js';
 import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';

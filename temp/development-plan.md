@@ -160,6 +160,22 @@
 
 ---
 
+### Task 5.5: Add F10 Hint to Mode HUD
+**Issue:** Mode HUD doesn't show how to access the config UI
+
+**Deliverable:** Update mode indicator to show "MODE (F10 to edit)"
+
+**Implementation:**
+- Change text in mode indicator from "MODE" to "MODE (F10 to edit)"
+- File to modify: `components/mode-indicator.js`
+
+**Test:**
+1. Load game
+2. Verify mode indicator shows "MODE (F10 to edit)"
+3. Press F10 to verify config UI opens
+
+---
+
 ## TESTING CHECKLIST TEMPLATE
 
 After each task, run relevant tests:
@@ -179,13 +195,16 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 5 In Progress - 0/4 tasks complete** 🚧
+**Phase 5 In Progress - 1/5 tasks complete** 🚧
+
+**Completed:**
+- ✅ Task 5.1: Fix Steering Mode Display on Debug Screen (commit: daec72d)
 
 **Next Up:**
-- 📝 Task 5.1: Fix Steering Mode Display on Debug Screen
 - 📝 Task 5.2: Remove Old Modes
 - 📝 Task 5.3: Set Default Max Angle to 25 Degrees
 - 📝 Task 5.4: Replace Keyboard Hints with Xbox Controller Hints
+- 📝 Task 5.5: Add F10 Hint to Mode HUD
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)

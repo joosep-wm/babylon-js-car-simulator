@@ -15,10 +15,6 @@ import { setupPhysics, InitTyreMaterial } from './modules/physics-config.js';
 // IMPORTS - Steering and Control Systems
 // ============================================================================
 import {
-    SteerMode,
-    modeNames,
-    getSteerMode,
-    cycleSteerMode,
     getCurrentModeName,
     updateSteering
 } from './modules/steering-system.js';
