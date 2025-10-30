@@ -340,9 +340,10 @@ export const ControllerConfigUI = {
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
 
+            const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '').replace('T', '_');
             const a = document.createElement('a');
             a.href = url;
-            a.download = `controller-modes-${Date.now()}.json`;
+            a.download = `controller-modes-${timestamp}.json`;
             a.click();
 
             URL.revokeObjectURL(url);
