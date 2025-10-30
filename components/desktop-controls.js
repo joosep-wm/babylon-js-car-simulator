@@ -46,18 +46,107 @@ export const DesktopControls = {
             return this.controllerConnected && this.currentMode;
         },
         controllerHints() {
-            if (!this.currentMode || !this.currentMode.utilityButtons) {
+            if (!this.currentMode) {
                 return [];
             }
 
             const hints = [];
+
+            this.addSpeedControlHints(hints);
+            this.addSteeringControlHints(hints);
+            this.addUtilityButtonHints(hints);
+
+            return hints;
+        }
+    },
+    methods: {
+        addSpeedControlHints(hints) {
+            const speedControl = this.currentMode.speedControl;
+            if (!speedControl) return;
+
+            if (speedControl.type === 'triggers') {
+                if (speedControl.forwardInput === 'RT') {
+                    hints.push({
+                        button: 'RT',
+                        label: 'Forward',
+                        active: this.controllerButtonStates[7] || false,
+                        buttonIndex: 7,
+                        category: 'speed'
+                    });
+                }
+                if (speedControl.backwardInput === 'LT') {
+                    hints.push({
+                        button: 'LT',
+                        label: 'Reverse',
+                        active: this.controllerButtonStates[6] || false,
+                        buttonIndex: 6,
+                        category: 'speed'
+                    });
+                }
+            } else if (speedControl.type === 'stick') {
+                const stickName = this.getStickDisplayName(speedControl.input);
+                hints.push({
+                    button: stickName,
+                    label: 'Speed',
+                    active: false,
+                    buttonIndex: null,
+                    category: 'speed'
+                });
+            }
+        },
+
+        addSteeringControlHints(hints) {
+            const steeringControl = this.currentMode.steeringControl;
+            if (!steeringControl) return;
+
+            if (steeringControl.type === 'singleInput') {
+                const stickName = this.getStickDisplayName(steeringControl.input);
+                const wheelsDesc = steeringControl.wheels === 'front' ? 'Front' :
+                                   steeringControl.wheels === 'all' ? 'All Wheels' : 'Wheels';
+                hints.push({
+                    button: stickName,
+                    label: `Steer ${wheelsDesc}`,
+                    active: false,
+                    buttonIndex: null,
+                    category: 'steering'
+                });
+            } else if (steeringControl.type === 'opposing') {
+                const stickName = this.getStickDisplayName(steeringControl.input);
+                hints.push({
+                    button: stickName,
+                    label: 'Opposing Turn',
+                    active: false,
+                    buttonIndex: null,
+                    category: 'steering'
+                });
+            } else if (steeringControl.type === 'multiInput') {
+                const frontStick = this.getStickDisplayName(steeringControl.frontInput);
+                const rearStick = this.getStickDisplayName(steeringControl.rearInput);
+                hints.push({
+                    button: frontStick,
+                    label: 'Front Wheels',
+                    active: false,
+                    buttonIndex: null,
+                    category: 'steering'
+                });
+                hints.push({
+                    button: rearStick,
+                    label: 'Rear Wheels',
+                    active: false,
+                    buttonIndex: null,
+                    category: 'steering'
+                });
+            }
+        },
+
+        addUtilityButtonHints(hints) {
+            if (!this.currentMode.utilityButtons) return;
+
             const buttonMap = {
                 0: 'A',
                 1: 'B',
                 2: 'X',
-                3: 'Y',
-                6: 'LT',
-                7: 'RT'
+                3: 'Y'
             };
 
             const actionLabels = {
@@ -76,15 +165,23 @@ export const DesktopControls = {
                         button,
                         label,
                         active: this.controllerButtonStates[buttonIndex] || false,
-                        buttonIndex
+                        buttonIndex,
+                        category: 'utility'
                     });
                 }
             });
+        },
 
-            return hints;
-        }
-    },
-    methods: {
+        getStickDisplayName(input) {
+            const stickMap = {
+                'LS-X': 'LS',
+                'LS-Y': 'LS',
+                'RS-X': 'RS',
+                'RS-Y': 'RS'
+            };
+            return stickMap[input] || input;
+        },
+
         setupKeyboardListeners() {
             this.handleKeyDown = (e) => {
                 this.updateKeyState(e.key, true);
