@@ -224,9 +224,9 @@ export const DesktopControls = {
                     this.controllerConnected = gamepadManager.connected;
 
                     if (this.controllerConnected) {
-                        if (!wasConnected || !this.currentMode) {
-                            this.updateCurrentMode();
-                        }
+                        // Always update mode to ensure we have the latest configuration
+                        // This handles cases where mode was edited but not switched
+                        this.updateCurrentMode();
                         this.updateControllerButtonStates();
                     }
                 }
@@ -272,8 +272,15 @@ export const DesktopControls = {
         updateCurrentMode() {
             const modeManager = getModeManager();
             if (modeManager) {
-                this.currentMode = modeManager.getCurrentMode();
-                console.log('🎮 Desktop controls: Updated to mode', this.currentMode?.name);
+                const newMode = modeManager.getCurrentMode();
+                // Only update and log if mode configuration actually changed
+                // Compare entire mode object to catch any property changes
+                if (!this.currentMode ||
+                    JSON.stringify(this.currentMode) !== JSON.stringify(newMode)) {
+                    this.currentMode = newMode;
+                    console.log('🎮 Desktop controls: Updated to mode', this.currentMode?.name);
+                    console.log('🎮 Mode config:', this.currentMode);
+                }
             }
         },
 
