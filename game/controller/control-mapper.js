@@ -177,8 +177,9 @@ export class ControlMapper {
 
     const BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
 
-    for (const [buttonIndex, config] of Object.entries(mode.utilityButtons)) {
-      const buttonName = BUTTON_NAMES[buttonIndex];
+    for (const [key, config] of Object.entries(mode.utilityButtons)) {
+      const actualButtonIndex = config.buttonIndex !== undefined ? config.buttonIndex : parseInt(key);
+      const buttonName = BUTTON_NAMES[actualButtonIndex];
       const button = gamepadState.buttons[buttonName];
 
       if (!button) continue;

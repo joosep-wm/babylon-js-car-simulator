@@ -134,6 +134,7 @@ export const ControllerConfigUI = {
 
             this.migrateSpeedControlSource();
             this.ensureDefaultMaxSpeed();
+            this.migrateUtilityButtons();
 
             console.log('Editing mode:', this.editingMode.name);
         },
@@ -151,6 +152,26 @@ export const ControllerConfigUI = {
         ensureDefaultMaxSpeed() {
             if (!this.editingMode.speedControl.maxSpeed) {
                 this.editingMode.speedControl.maxSpeed = 100;
+            }
+        },
+        migrateUtilityButtons() {
+            if (!this.editingMode.utilityButtons) {
+                this.editingMode.utilityButtons = {};
+            }
+
+            const defaults = {
+                0: { action: 'jump', type: 'press', buttonIndex: 0 },
+                1: { action: 'brake', type: 'hold', holdDuration: 100, buttonIndex: 1 },
+                2: { action: 'resetPosition', type: 'press', buttonIndex: 2 },
+                3: { action: 'resetWheels', type: 'press', buttonIndex: 3 }
+            };
+
+            for (let i = 0; i <= 3; i++) {
+                if (!this.editingMode.utilityButtons[i]) {
+                    this.editingMode.utilityButtons[i] = { ...defaults[i] };
+                } else if (this.editingMode.utilityButtons[i].buttonIndex === undefined) {
+                    this.editingMode.utilityButtons[i].buttonIndex = i;
+                }
             }
         },
         saveMode() {
@@ -355,7 +376,80 @@ export const ControllerConfigUI = {
 
                             <div class="editor-section">
                                 <h4>Utility Buttons</h4>
-                                <p class="placeholder-text">Configuration coming in Task 4.7</p>
+                                <div class="utility-buttons-config">
+                                    <div class="button-mapping-row">
+                                        <span class="action-label">Jump</span>
+                                        <select v-model.number="editingMode.utilityButtons[0].buttonIndex" class="form-select button-select">
+                                            <option :value="0">A</option>
+                                            <option :value="1">B</option>
+                                            <option :value="2">X</option>
+                                            <option :value="3">Y</option>
+                                            <option :value="4">LB</option>
+                                            <option :value="5">RB</option>
+                                            <option :value="6">LT</option>
+                                            <option :value="7">RT</option>
+                                            <option :value="8">Back</option>
+                                            <option :value="9">Start</option>
+                                            <option :value="10">LS</option>
+                                            <option :value="11">RS</option>
+                                        </select>
+                                        <span class="button-badge">{{ ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS'][editingMode.utilityButtons[0].buttonIndex || 0] }}</span>
+                                    </div>
+                                    <div class="button-mapping-row">
+                                        <span class="action-label">Brake</span>
+                                        <select v-model.number="editingMode.utilityButtons[1].buttonIndex" class="form-select button-select">
+                                            <option :value="0">A</option>
+                                            <option :value="1">B</option>
+                                            <option :value="2">X</option>
+                                            <option :value="3">Y</option>
+                                            <option :value="4">LB</option>
+                                            <option :value="5">RB</option>
+                                            <option :value="6">LT</option>
+                                            <option :value="7">RT</option>
+                                            <option :value="8">Back</option>
+                                            <option :value="9">Start</option>
+                                            <option :value="10">LS</option>
+                                            <option :value="11">RS</option>
+                                        </select>
+                                        <span class="button-badge">{{ ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS'][editingMode.utilityButtons[1].buttonIndex || 1] }}</span>
+                                    </div>
+                                    <div class="button-mapping-row">
+                                        <span class="action-label">Reset Position</span>
+                                        <select v-model.number="editingMode.utilityButtons[2].buttonIndex" class="form-select button-select">
+                                            <option :value="0">A</option>
+                                            <option :value="1">B</option>
+                                            <option :value="2">X</option>
+                                            <option :value="3">Y</option>
+                                            <option :value="4">LB</option>
+                                            <option :value="5">RB</option>
+                                            <option :value="6">LT</option>
+                                            <option :value="7">RT</option>
+                                            <option :value="8">Back</option>
+                                            <option :value="9">Start</option>
+                                            <option :value="10">LS</option>
+                                            <option :value="11">RS</option>
+                                        </select>
+                                        <span class="button-badge">{{ ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS'][editingMode.utilityButtons[2].buttonIndex || 2] }}</span>
+                                    </div>
+                                    <div class="button-mapping-row">
+                                        <span class="action-label">Reset Wheels</span>
+                                        <select v-model.number="editingMode.utilityButtons[3].buttonIndex" class="form-select button-select">
+                                            <option :value="0">A</option>
+                                            <option :value="1">B</option>
+                                            <option :value="2">X</option>
+                                            <option :value="3">Y</option>
+                                            <option :value="4">LB</option>
+                                            <option :value="5">RB</option>
+                                            <option :value="6">LT</option>
+                                            <option :value="7">RT</option>
+                                            <option :value="8">Back</option>
+                                            <option :value="9">Start</option>
+                                            <option :value="10">LS</option>
+                                            <option :value="11">RS</option>
+                                        </select>
+                                        <span class="button-badge">{{ ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS'][editingMode.utilityButtons[3].buttonIndex || 3] }}</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="editor-actions">
