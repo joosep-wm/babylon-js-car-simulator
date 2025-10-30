@@ -198,6 +198,46 @@ export const ControllerConfigUI = {
         deleteMode(index) {
             console.log('Delete mode:', index);
         },
+        addNewMode() {
+            const manager = getModeManager();
+            if (!manager) return;
+
+            const newMode = new Mode({
+                name: 'New Mode',
+                description: 'Custom control mode',
+                speedControl: {
+                    source: 'triggers',
+                    type: 'triggers',
+                    forwardInput: 'RT',
+                    backwardInput: 'LT',
+                    deadZone: 0.15,
+                    maxSpeed: 100,
+                    sensitivity: 1.0
+                },
+                steeringControl: {
+                    type: 'singleInput',
+                    input: 'LS-X',
+                    wheels: 'front',
+                    maxAngle: 45,
+                    sensitivity: 1.0,
+                    deadZone: 0.15
+                },
+                utilityButtons: {
+                    0: { action: 'jump', type: 'press', buttonIndex: 0 },
+                    1: { action: 'brake', type: 'hold', holdDuration: 100, buttonIndex: 1 },
+                    2: { action: 'resetPosition', type: 'press', buttonIndex: 2 },
+                    3: { action: 'resetWheels', type: 'press', buttonIndex: 3 }
+                }
+            });
+
+            manager.modes.push(newMode);
+            manager.saveModes();
+
+            const newIndex = manager.modes.length - 1;
+            this.editMode(newIndex);
+
+            console.log('New mode created:', newMode.name);
+        },
         handleDragStart(e, index) {
             this.draggedIndex = index;
             e.dataTransfer.effectAllowed = 'move';
@@ -275,6 +315,12 @@ export const ControllerConfigUI = {
                                     <button class="mode-button mode-delete" @click="deleteMode(index)">Delete</button>
                                 </div>
                             </div>
+                        </div>
+                        <div class="add-mode-section">
+                            <button class="add-mode-button" @click="addNewMode">
+                                <span class="add-icon">+</span>
+                                <span>Add New Mode</span>
+                            </button>
                         </div>
                     </div>
 
