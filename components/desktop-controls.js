@@ -160,32 +160,30 @@ export const DesktopControls = {
                 resetWheels: 'Reset Wheels'
             };
 
-            // Build reverse map: action -> button index
-            const actionToButton = {};
+            // Build array of hints from utilityButtons config
+            const utilityHints = [];
             Object.entries(this.currentMode.utilityButtons).forEach(([buttonIndex, config]) => {
                 const actionName = typeof config === 'string' ? config : config.action;
-                // Convert string key to number (JSON.parse makes object keys strings)
-                actionToButton[actionName] = parseInt(buttonIndex, 10);
-            });
+                const buttonIndexNum = parseInt(buttonIndex, 10);
+                const button = buttonMap[buttonIndexNum];
+                const label = actionLabels[actionName];
 
-            // Display hints in consistent order: jump, brake, resetPosition, resetWheels
-            const actionOrder = ['jump', 'brake', 'resetPosition', 'resetWheels'];
-            actionOrder.forEach(actionName => {
-                const buttonIndex = actionToButton[actionName];
-                if (buttonIndex !== undefined) {
-                    const button = buttonMap[buttonIndex];
-                    const label = actionLabels[actionName];
-                    if (button && label) {
-                        hints.push({
-                            button,
-                            label,
-                            active: this.controllerButtonStates[buttonIndex] || false,
-                            buttonIndex,
-                            category: 'utility'
-                        });
-                    }
+                if (button && label) {
+                    utilityHints.push({
+                        button,
+                        label,
+                        active: this.controllerButtonStates[buttonIndexNum] || false,
+                        buttonIndex: buttonIndexNum,
+                        category: 'utility'
+                    });
                 }
             });
+
+            // Sort by button index to display in order: A, B, X, Y
+            utilityHints.sort((a, b) => a.buttonIndex - b.buttonIndex);
+
+            // Add sorted hints to main hints array
+            hints.push(...utilityHints);
         },
 
         getStickDisplayName(input) {
