@@ -2,11 +2,29 @@
 
 **Source Document:** temp/xbox-controller-design.md v3.0
 **Strategy:** Minimal testable increments, test after EVERY change
-**Current Phase:** Phase 4 - Configuration UI
+**Current Phase:** Phase 5 - Small Improvements
 
 ---
 
 ## Phase Summaries
+
+### PHASE 4: CONFIGURATION UI ✅ COMPLETE
+**Status:** Complete (2025-10-30)
+**Goal:** Visual mode editor
+
+**Key Achievements:**
+- ✅ Full mode configuration UI with F10 hotkey toggle
+- ✅ Mode list view with drag-and-drop reordering
+- ✅ Complete mode editor: speed, steering, utility button configuration
+- ✅ Add new mode, duplicate mode, export/import profiles functionality
+- ✅ Backward compatibility migration for existing modes
+- ✅ 11/12 tasks completed (Task 4.8 skipped)
+- ✅ 11 git commits: fa22bad → fdca137
+
+**Documents:**
+- Archive: `temp/M2-phase4-archive.md`
+
+---
 
 ### PHASE 3: CONTROL MAPPING ✅ COMPLETE
 **Status:** Complete (2025-10-28)
@@ -64,352 +82,68 @@
 - Archive: `temp/M2-phase2-archive.md`
 - Completion Report: `temp/M2-PHASE-2-COMPLETE.md`
 
-> **Note:** Phase 1-2 detailed planning has been archived. See archive documents for full task details.
-
-> **Note:** Phase 3 detailed planning has been archived. See `temp/M2-phase3-archive.md` for full task details.
+> **Note:** Phase 1-2-3-4 detailed planning has been archived. See archive documents for full task details.
 
 ---
 
-## PHASE 4: CONFIGURATION UI (Week 2-3)
-**Goal:** Visual mode editor
+## PHASE 5: SMALL IMPROVEMENTS
+**Goal:** Polish and bug fixes
 
-### Task 4.1: Create Controller Config UI Component Shell ✅ COMPLETE
-**Deliverable:** Empty Vue overlay component
+### Task 5.1: Fix Steering Mode Display on Debug Screen
+**Issue:** Debug screen not showing the mode name from dialog
 
-**Implementation:**
-- Create `components/controller-config-ui.js`
-- Create `css/controller-config.css`
-- F10 hotkey to toggle overlay
-- Basic modal layout
-
-**Status:** Completed 2025-10-28 | Commit: fa22bad
-
----
-
-### Task 4.2: Create Mode List View ✅ COMPLETE
-**Deliverable:** Display all modes in list with reactive updates
-
-**Implementation:**
-- Show mode name and description
-- Active mode highlighted
-- Edit button per mode
-- Delete button per mode
-- Vue reactivity using refreshKey + 100ms polling (technical debt for Phase 6)
-
-**Status:** Completed 2025-10-28 | Commit: b9e2094
-
----
-
-### Task 4.3: Implement Mode Reordering ✅ COMPLETE
-**Deliverable:** Drag-to-reorder modes
-
-**Implementation:**
-- Full drag-and-drop with visual feedback
-- ModeManager.reorderModes() method
-- Active mode tracking during reorder
-- localStorage persistence
-
-**Status:** Completed 2025-10-28 | Commit: a41f541
-
----
-
-### Task 4.4: Create Mode Editor Component ✅ COMPLETE
-**Deliverable:** Detailed mode configuration screen with working Save
-
-**Implementation:**
-- Editor UI with editable name and description fields
-- Placeholder sections for speed/steering/utility (content in Tasks 4.5-4.7)
-- Working Save functionality:
-  - Import Mode class for object reconstruction
-  - Update mode in ModeManager.modes array
-  - Call ModeManager.saveModes() to persist to localStorage
-  - Refresh UI after save
-- Cancel button discards changes and returns to list
-
-**Status:** Completed 2025-10-28 | Commit: b625060
-
----
-
-### Task 4.5: Implement Speed Control Editor ✅ COMPLETE
-**Deliverable:** Dropdown + sliders for speed config
-
-**Implementation:**
-- Added Speed Control section with dropdown for speed input source (triggers/rightStickY/leftStickY)
-- Added max speed slider (0-200 range) with live numeric display
-- Implemented backward compatibility migration (type → source)
-- Default maxSpeed to 100 for modes without maxSpeed
-- Full CSS styling for select dropdown and range slider
-
-**Test Results:**
-✓ Dropdown changes speed source correctly
-✓ Slider adjusts max speed with live value display
-✓ Save persists changes to localStorage
-✓ Backward compatibility works (triggers → triggers, analog → rightStickY)
-✓ No console errors (except known favicon issue)
-
-**Status:** Completed 2025-10-30
-
----
-
-### Task 4.6: Implement Steering Control Editor ✅ COMPLETE
-**Deliverable:** Configure steering mappings
-
-**Implementation:**
-- Added Steering Control section in Mode Editor Component
-- Created dropdown for steering type selection: Front Only, All Wheel, Opposite, Independent
-- Added max angle slider (0-90 degrees) with live numeric display
-- Implemented computed properties for bidirectional mapping between UI and mode structure
-- Correctly handles all steering types: singleInput (front/all), opposing, multiInput
-- Save functionality updates steeringControl.type and maxAngle (or frontMaxAngle/rearMaxAngle)
-- Added CSS styling matching Speed Control section
-
-**Test Results:**
-✓ Dropdown correctly displays current steering type for all mode structures
-✓ Slider adjusts max angle with live value display (45° → 60° → 70°)
-✓ Save persists changes to localStorage correctly
-✓ All Wheel mode: type=singleInput, wheels=all, maxAngle=60
-✓ Independent mode: type=multiInput, frontMaxAngle=70, rearMaxAngle=70
-✓ Opposite mode: type=opposing correctly detected
-✓ No console errors (except known favicon issue)
-
-**Status:** Completed 2025-10-30
-
----
-
-### Task 4.7: Implement Utility Button Editor ✅ COMPLETE
-**Deliverable:** Remap buttons to actions
-
-**Implementation:**
-- Added Utility Buttons section in Mode Editor Component
-- Display all 4 utility button mappings: Jump, Brake, Reset Position, Reset Wheels
-- Each action shows dropdown select with all 12 Xbox buttons (A, B, X, Y, LB, RB, LT, RT, Back, Start, LS, RS)
-- Button badge displays currently selected button with purple theme styling
-- Added migrateUtilityButtons() method for backward compatibility
-- Updated ControlMapper to read from buttonIndex property with fallback
-
-**Test Results:**
-✓ UI displays all actions with dropdowns and badges
-✓ Dropdown changes update badge immediately
-✓ Save persists changes to localStorage
-✓ Configuration loads correctly after save
-✓ Successfully remapped Jump to B and Brake to A
-✓ Migration adds buttonIndex property to existing modes
-✓ No console errors (except known favicon issue)
-
-**Status:** Completed 2025-10-30 | Commit: 76f771f
-
----
-
-### Task 4.8: Create Input Binding Dialog ⏭️ SKIPPED
-**Deliverable:** "Press button" widget
-
-**Reason for Skip:** Task 4.7 implemented dropdown selects for button remapping, which provides simpler and more intuitive UX than a "press button" dialog. The dropdown approach is already functional and meets all requirements.
+**Deliverable:** Debug overlay (F11) displays the current steering mode name
 
 **Test:**
-1. ~~Click "Change Input" for speed control~~
-2. ~~Verify dialog appears~~
-3. ~~Press RT trigger~~
-4. ~~Verify RT assigned~~
-
-**Status:** Skipped 2025-10-30 - Functionality already implemented via dropdowns in Task 4.7
+1. Open debug overlay with F11
+2. Verify steering mode displays correct name
+3. Switch modes with LB/RB
+4. Verify mode name updates correctly
 
 ---
 
-### Task 4.9: Implement Add New Mode ✅ COMPLETE
-**Deliverable:** Create custom mode from scratch
+### Task 5.2: Remove Old Modes
+**Issue:** Old/unused mode definitions cluttering the codebase
+
+**Deliverable:** Clean up legacy mode code
+
+**Test:**
+1. Game still works with current modes
+2. No console errors
+3. All existing modes still functional
+
+---
+
+### Task 5.3: Set Default Max Angle to 25 Degrees
+**Issue:** Default steering angle should be 25 degrees
+
+**Deliverable:** New modes default to 25° max steering angle
+
+**Test:**
+1. Create new mode
+2. Verify default max angle is 25°
+3. Existing modes unchanged
+
+---
+
+### Task 5.4: Replace Keyboard Hints with Xbox Controller Hints
+**Issue:** Bottom control hints show keyboard controls instead of Xbox controller controls
+
+**Deliverable:** Dynamic hints that reflect current mode's Xbox button mappings
 
 **Implementation:**
-- Added "Add New Mode" button at bottom of mode list with purple theme styling
-- Created addNewMode() method that:
-  - Creates new Mode instance with default values (triggers, front-only steering, maxSpeed 100)
-  - Adds to ModeManager.modes array and saves to localStorage
-  - Automatically opens mode editor for configuration
-- Added CSS styling with hover effects and transitions
-
-**Test Results:**
-✓ "Add New Mode" button displays at bottom of mode list
-✓ Click button creates new mode with name "New Mode"
-✓ Mode editor opens automatically with all default values
-✓ Can configure name, description, speed control, steering, and utility buttons
-✓ Save persists new mode to localStorage
-✓ New mode appears in mode list
-✓ Can switch to new mode using LB/RB buttons
-✓ All configurations work as expected
-
-**Status:** Completed 2025-10-30
-
----
-
-### Task 4.10: Implement Duplicate Mode ✅ COMPLETE
-**Deliverable:** Copy existing mode
-
-**Implementation:**
-- Added duplicateMode(index) method that creates deep copy using JSON.parse(JSON.stringify())
-- Appends " Copy" to the mode name
-- Creates new Mode instance with new createdAt/modifiedAt timestamps
-- Adds duplicated mode to ModeManager.modes array
-- Saves to localStorage and refreshes UI
-- Added "Duplicate" button between Edit and Delete in mode list
-- Added purple gradient styling for duplicate button matching theme
-
-**Test Results:**
-✓ Duplicated "Test Mode" to create "Test Mode Copy"
-✓ Modified duplicate name to "Modified Duplicate Mode"
-✓ Verified original "Test Mode" unchanged (name, description, all settings intact)
-✓ Duplicate button displays with proper styling and hover effects
-✓ Duplicate appears in mode list immediately after creation
-✓ All configuration deep copied correctly (speed, steering, utility buttons)
-
-**Status:** Completed 2025-10-30
-
----
-
-### Task 4.11: Implement Delete Mode
-**Deliverable:** Remove mode from list
+- Hide keyboard control hints when Xbox controller connected
+- Show Xbox button hints based on current mode configuration
+- Display actual button mappings from mode (e.g., "A: Jump" or "B: Jump" depending on config)
+- Update hints when switching modes
 
 **Test:**
-1. Create extra mode
-2. Delete it
-3. Verify removed from list
-4. Verify can't delete if only 1 mode remains
-
----
-
-### Task 4.12: Implement Export/Import Profiles ✅ COMPLETE
-**Deliverable:** Save config to JSON file and restore from JSON file
-
-**Implementation:**
-- Added Export Profiles button (blue gradient) that downloads JSON with timestamp
-- Added Import Profiles button (green gradient) with hidden file input
-- JSON structure includes: version, exportDate, modeCount, modes array
-- Full validation: checks for modes array, rejects empty arrays, validates JSON format
-- Reconstructs Mode instances from JSON using Mode class constructor
-- Resets to first mode after import and saves to localStorage
-- User-friendly alerts for success and error cases
-
-**Test Results:**
-✓ Export button downloads properly formatted JSON file
-✓ JSON includes all mode data (speed, steering, utility buttons, timestamps)
-✓ Import button opens file picker with .json filter
-✓ Successfully imported 2 modes from backup file
-✓ Invalid JSON rejected with error: "Invalid profile file format"
-✓ Empty modes array rejected with error: "Cannot import: profile file contains no modes"
-✓ UI refreshes immediately after import
-✓ localStorage persistence works correctly
-
-**Status:** Completed 2025-10-30 | Commit: fdca137
-
----
-
-## PHASE 5: TESTING INFRASTRUCTURE (Week 3)
-**Goal:** AI-testable mock controller
-
-### Task 5.1: Create VirtualGamepad Class
-**Deliverable:** Mock Gamepad API
-
-**Implementation:**
-```javascript
-// game/testing/virtual-gamepad.js
-export class VirtualGamepad {
-  constructor() {
-    this.buttons = Array(16).fill().map(() => ({ pressed: false, value: 0 }));
-    this.axes = Array(8).fill(0);
-    this.id = 'Virtual Xbox Controller';
-    this.index = 0;
-    this.connected = true;
-  }
-
-  pressButton(index) {
-    this.buttons[index].pressed = true;
-    this.buttons[index].value = 1.0;
-  }
-
-  releaseButton(index) {
-    this.buttons[index].pressed = false;
-    this.buttons[index].value = 0;
-  }
-
-  setAxis(index, value) {
-    this.axes[index] = Math.max(-1, Math.min(1, value));
-  }
-
-  inject() {
-    // Override navigator.getGamepads()
-    const original = navigator.getGamepads.bind(navigator);
-    navigator.getGamepads = () => {
-      const gamepads = original();
-      gamepads[this.index] = this;
-      return gamepads;
-    };
-  }
-}
-```
-
-**Test:**
-1. Create VirtualGamepad
-2. Call inject()
-3. Call navigator.getGamepads()
-4. Verify virtual controller in array
-
----
-
-### Task 5.2: Create Test Harness
-**Deliverable:** Automated test runner
-
-**Test:**
-1. Run test harness
-2. Verify can execute test steps
-3. Verify can validate expectations
-
----
-
-### Task 5.3: Create Test Scenarios for Mode 1
-**Deliverable:** Automated tests for Traditional Driving
-
-**Test:**
-1. Run scenario
-2. Verify car drives forward
-3. Verify car turns left/right
-4. Verify jump works
-
----
-
-### Task 5.4: Create Test Scenarios for Modes 2-4
-**Deliverable:** Full mode coverage
-
----
-
-### Task 5.5: Create Visual Test Mode UI
-**Deliverable:** In-game test overlay
-
-**Test:**
-1. Open test mode
-2. See real-time input display
-3. See wheel status
-4. See action log
-
----
-
-## PHASE 6: POLISH (Week 4)
-**Goal:** Production ready
-
-### Task 6.1: Add Conflict Detection
-**Deliverable:** Warn on duplicate button mappings
-
----
-
-### Task 6.2: Performance Profiling
-**Deliverable:** Ensure <1ms per frame
-
----
-
-### Task 6.3: Write User Documentation
-**Deliverable:** docs/controller-user-guide.md
-
----
-
-### Task 6.4: Write Architecture Documentation
-**Deliverable:** docs/controller-architecture.md
+1. Connect Xbox controller
+2. Verify keyboard hints hidden
+3. Verify Xbox button hints display
+4. Verify hints match current mode configuration
+5. Switch modes and verify hints update
+6. Disconnect controller and verify keyboard hints return
 
 ---
 
@@ -432,32 +166,22 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Phase 4 In Progress - 10/12 tasks complete** 🚧
-
-**Completed Tasks:**
-- ✅ Task 4.1: Controller Config UI Component Shell (fa22bad) - 2025-10-28
-- ✅ Task 4.2: Mode List View with reactive updates (b9e2094) - 2025-10-28
-- ✅ Task 4.3: Mode Reordering with drag-and-drop (a41f541) - 2025-10-28
-- ✅ Task 4.4: Mode Editor Component with working Save (b625060) - 2025-10-28
-- ✅ Task 4.5: Speed Control Editor (dropdown + slider) - 2025-10-30
-- ✅ Task 4.6: Steering Control Editor (dropdown + slider) - 2025-10-30
-- ✅ Task 4.7: Utility Button Editor (76f771f) - 2025-10-30
-- ✅ Task 4.9: Add New Mode functionality - 2025-10-30
-- ✅ Task 4.10: Implement Duplicate Mode - 2025-10-30
-- ✅ Task 4.12: Export/Import Profiles (fdca137) - 2025-10-30
-
-**In Progress:**
-- 🔄 Phase 4: Configuration UI (10/12 tasks done)
+**Phase 5 In Progress - 0/4 tasks complete** 🚧
 
 **Next Up:**
-- 📝 Task 4.11: Implement Delete Mode
+- 📝 Task 5.1: Fix Steering Mode Display on Debug Screen
+- 📝 Task 5.2: Remove Old Modes
+- 📝 Task 5.3: Set Default Max Angle to 25 Degrees
+- 📝 Task 5.4: Replace Keyboard Hints with Xbox Controller Hints
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)
 - ✅ Phase 2: Mode System (mode data, switching, persistence, HUD)
 - ✅ Phase 3: Control Mapping (ControlMapper, integration, actions)
+- ✅ Phase 4: Configuration UI (mode editor, add/duplicate/export/import)
 
 **Known Issues:**
-- 🟡 WebGL feedback loop warning (deferred to Phase 6 - no functional impact)
-- 🟡 Missing favicon.ico (low priority cosmetic issue)
-- 🟡 Polling vs events in mode list (Task 4.2 technical debt - deferred to Phase 6)
+- 🟡 Steering mode not displayed on debug screen
+- 🟡 Old unused modes in codebase
+- 🟡 Default max angle should be 25° instead of current default
+- 🟡 Keyboard hints shown instead of Xbox controller hints
