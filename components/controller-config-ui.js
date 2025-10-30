@@ -32,7 +32,7 @@ export const ControllerConfigUI = {
         modes() {
             this.refreshKey;
             const manager = getModeManager();
-            return manager ? manager.modes : [];
+            return manager ? [...manager.modes] : [];
         },
         activeModeIndex() {
             this.refreshKey;
@@ -216,7 +216,33 @@ export const ControllerConfigUI = {
             console.log('Mode duplicated:', duplicatedMode.name);
         },
         deleteMode(index) {
-            console.log('Delete mode:', index);
+            const manager = getModeManager();
+            if (!manager) return;
+
+            if (manager.modes.length <= 1) {
+                alert('Cannot delete the last mode. At least one mode must exist.');
+                return;
+            }
+
+            const mode = manager.modes[index];
+            if (!confirm(`Are you sure you want to delete "${mode.name}"?`)) {
+                return;
+            }
+
+            if (index === manager.currentIndex) {
+                manager.currentIndex = 0;
+            }
+
+            manager.modes.splice(index, 1);
+
+            if (index < manager.currentIndex) {
+                manager.currentIndex--;
+            }
+
+            manager.saveModes();
+            this.refreshKey++;
+
+            console.log(`✅ Mode "${mode.name}" deleted successfully`);
         },
         addNewMode() {
             const manager = getModeManager();
@@ -295,6 +321,78 @@ export const ControllerConfigUI = {
 
             this.draggedIndex = null;
             this.dragOverIndex = null;
+        },
+        exportProfiles() {
+            const manager = getModeManager();
+            if (!manager) {
+                alert('Mode manager not available');
+                return;
+            }
+
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                modeCount: manager.modes.length,
+                modes: manager.modes.map(m => m.toJSON())
+            };
+
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `controller-modes-${Date.now()}.json`;
+            a.click();
+
+            URL.revokeObjectURL(url);
+
+            console.log('✅ Exported', data.modeCount, 'modes to JSON file');
+        },
+        importProfiles(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (!data.modes || !Array.isArray(data.modes)) {
+                        alert('Invalid profile file format: missing or invalid modes array');
+                        return;
+                    }
+
+                    if (data.modes.length === 0) {
+                        alert('Cannot import: profile file contains no modes');
+                        return;
+                    }
+
+                    const manager = getModeManager();
+                    if (!manager) {
+                        alert('Mode manager not available');
+                        return;
+                    }
+
+                    manager.modes = data.modes.map(m => new Mode(m));
+                    manager.currentIndex = 0;
+                    manager.saveModes();
+
+                    this.refreshKey++;
+
+                    console.log(`✅ Successfully imported ${data.modes.length} modes from ${data.exportDate || 'unknown date'}`);
+                    alert(`Successfully imported ${data.modes.length} modes`);
+                } catch (error) {
+                    console.error('❌ Import error:', error);
+                    alert('Error importing profiles: ' + error.message);
+                }
+
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        },
+        triggerImport() {
+            this.$refs.fileInput.click();
         }
     },
     template: `
@@ -311,7 +409,7 @@ export const ControllerConfigUI = {
                         <div class="mode-list">
                             <div
                                 v-for="(mode, index) in modes"
-                                :key="index"
+                                :key="mode.createdAt + '-' + index"
                                 :class="[
                                     'mode-item',
                                     { 'mode-active': index === activeModeIndex },
@@ -342,6 +440,23 @@ export const ControllerConfigUI = {
                                 <span class="add-icon">+</span>
                                 <span>Add New Mode</span>
                             </button>
+                        </div>
+                        <div class="profile-actions-section">
+                            <button class="profile-button profile-export" @click="exportProfiles">
+                                <span class="profile-icon">↓</span>
+                                <span>Export Profiles</span>
+                            </button>
+                            <button class="profile-button profile-import" @click="triggerImport">
+                                <span class="profile-icon">↑</span>
+                                <span>Import Profiles</span>
+                            </button>
+                            <input
+                                ref="fileInput"
+                                type="file"
+                                accept=".json"
+                                @change="importProfiles"
+                                style="display: none;"
+                            />
                         </div>
                     </div>
 
