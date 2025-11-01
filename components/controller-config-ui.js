@@ -218,6 +218,20 @@ export const ControllerConfigUI = {
             manager.modes[this.editingModeIndex] = reconstructedMode;
             manager.saveModes();
 
+            // Notify desktop-controls that mode configuration changed
+            // Fire event if this is the currently active mode
+            if (window.getGamepadManager) {
+                const gamepadManager = window.getGamepadManager();
+                if (gamepadManager && this.editingModeIndex === manager.currentIndex) {
+                    // Fire modechange event to trigger hint updates
+                    gamepadManager._emit('modechange', {
+                        mode: reconstructedMode,
+                        direction: 'update'
+                    });
+                    console.log('🎮 Fired modechange event for updated mode:', reconstructedMode.name);
+                }
+            }
+
             this.refreshKey++;
             this.isCreatingNewMode = false;
             this.editingModeIndex = null;

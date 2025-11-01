@@ -145,7 +145,9 @@ export const DesktopControls = {
         },
 
         addUtilityButtonHints(hints) {
-            if (!this.currentMode.utilityButtons) return;
+            if (!this.currentMode.utilityButtons) {
+                return;
+            }
 
             const buttonMap = {
                 0: 'A',
@@ -163,9 +165,10 @@ export const DesktopControls = {
 
             // Build array of hints from utilityButtons config
             const utilityHints = [];
-            Object.entries(this.currentMode.utilityButtons).forEach(([buttonIndex, config]) => {
+            Object.entries(this.currentMode.utilityButtons).forEach(([storageKey, config]) => {
                 const actionName = typeof config === 'string' ? config : config.action;
-                const buttonIndexNum = parseInt(buttonIndex, 10);
+                // Use the buttonIndex from INSIDE the config, not the storage key
+                const buttonIndexNum = config.buttonIndex !== undefined ? config.buttonIndex : parseInt(storageKey, 10);
                 const button = buttonMap[buttonIndexNum];
                 const label = actionLabels[actionName];
 
@@ -280,7 +283,9 @@ export const DesktopControls = {
                 // Compare entire mode object to catch any property changes
                 if (!this.currentMode ||
                     JSON.stringify(this.currentMode) !== JSON.stringify(newMode)) {
-                    this.currentMode = newMode;
+                    // Deep copy to create new object reference for Vue reactivity
+                    // This ensures Vue detects changes when mode config is modified
+                    this.currentMode = JSON.parse(JSON.stringify(newMode));
                     console.log('🎮 Desktop controls: Updated to mode', this.currentMode?.name);
                     console.log('🎮 Mode config:', this.currentMode);
                 }
