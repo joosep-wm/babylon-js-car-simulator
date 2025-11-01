@@ -53,6 +53,10 @@ export class GamepadManager {
         configurable: true  // Allow redefinition if needed
       });
     }
+
+    // Immediately poll for already-connected gamepads
+    this.pollGamepads();
+    console.log('🎮 Initial gamepad poll complete. Connected:', this.connected);
   }
 
   addEventListener(type, callback) {
@@ -82,18 +86,40 @@ export class GamepadManager {
   }
 
   pollGamepads() {
-    if (!this.connected) {
-      this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
-      return;
-    }
-
     const gamepads = navigator.getGamepads();
     if (!gamepads) {
       this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
       return;
     }
 
-    const gamepad = gamepads[this.gamepad?.index];
+    // Find the first connected gamepad or use existing gamepad index
+    let gamepad = null;
+    if (this.gamepad) {
+      gamepad = gamepads[this.gamepad.index];
+    }
+
+    // If we don't have a gamepad or it's disconnected, try to find any connected gamepad
+    if (!gamepad) {
+      for (let i = 0; i < gamepads.length; i++) {
+        if (gamepads[i]) {
+          gamepad = gamepads[i];
+          this.gamepad = gamepad;
+          break;
+        }
+      }
+    }
+
+    // Update connection status based on actual gamepad presence
+    const wasConnected = this.connected;
+    this.connected = !!gamepad;
+
+    // Log connection changes
+    if (this.connected && !wasConnected) {
+      console.log('🎮 Controller detected (poll):', gamepad.id);
+    } else if (!this.connected && wasConnected) {
+      console.log('🎮 Controller lost (poll)');
+    }
+
     if (!gamepad) {
       this.cachedGamepadState = { connected: false, gamepadId: null, buttons: {}, axes: [] };
       return;
