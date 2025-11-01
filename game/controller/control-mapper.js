@@ -15,7 +15,8 @@ export class ControlMapper {
     return {
       speed: this.mapSpeedControl(gamepadState, mode),
       steering: this.mapSteeringControl(gamepadState, mode),
-      actions: this.mapUtilityButtons(gamepadState, mode)
+      actions: this.mapUtilityButtons(gamepadState, mode),
+      spinTurn: this.mapSpinTurn(gamepadState, mode)
     };
   }
 
@@ -208,5 +209,36 @@ export class ControlMapper {
     }
 
     return actions;
+  }
+
+  mapSpinTurn(gamepadState, mode) {
+    const BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
+
+    let clockwiseActive = false;
+    let counterClockwiseActive = false;
+
+    for (const [key, config] of Object.entries(mode.utilityButtons)) {
+      const actualButtonIndex = config.buttonIndex !== undefined ? config.buttonIndex : parseInt(key);
+      const buttonName = BUTTON_NAMES[actualButtonIndex];
+      const button = gamepadState.buttons[buttonName];
+
+      if (!button || !button.pressed) continue;
+
+      if (config.action === 'spinTurnClockwise' && config.type === 'hold') {
+        clockwiseActive = true;
+      } else if (config.action === 'spinTurnCounterClockwise' && config.type === 'hold') {
+        counterClockwiseActive = true;
+      }
+    }
+
+    if (clockwiseActive && counterClockwiseActive) {
+      return { direction: 'none' };
+    } else if (clockwiseActive) {
+      return { direction: 'clockwise' };
+    } else if (counterClockwiseActive) {
+      return { direction: 'counterClockwise' };
+    } else {
+      return { direction: 'none' };
+    }
   }
 }

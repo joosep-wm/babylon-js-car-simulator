@@ -24,6 +24,16 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     let controllerJumpPrev = false;
     let keyboardJumpPrev = false;
 
+    let spinTurnState = {
+        active: false,
+        direction: 'none',
+        wheelAnimationProgress: { FL: 0, FR: 0, RL: 0, RR: 0 },
+        targetAngles: { FL: 0, FR: 0, RL: 0, RR: 0 },
+        animationComplete: false
+    };
+    const spinSpeed = 5;  // Motor force for rotation (balance between speed and control)
+    const wheelAnimationSpeed = 0.05;  // Smooth interpolation (20 frames to full angle at 60fps)
+
     initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl, scene, modeManager, gamepadManager);
 
     scene.onKeyboardObservable.add(e => {
@@ -72,6 +82,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         let controllerActions = [];
         let controllerConnected = false;
         let controllerBrake = null;
+        let controllerSpinTurn = { direction: 'none' };
 
         if (gamepadManager && controlMapper) {
             gamepadManager.pollGamepads();
@@ -83,6 +94,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 controllerSteering = mappedOutput.steering;
                 controllerActions = mappedOutput.actions;
                 controllerBrake = controllerActions.find(a => a.action === 'brake');
+                controllerSpinTurn = mappedOutput.spinTurn || { direction: 'none' };
             }
         }
 
@@ -122,7 +134,82 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
         const controllerResetWheels = controllerActions.find(a => a.action === 'resetWheels');
 
-        if (!manualControl.active) {
+        const currentMode = modeManager?.getCurrentMode();
+        const currentMaxAngle = currentMode?.steeringControl?.maxAngle || maxSteeringAngle;
+
+        const hasNormalInput = controllerConnected ? (Math.abs(controllerSpeed) > 0.1 || Math.abs(controllerSteering.FL) > 0.1) : (isLeft || isRight || isForward || isBackward);
+
+        if (controllerSpinTurn.direction !== 'none' && !hasNormalInput) {
+            if (!spinTurnState.active || spinTurnState.direction !== controllerSpinTurn.direction) {
+                console.log('🔄 Spin turn activated:', controllerSpinTurn.direction);
+                spinTurnState.active = true;
+                spinTurnState.direction = controllerSpinTurn.direction;
+                spinTurnState.animationComplete = false;
+
+                spinTurnState.targetAngles.FL = currentMaxAngle;
+                spinTurnState.targetAngles.FR = -currentMaxAngle;
+                spinTurnState.targetAngles.RL = currentMaxAngle;
+                spinTurnState.targetAngles.RR = -currentMaxAngle;
+            }
+
+            ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                const currentAngle = steerAngle[wheel];
+                const targetAngle = spinTurnState.targetAngles[wheel];
+                const diff = targetAngle - currentAngle;
+
+                if (Math.abs(diff) > 0.01) {
+                    steerAngle[wheel] += diff * wheelAnimationSpeed;
+                } else {
+                    steerAngle[wheel] = targetAngle;
+                    spinTurnState.wheelAnimationProgress[wheel] = 1;
+                }
+            });
+
+            const allWheelsAtTarget = Object.values(spinTurnState.wheelAnimationProgress).every(p => p === 1);
+            if (allWheelsAtTarget) {
+                spinTurnState.animationComplete = true;
+            }
+
+            if (spinTurnState.animationComplete) {
+                if (controllerSpinTurn.direction === 'clockwise') {
+                    wheelSpeed.FL = spinSpeed;
+                    wheelSpeed.FR = -spinSpeed;
+                    wheelSpeed.RL = spinSpeed;
+                    wheelSpeed.RR = -spinSpeed;
+                } else if (controllerSpinTurn.direction === 'counterClockwise') {
+                    wheelSpeed.FL = -spinSpeed;
+                    wheelSpeed.FR = spinSpeed;
+                    wheelSpeed.RL = -spinSpeed;
+                    wheelSpeed.RR = spinSpeed;
+                }
+            } else {
+                wheelSpeed.FL = 0;
+                wheelSpeed.FR = 0;
+                wheelSpeed.RL = 0;
+                wheelSpeed.RR = 0;
+            }
+        } else {
+            if (spinTurnState.active) {
+                console.log('🔄 Spin turn deactivated');
+                spinTurnState.active = false;
+                spinTurnState.direction = 'none';
+                spinTurnState.animationComplete = false;
+                spinTurnState.wheelAnimationProgress = { FL: 0, FR: 0, RL: 0, RR: 0 };
+
+                // Stop motor force immediately
+                wheelSpeed.FL = 0;
+                wheelSpeed.FR = 0;
+                wheelSpeed.RL = 0;
+                wheelSpeed.RR = 0;
+
+                // Note: Wheel angles are NOT locked at their spin turn positions.
+                // Normal steering logic (line 206+) will resume immediately, allowing
+                // the driver to regain control without manually resetting wheel angles.
+                // This provides better UX than the original plan specification.
+            }
+        }
+
+        if (!manualControl.active && !spinTurnState.active) {
             if (controllerConnected && !controllerResetWheels) {
                 steerAngle.FL = controllerSteering.FL * (Math.PI / 180);
                 steerAngle.FR = controllerSteering.FR * (Math.PI / 180);
@@ -174,7 +261,13 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         if (vueApp) {
             let directions = [];
 
-            if (controllerConnected) {
+            if (spinTurnState.active) {
+                if (spinTurnState.direction === 'clockwise') {
+                    directions.push('Spin Turn Clockwise');
+                } else if (spinTurnState.direction === 'counterClockwise') {
+                    directions.push('Spin Turn Counter-Clockwise');
+                }
+            } else if (controllerConnected) {
                 if (controllerSpeed > 0) directions.push('Forward (Controller)');
                 if (controllerSpeed < 0) directions.push('Backward (Controller)');
                 if (Math.abs(controllerSteering.FL) > 0.1) {
