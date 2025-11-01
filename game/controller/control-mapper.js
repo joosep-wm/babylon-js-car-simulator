@@ -16,7 +16,8 @@ export class ControlMapper {
       speed: this.mapSpeedControl(gamepadState, mode),
       steering: this.mapSteeringControl(gamepadState, mode),
       actions: this.mapUtilityButtons(gamepadState, mode),
-      spinTurn: this.mapSpinTurn(gamepadState, mode)
+      spinTurn: this.mapSpinTurn(gamepadState, mode),
+      calibration: this.mapCalibration(gamepadState, mode)
     };
   }
 
@@ -240,5 +241,23 @@ export class ControlMapper {
     } else {
       return { direction: 'none' };
     }
+  }
+
+  mapCalibration(gamepadState, mode) {
+    const BUTTON_NAMES = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'DUp', 'DDown', 'DLeft', 'DRight'];
+
+    for (const [key, config] of Object.entries(mode.utilityButtons)) {
+      const actualButtonIndex = config.buttonIndex !== undefined ? config.buttonIndex : parseInt(key);
+      const buttonName = BUTTON_NAMES[actualButtonIndex];
+      const button = gamepadState.buttons[buttonName];
+
+      if (!button) continue;
+
+      if (config.action === 'calibrateWheels' && config.type === 'hold' && button.pressed) {
+        return { active: true };
+      }
+    }
+
+    return { active: false };
   }
 }

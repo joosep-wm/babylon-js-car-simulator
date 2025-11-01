@@ -4,6 +4,7 @@ import { updateSteering, getCurrentModeName } from './steering-system.js';
 import { toggleDebugOverlay, updateDebugOverlay } from './debug-overlay.js';
 import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';
+import { CalibrationStateMachine } from './wheel-calibration.js';
 
 export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper, modeManager) {
     let forwardPressed = false;
@@ -33,6 +34,9 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     };
     const spinSpeed = 5;  // Motor force for rotation (balance between speed and control)
     const wheelAnimationSpeed = 0.05;  // Smooth interpolation (20 frames to full angle at 60fps)
+
+    const calibrationMachine = new CalibrationStateMachine(10000);
+    let calibrationPrevActive = false;
 
     initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl, scene, modeManager, gamepadManager);
 
@@ -83,6 +87,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         let controllerConnected = false;
         let controllerBrake = null;
         let controllerSpinTurn = { direction: 'none' };
+        let controllerCalibration = { active: false };
 
         if (gamepadManager && controlMapper) {
             gamepadManager.pollGamepads();
@@ -95,6 +100,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 controllerActions = mappedOutput.actions;
                 controllerBrake = controllerActions.find(a => a.action === 'brake');
                 controllerSpinTurn = mappedOutput.spinTurn || { direction: 'none' };
+                controllerCalibration = mappedOutput.calibration || { active: false };
             }
         }
 
@@ -209,7 +215,35 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             }
         }
 
-        if (!manualControl.active && !spinTurnState.active) {
+        if (controllerCalibration.active) {
+            if (!calibrationPrevActive) {
+                calibrationMachine.start();
+            }
+            calibrationPrevActive = true;
+
+            const calibrationState = calibrationMachine.update(performance.now());
+
+            if (calibrationState.active) {
+                const angle = calibrationState.normalizedAngle * currentMaxAngle * (Math.PI / 180);
+
+                steerAngle.FL = angle;
+                steerAngle.FR = angle;
+                steerAngle.RL = angle;
+                steerAngle.RR = angle;
+
+                wheelSpeed.FL = 0;
+                wheelSpeed.FR = 0;
+                wheelSpeed.RL = 0;
+                wheelSpeed.RR = 0;
+            }
+        } else {
+            if (calibrationPrevActive) {
+                calibrationMachine.stop();
+            }
+            calibrationPrevActive = false;
+        }
+
+        if (!manualControl.active && !spinTurnState.active && !calibrationMachine.isActive()) {
             if (controllerConnected && !controllerResetWheels) {
                 steerAngle.FL = controllerSteering.FL * (Math.PI / 180);
                 steerAngle.FR = controllerSteering.FR * (Math.PI / 180);
@@ -261,7 +295,14 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         if (vueApp) {
             let directions = [];
 
-            if (spinTurnState.active) {
+            if (calibrationMachine.isActive()) {
+                const state = calibrationMachine.getState();
+                if (state === 'turningOut') {
+                    directions.push('Calibrating (Turning Out)');
+                } else if (state === 'turningBack') {
+                    directions.push('Calibrating (Turning Back)');
+                }
+            } else if (spinTurnState.active) {
                 if (spinTurnState.direction === 'clockwise') {
                     directions.push('Spin Turn Clockwise');
                 } else if (spinTurnState.direction === 'counterClockwise') {

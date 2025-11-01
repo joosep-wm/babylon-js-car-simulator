@@ -29,6 +29,7 @@ export const defaultModes = [
       1: { action: 'brake', type: 'hold', holdDuration: 100 },
       2: { action: 'resetPosition', type: 'press' },
       3: { action: 'resetWheels', type: 'press' },
+      13: { action: 'calibrateWheels', type: 'hold' },
       14: { action: 'spinTurnCounterClockwise', type: 'hold' },
       15: { action: 'spinTurnClockwise', type: 'hold' }
     }
@@ -56,7 +57,10 @@ export const defaultModes = [
       0: { action: 'jump', type: 'press' },
       1: { action: 'brake', type: 'hold', holdDuration: 100 },
       2: { action: 'resetPosition', type: 'press' },
-      3: { action: 'resetWheels', type: 'press' }
+      3: { action: 'resetWheels', type: 'press' },
+      13: { action: 'calibrateWheels', type: 'hold' },
+      14: { action: 'spinTurnCounterClockwise', type: 'hold' },
+      15: { action: 'spinTurnClockwise', type: 'hold' }
     }
   },
   {
@@ -82,7 +86,10 @@ export const defaultModes = [
       0: { action: 'jump', type: 'press' },
       1: { action: 'brake', type: 'hold', holdDuration: 100 },
       2: { action: 'resetPosition', type: 'press' },
-      3: { action: 'resetWheels', type: 'press' }
+      3: { action: 'resetWheels', type: 'press' },
+      13: { action: 'calibrateWheels', type: 'hold' },
+      14: { action: 'spinTurnCounterClockwise', type: 'hold' },
+      15: { action: 'spinTurnClockwise', type: 'hold' }
     }
   },
   {
@@ -109,7 +116,10 @@ export const defaultModes = [
       0: { action: 'jump', type: 'press' },
       1: { action: 'brake', type: 'hold', holdDuration: 100 },
       2: { action: 'resetPosition', type: 'press' },
-      3: { action: 'resetWheels', type: 'press' }
+      3: { action: 'resetWheels', type: 'press' },
+      13: { action: 'calibrateWheels', type: 'hold' },
+      14: { action: 'spinTurnCounterClockwise', type: 'hold' },
+      15: { action: 'spinTurnClockwise', type: 'hold' }
     }
   }
 ];
