@@ -43,16 +43,17 @@ export const DesktopControls = {
             return !this.controllerConnected;
         },
         showControllerHints() {
-            return this.controllerConnected && this.currentMode;
+            return this.controllerConnected && !!this.currentMode;
         },
         controllerHints() {
             if (!this.currentMode) {
                 return [];
             }
 
-            // Include the mode in the computation to ensure Vue tracks changes
-            // This forces re-computation when mode object changes
-            const mode = JSON.stringify(this.currentMode);
+            // Explicitly access nested properties to trigger Vue's reactivity
+            const utilityButtons = this.currentMode.utilityButtons;
+            const speedControl = this.currentMode.speedControl;
+            const steeringControl = this.currentMode.steeringControl;
 
             const hints = [];
 
