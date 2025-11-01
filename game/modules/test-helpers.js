@@ -96,11 +96,10 @@ export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualCo
                 return null;
             }
             const currentMode = modeManager.getCurrentMode();
-            const modeName = modeManager.getCurrentModeName();
             return {
-                index: currentMode,
-                name: modeName,
-                config: modeManager.getModeConfig(currentMode)
+                index: modeManager.currentIndex,
+                name: currentMode.name,
+                config: currentMode
             };
         },
 
@@ -137,8 +136,8 @@ export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualCo
                 return;
             }
 
-            modeManager.setMode(modeIndex);
-            console.log(`🔧 Mode set to: ${modeManager.getCurrentModeName()} (${modeIndex})`);
+            modeManager.setActiveMode(modeIndex);
+            console.log(`🔧 Mode set to: ${modeManager.getCurrentMode().name} (${modeIndex})`);
         },
 
         listModes: () => {
@@ -147,11 +146,11 @@ export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualCo
                 return;
             }
             console.log("🔧 Available steering modes:");
-            console.log("   0: Front-Wheel");
-            console.log("   1: Rear-Wheel");
-            console.log("   2: 4W-Opposite");
-            console.log("   3: 4W-Crab");
-            console.log(`   Current: ${modeManager.getCurrentModeName()} (${modeManager.getCurrentMode()})`);
+            modeManager.modes.forEach((mode, index) => {
+                const current = index === modeManager.currentIndex ? ' ⭐ ACTIVE' : '';
+                console.log(`   ${index}: ${mode.name}${current}`);
+            });
+            console.log(`   Current: ${modeManager.getCurrentMode().name} (${modeManager.currentIndex})`);
         },
 
         // ====================================================================
@@ -294,23 +293,34 @@ export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualCo
                 return null;
             }
 
-            const gamepad = gamepadManager.getGamepad();
-            if (!gamepad) {
+            const state = gamepadManager.getGamepadState();
+            if (!state.connected) {
                 return { connected: false };
             }
 
+            // Convert button object to array format for easier viewing
+            const buttonArray = [];
+            for (const [name, data] of Object.entries(state.buttons)) {
+                if (data.pressed || data.value > 0) {
+                    buttonArray.push({
+                        name: name,
+                        pressed: data.pressed,
+                        value: data.value.toFixed(2)
+                    });
+                }
+            }
+
+            // Filter axes to only show significant values
+            const axesArray = state.axes.map((val, i) => ({
+                index: i,
+                value: val.toFixed(2)
+            })).filter(axis => Math.abs(axis.value) > 0.1);
+
             return {
                 connected: true,
-                id: gamepad.id,
-                buttons: gamepad.buttons.map((btn, i) => ({
-                    index: i,
-                    pressed: btn.pressed,
-                    value: btn.value.toFixed(2)
-                })).filter(btn => btn.pressed || btn.value > 0),
-                axes: gamepad.axes.map((val, i) => ({
-                    index: i,
-                    value: val.toFixed(2)
-                })).filter(axis => Math.abs(axis.value) > 0.1)
+                id: state.gamepadId,
+                buttons: buttonArray,
+                axes: axesArray
             };
         },
 
@@ -320,15 +330,19 @@ export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualCo
                 return;
             }
 
-            const currentMode = modeManager.getCurrentMode();
-            const config = modeManager.getModeConfig(currentMode);
+            const mode = modeManager.getCurrentMode();
 
-            console.log(`🎮 Controller Mapping - ${modeManager.getCurrentModeName()}`);
+            console.log(`🎮 Controller Mapping - ${mode.name}`);
             console.log("Utility Buttons:");
-            Object.entries(config.utilityButtons || {}).forEach(([key, cfg]) => {
+            Object.entries(mode.utilityButtons || {}).forEach(([key, cfg]) => {
                 const buttonIndex = cfg.buttonIndex !== undefined ? cfg.buttonIndex : parseInt(key, 10);
                 const buttonNames = ['A', 'B', 'X', 'Y'];
                 console.log(`   ${buttonNames[buttonIndex]}: ${cfg.action} (${cfg.type})`);
+            });
+            console.log("Reserved Buttons:");
+            Object.entries(mode.reservedButtons || {}).forEach(([buttonIndex, action]) => {
+                const buttonNames = ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start'];
+                console.log(`   ${buttonNames[buttonIndex] || `Button-${buttonIndex}`}: ${action}`);
             });
         },
 

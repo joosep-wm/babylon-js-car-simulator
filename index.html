@@ -10,7 +10,83 @@
     <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script type="module" src="./index.js"></script>
+
+    <!-- Cache-busting for ES6 modules - prevents stale module caching in dev and prod -->
+    <script>
+        // Generate cache-busting parameter using timestamp
+        const cacheBuster = Date.now();
+        window.__cacheBuster = cacheBuster;
+
+        // List of all modules that need cache-busting
+        // This ensures static imports in nested modules are also cache-busted
+        const modules = [
+            // Core
+            './index.js',
+            './vue-app.js',
+            './game/babylon-game.js',
+
+            // Game modules
+            './game/modules/constants.js',
+            './game/modules/debug-overlay.js',
+            './game/modules/collision-detection.js',
+            './game/modules/environment.js',
+            './game/modules/lighting-system.js',
+            './game/modules/camera-controller.js',
+            './game/modules/rendering-effects.js',
+            './game/modules/physics-config.js',
+            './game/modules/car-factory.js',
+            './game/modules/steering-system.js',
+            './game/modules/input-handler.js',
+            './game/modules/test-helpers.js',
+
+            // Controller system
+            './game/controller/storage-manager.js',
+            './game/controller/analog-processor.js',
+            './game/controller/default-modes.js',
+            './game/controller/mode-manager.js',
+            './game/controller/control-mapper.js',
+            './game/controller/gamepad-manager.js',
+
+            // Testing
+            './game/testing/virtual-gamepad.js',
+            './game/testing/test-harness.js',
+            './game/testing/test-scenarios.js',
+            './game/testing/control-mapper-test.js',
+
+            // Components
+            './components/info-panel.js',
+            './components/mobile-controls.js',
+            './components/mode-indicator.js',
+            './components/controller-config-ui.js',
+            './components/desktop-controls.js'
+        ];
+
+        // Build import map with cache-busting for all modules
+        const imports = {};
+        modules.forEach(modulePath => {
+            // Map both with ./ and without ./ prefix for compatibility
+            imports[modulePath] = `${modulePath}?v=${cacheBuster}`;
+
+            // Also map absolute paths starting with /
+            const absolutePath = modulePath.replace('./', '/');
+            imports[absolutePath] = `${absolutePath}?v=${cacheBuster}`;
+        });
+
+        // Inject import map into document
+        const importMap = document.createElement('script');
+        importMap.type = 'importmap';
+        importMap.textContent = JSON.stringify({ imports }, null, 2);
+        document.head.appendChild(importMap);
+
+        console.log('📦 Cache-busting enabled for all modules: v=' + cacheBuster);
+
+        // Dynamically load the main module with cache-busting
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = `./index.js?v=${cacheBuster}`;
+        document.head.appendChild(script);
+    </script>
+
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/info-panel.css">
     <link rel="stylesheet" href="css/mobile-controls.css">

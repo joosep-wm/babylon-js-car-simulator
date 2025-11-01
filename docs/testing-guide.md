@@ -21,7 +21,17 @@ Press **F11** to toggle real-time debug overlay showing:
 
 ### Console Test Helpers
 
-Available via `window.testHelpers` in browser console. Type `testHelpers.help()` to see all available commands.
+Available via `window.testHelpers` in browser console.
+
+**Quick Start:**
+```javascript
+testHelpers.help()  // Show all 20 available commands
+```
+
+**Verify All Loaded:**
+```javascript
+Object.keys(testHelpers).length  // Should return 20
+```
 
 #### Wheel Control
 
@@ -134,6 +144,52 @@ testHelpers.help('setMode')
 - **RL**: Rear-Left
 - **RR**: Rear-Right
 
+## Troubleshooting
+
+### Verifying Test Helpers Are Loaded
+
+If test helpers don't work or seem incomplete, verify they loaded correctly:
+
+```javascript
+// Check number of available functions (should be 20)
+Object.keys(window.testHelpers).length
+
+// List all available functions
+Object.keys(window.testHelpers).sort()
+```
+
+**Expected output:** 20 functions including:
+- Wheel control: `getWheelStates`, `setWheelAngle`, `setWheelSpeed`, `setAllWheels`, `disableManualControl`, `resetCarPosition`, `testMotors`
+- Mode management: `getMode`, `setMode`, `listModes`
+- Performance: `getFPS`, `getPerformanceMetrics`
+- Car state: `getCarState`, `getCarVelocity`, `getCarRotation`
+- Scene state: `getBoxStates`, `getSceneInfo`
+- Gamepad: `getControllerState`, `listControllerMapping`
+- Help: `help`
+
+**If fewer than 20 functions appear:** Browser may have cached old code. See Cache Issues below.
+
+### Cache Issues
+
+**Problem:** Browser caches old JavaScript modules, causing outdated test helpers or missing functions.
+
+**Solution:** The app uses Import Maps for automatic cache-busting. Each page load gets a unique timestamp parameter (e.g., `?v=1234567890`).
+
+**Verification:**
+1. Check console for: `📦 Cache-busting enabled for all modules: v=...`
+2. In DevTools Network tab: All `.js` files should have `?v=` parameter
+3. No files should show "304 Not Modified" or "(disk cache)"
+
+**Manual Cache Clear (if needed):**
+- Chrome: Ctrl+Shift+R (Cmd+Shift+R on Mac) for hard reload
+- Firefox: Ctrl+F5 (Cmd+Shift+R on Mac)
+- All browsers: Open DevTools → Network tab → Check "Disable cache"
+
+**For Persistent Issues:**
+- Open in incognito/private browsing mode
+- Clear browser cache completely
+- Check console for Import Map injection message
+
 ## Core Validation Tests
 
 ### Basic Functionality Test
@@ -149,27 +205,24 @@ Run after every change:
 
 ### Steering Mode Validation
 
-Test all modes cycle correctly (M key):
+Test all modes cycle correctly (LB/RB buttons on controller, or use `testHelpers.setMode()`):
 
-**Mode 0 (Front-Wheel)**:
-- Front wheels turn with A/D
-- Rear wheels stay straight (RL=0°, RR=0°)
-- Normal car turning behavior
+**Available Modes** (names may vary based on configuration):
+- Use `testHelpers.listModes()` to see actual mode names
+- Default modes may include: Traditional Driving, Crab Walk, Opposing Turn, etc.
 
-**Mode 1 (Rear-Wheel)**:
-- Rear wheels turn with A/D
-- Front wheels stay straight (FL=0°, FR=0°)
-- Forklift-style steering (inverted feel)
+**Mode Testing Steps:**
+1. `testHelpers.listModes()` - View all modes and current active mode
+2. `testHelpers.setMode(0)` - Switch to mode 0
+3. Drive and test steering behavior
+4. `testHelpers.setMode(1)` - Switch to next mode
+5. Repeat for all modes
 
-**Mode 2 (Opposite)**:
-- Front and rear turn opposite directions
-- Pressing A: FL/FR positive, RL/RR negative
-- Very tight turning radius
-
-**Mode 3 (Crab)**:
-- All wheels turn same direction
-- Pressing A: All wheels positive
-- Produces sideways/diagonal movement
+**Example Mode Behaviors:**
+- **Front-Wheel Steering**: Front wheels turn with A/D, rear wheels stay straight (RL=0°, RR=0°)
+- **Rear-Wheel Steering**: Rear wheels turn with A/D, front wheels stay straight (FL=0°, FR=0°)
+- **Opposing Turn**: Front and rear turn opposite directions (very tight turning)
+- **Crab Walk**: All wheels turn same direction (sideways/diagonal movement)
 
 ### Control System Validation
 
@@ -355,6 +408,49 @@ async function fullTest() {
 
 fullTest()
 ```
+
+## Technical Notes
+
+### Cache-Busting Implementation
+
+The application uses **ES6 Import Maps** to prevent module caching issues:
+
+**How It Works:**
+1. `index.html` generates a unique timestamp on each page load
+2. All 31 JavaScript modules are mapped with `?v=timestamp` parameter
+3. Browser treats each load as a fresh module, bypassing cache
+4. Works for both top-level and nested static imports
+
+**Implementation Location:**
+- **index.html**: Import Map injection script
+- **index.js**: Cache-busting verification
+
+**Console Verification:**
+```
+📦 Cache-busting enabled for all modules: v=1234567890
+📦 Cache-busting active: v=1234567890
+```
+
+**Network Verification:**
+All `.js` files load with `?v=` parameter:
+```
+/index.js?v=1234567890
+/game/modules/test-helpers.js?v=1234567890
+/game/babylon-game.js?v=1234567890
+...
+```
+
+**Why This Matters:**
+- ES6 modules are aggressively cached by browsers
+- Without cache-busting, code updates may not load
+- Nested imports (static `import` statements) also need cache-busting
+- Import Maps solve this by rewriting all module specifiers
+
+**Troubleshooting:**
+- If test helpers are incomplete (< 20 functions): cache issue
+- Check Network tab for `?v=` parameters on all modules
+- Verify no "304 Not Modified" responses
+- test-helpers.js should be ~17KB (not ~4KB cached version)
 
 ## Testing Best Practices
 
