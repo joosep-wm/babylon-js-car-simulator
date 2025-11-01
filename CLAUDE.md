@@ -264,15 +264,40 @@ See `temp/testing-strategy.md` for comprehensive testing approach including:
 4. Git commit only if ALL tests pass
 5. If test fails: fix immediately or rollback
 
-### Test Helpers (when implemented)
+### Test Helpers
+Available in browser console via `window.testHelpers`:
+
 ```javascript
-// Available in browser console after implementation
-window.testHelpers.getWheelStates()           // Check current state
-window.testHelpers.setWheelAngle('FL', 45)    // Manual wheel angle control
-window.testHelpers.setWheelSpeed('FR', 30)    // Manual wheel speed control
-window.testHelpers.testMotors()               // Automated motor sequence test
-window.testHelpers.resetCarPosition()         // Quick position reset
+// Get current wheel state
+window.testHelpers.getWheelStates()
+// Returns: {angles: {FL, FR, RL, RR}, speeds: {FL, FR, RL, RR}, manualControlActive: bool}
+
+// Manual wheel angle control (degrees)
+window.testHelpers.setWheelAngle('FL', 45)
+// Sets specific wheel angle, activates manual control
+
+// Manual wheel speed control
+window.testHelpers.setWheelSpeed('FR', 30)
+// Sets specific wheel speed, activates manual control
+
+// Set all wheels at once
+window.testHelpers.setAllWheels(45, 30)
+// Sets all wheels to same angle and speed
+
+// Disable manual control
+window.testHelpers.disableManualControl()
+// Re-enables keyboard controls
+
+// Reset car position
+window.testHelpers.resetCarPosition()
+// Moves car to origin (0, 5, 0) with zero velocity
+
+// Automated motor test sequence
+window.testHelpers.testMotors()
+// Tests each wheel motor sequentially (async, takes ~4 seconds)
 ```
+
+**Note**: Setting wheels manually activates manual control mode, which disables keyboard input. Use `disableManualControl()` to restore keyboard controls.
 
 ### Key Testing Principles
 - ❌ Never skip a test - "I'll test it later" = disaster
@@ -280,3 +305,66 @@ window.testHelpers.resetCarPosition()         // Quick position reset
 - ❌ Never proceed if test fails
 - ✅ Test immediately after change
 - ✅ Document unexpected behavior
+
+## Controller System (Xbox/Gamepad)
+
+### Mode Configuration Structure
+
+Controller modes support button remapping via the `buttonIndex` property. Understanding this is critical for debugging hint displays and button mappings.
+
+**Default Configuration Format** (no remapping):
+```javascript
+utilityButtons: {
+  0: { action: 'jump', type: 'press' },           // A button (buttonIndex 0)
+  1: { action: 'brake', type: 'hold' },           // B button (buttonIndex 1)
+  2: { action: 'resetPosition', type: 'press' },  // X button (buttonIndex 2)
+  3: { action: 'resetWheels', type: 'press' }     // Y button (buttonIndex 3)
+}
+```
+
+**Remapped Configuration Format**:
+```javascript
+utilityButtons: {
+  0: { action: 'jump', type: 'press', buttonIndex: 2 },      // Jump action on X button
+  1: { action: 'brake', type: 'hold', buttonIndex: 0 },      // Brake action on A button
+  2: { action: 'resetPosition', type: 'press', buttonIndex: 1 },  // Reset on B button
+  3: { action: 'resetWheels', type: 'press', buttonIndex: 3 }     // Reset wheels on Y button
+}
+```
+
+### Critical Implementation Note: Storage Keys vs Button Indices
+
+**IMPORTANT**: When processing `utilityButtons` configuration:
+
+- **Storage keys** (0, 1, 2, 3) are the object keys in `utilityButtons`
+- **Button indices** are the `buttonIndex` property inside each config object
+- **Physical buttons** are: A=0, B=1, X=2, Y=3
+
+Always use `config.buttonIndex` to determine which physical button to use:
+
+```javascript
+// CORRECT - uses buttonIndex property if available
+const buttonIndexNum = config.buttonIndex !== undefined
+    ? config.buttonIndex
+    : parseInt(storageKey, 10);
+```
+
+```javascript
+// WRONG - uses storage key directly
+const buttonIndexNum = parseInt(storageKey, 10);  // ❌ Ignores remapping
+```
+
+**Why This Matters**:
+- Default modes have no `buttonIndex` property → storage keys match button positions
+- Edited modes have `buttonIndex` property → allows remapping buttons
+- Using storage keys directly breaks button hints and mappings for edited configurations
+- This bug is hidden when testing with default configurations (storage keys = button indices)
+- Only appears when users customize their button mappings via the config UI
+
+**Example Bug**:
+If configuration maps brake to button A (`buttonIndex: 0`), but is stored at key 1, using the storage key will show "B → Brake" instead of "A → Brake".
+
+**Where This Applies**:
+- `components/desktop-controls.js`: Button hint generation
+- Any code that maps controller buttons to actions
+- Any code that displays button labels or hints
