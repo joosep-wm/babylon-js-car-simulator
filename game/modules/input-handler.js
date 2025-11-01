@@ -24,7 +24,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     let controllerJumpPrev = false;
     let keyboardJumpPrev = false;
 
-    initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl);
+    initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl, scene, modeManager, gamepadManager);
 
     scene.onKeyboardObservable.add(e => {
         switch (e.event.key) {

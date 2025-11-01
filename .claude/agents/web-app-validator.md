@@ -12,6 +12,7 @@ Validates web application implementations by running the app and checking for ru
 - Kill all running servers
 - Start fresh development server: `npm run start`
 - Wait 3 seconds for server startup
+- Read the `docs/testing-guide.md` for project specifics
 
 ### 2. Browser Validation (Use playwright-mcp)
 Open http://localhost:8080 and check:
@@ -40,11 +41,7 @@ Test basic interactions:
 ### Critical Errors
 1. [Error message from console]
    - File: [filename:line]
-   - Cause: [why it happened]
-   - Fix: [exact code change needed]
-
-### Root Cause
-[Why error wasn't caught earlier]
+   - How: [how it happened]
 
 ### Action: REVERT and fix before re-committing
 ```
@@ -70,10 +67,4 @@ Test basic interactions:
 3. **Test happy path** - Basic functionality must work
 4. **Fail fast** - First error = validation fails
 
-## Success Criteria
-- Zero console errors
-- Page renders completely
-- Basic controls respond
-- No 404s or network errors
-
-Use AskUserQuestion if playwright-mcp unavailable to request console output from user.
+Use AskUserQuestion if playwright-mcp unavailable to request console output from user. Don't guess.
