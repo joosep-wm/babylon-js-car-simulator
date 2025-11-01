@@ -62,6 +62,38 @@ export const DesktopControls = {
             this.addUtilityButtonHints(hints);
 
             return hints;
+        },
+        dpadHints() {
+            if (!this.currentMode || !this.currentMode.utilityButtons) {
+                return null;
+            }
+
+            const dpadButtons = {
+                13: { direction: 'down', arrow: '↓', label: null },
+                14: { direction: 'left', arrow: '←', label: null },
+                15: { direction: 'right', arrow: '→', label: null }
+            };
+
+            const actionLabels = {
+                spinTurnClockwise: 'Spin Right',
+                spinTurnCounterClockwise: 'Spin Left',
+                calibrateWheels: 'Calibrate'
+            };
+
+            let hasAnyDpadButton = false;
+
+            Object.entries(this.currentMode.utilityButtons).forEach(([storageKey, config]) => {
+                const actionName = typeof config === 'string' ? config : config.action;
+                const buttonIndex = config.buttonIndex !== undefined ? config.buttonIndex : parseInt(storageKey, 10);
+
+                if (dpadButtons[buttonIndex]) {
+                    hasAnyDpadButton = true;
+                    dpadButtons[buttonIndex].label = actionLabels[actionName] || actionName;
+                    dpadButtons[buttonIndex].active = this.controllerButtonStates[buttonIndex] || false;
+                }
+            });
+
+            return hasAnyDpadButton ? dpadButtons : null;
         }
     },
     methods: {
@@ -314,7 +346,8 @@ export const DesktopControls = {
         getButtonIndexFromName(name) {
             const buttonIndices = {
                 'A': 0, 'B': 1, 'X': 2, 'Y': 3,
-                'LT': 6, 'RT': 7
+                'LT': 6, 'RT': 7,
+                'DDown': 13, 'DLeft': 14, 'DRight': 15, 'DUp': 12
             };
             return buttonIndices[name] !== undefined ? buttonIndices[name] : -1;
         },
@@ -399,6 +432,31 @@ export const DesktopControls = {
                             {{ hint.button }}
                         </div>
                         <span class="control-label">{{ hint.label }}</span>
+                    </div>
+                </template>
+
+                <!-- D-pad Section (shown when D-pad buttons configured) -->
+                <template v-if="dpadHints">
+                    <div class="control-separator"></div>
+                    <div class="dpad-section">
+                        <span class="dpad-label">D-PAD:</span>
+                        <div class="dpad-grid">
+                            <div class="dpad-button" v-if="dpadHints[14].label"
+                                 :class="{ active: dpadHints[14].active }">
+                                <span class="dpad-arrow">{{ dpadHints[14].arrow }}</span>
+                                <span class="dpad-action">{{ dpadHints[14].label }}</span>
+                            </div>
+                            <div class="dpad-button" v-if="dpadHints[13].label"
+                                 :class="{ active: dpadHints[13].active }">
+                                <span class="dpad-arrow">{{ dpadHints[13].arrow }}</span>
+                                <span class="dpad-action">{{ dpadHints[13].label }}</span>
+                            </div>
+                            <div class="dpad-button" v-if="dpadHints[15].label"
+                                 :class="{ active: dpadHints[15].active }">
+                                <span class="dpad-arrow">{{ dpadHints[15].arrow }}</span>
+                                <span class="dpad-action">{{ dpadHints[15].label }}</span>
+                            </div>
+                        </div>
                     </div>
                 </template>
             </template>
