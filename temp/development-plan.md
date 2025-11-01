@@ -8,20 +8,24 @@
 
 ## Phase Summaries
 
-### PHASE 6: SPECIAL CONTROL MODES 🚧 PLANNING
-**Status:** Planning (2025-11-01)
+### PHASE 6: SPECIAL CONTROL MODES ✅ COMPLETE
+**Status:** Complete (2025-11-01)
 **Goal:** Add 360 spin turn and wheel calibration modes
 
-**Planned Features:**
-- 🎯 360 Spin Turn: Hold button → rotate vehicle in place (left/right)
-- 🎯 Wheel Calibration: Hold button → animate wheels to max → return to center
-- 🎯 D-pad button integration (buttons 12-15)
-- 🎯 Special mode state machine with animation
-- 🎯 Debug overlay showing special mode state
-- 🎯 Controller hints for D-pad actions
+**Key Achievements:**
+- ✅ 360° Spin Turn: Tank-style rotation with D-pad left/right (buttons 14/15)
+- ✅ Wheel Calibration: 10-second animation sequence with D-pad down (button 13)
+- ✅ CalibrationStateMachine with 3-state workflow (idle/turningOut/turningBack)
+- ✅ Debug overlay special mode field showing real-time state
+- ✅ Controller hints D-pad section with directional arrows
+- ✅ All 4 default modes include D-pad button bindings
+- ✅ 6/6 tasks completed, 5 git commits: a4fc284 → 2217eca
+- ✅ Comprehensive testing: automated browser validation via playwright-mcp
+- ✅ Zero runtime errors, 120fps maintained (exceeds target)
 
 **Documents:**
 - Plan: `temp/M2-phase6-plan.md`
+- Completion Report: `temp/M2-PHASE-6-COMPLETE.md`
 
 ---
 
@@ -123,23 +127,19 @@
 
 ---
 
-## MILESTONE 2 STATUS 🚧
+## MILESTONE 2 STATUS ✅ COMPLETE
 
-**Core Implementation (Phases 1-5):** ✅ COMPLETE
-**Extended Features (Phase 6):** 🚧 IN PLANNING
+**All Phases:** ✅ COMPLETE (6/6 phases)
+**Status:** Production Ready
 
-**Achievement Summary (Phases 1-5):**
-- Total Phases: 5/5 complete
-- Total Tasks: 42 completed (41 implemented, 1 skipped)
-- Total Commits: 58+
-- Success Rate: 97.6%
+**Achievement Summary (All Phases):**
+- Total Phases: 6/6 complete (100%)
+- Total Tasks: 48 completed (47 implemented, 1 skipped)
+- Total Commits: 63+
+- Success Rate: 97.9%
+- Performance: 120 FPS (exceeds 60 FPS target)
+- Runtime Errors: 0
 - Status: Production Ready ✅
-
-**Phase 6 (Extended):**
-- Status: Planning
-- Goal: Special Control Modes (360 Spin Turn, Wheel Calibration)
-- Estimated Tasks: 6
-- Estimated Duration: 1-2 days
 
 **What Was Built:**
 1. Complete Xbox controller integration with Gamepad API
@@ -150,8 +150,10 @@
 6. Persistent user profiles via localStorage
 7. Import/export profile functionality
 8. Comprehensive debug tooling (F11 overlay)
-9. Clean, maintainable codebase
-10. Excellent user experience with polished UI
+9. Special control modes (360° spin turn, wheel calibration)
+10. D-pad button integration with visual hints
+11. Clean, maintainable codebase
+12. Excellent user experience with polished UI
 
 **Documents:**
 - Phase 1: `temp/M2-phase1-archive.md`, `temp/M2-PHASE-1-COMPLETE.md`
@@ -159,7 +161,7 @@
 - Phase 3: `temp/M2-phase3-archive.md`, `temp/M2-PHASE-3-COMPLETE.md`
 - Phase 4: `temp/M2-phase4-archive.md`
 - Phase 5: `temp/M2-phase5-archive.md`, `temp/M2-PHASE-5-COMPLETE.md`
-- Phase 6: `temp/M2-phase6-plan.md` (in planning)
+- Phase 6: `temp/M2-phase6-plan.md`, `temp/M2-PHASE-6-COMPLETE.md`
 
 ---
 
