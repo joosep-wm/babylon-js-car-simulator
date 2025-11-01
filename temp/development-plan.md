@@ -2,11 +2,28 @@
 
 **Source Document:** temp/xbox-controller-design.md v3.0
 **Strategy:** Minimal testable increments, test after EVERY change
-**Current Phase:** Phase 5 - Small Improvements
+**Current Phase:** Phase 6 - Special Control Modes
 
 ---
 
 ## Phase Summaries
+
+### PHASE 6: SPECIAL CONTROL MODES 🚧 PLANNING
+**Status:** Planning (2025-11-01)
+**Goal:** Add 360 spin turn and wheel calibration modes
+
+**Planned Features:**
+- 🎯 360 Spin Turn: Hold button → rotate vehicle in place (left/right)
+- 🎯 Wheel Calibration: Hold button → animate wheels to max → return to center
+- 🎯 D-pad button integration (buttons 12-15)
+- 🎯 Special mode state machine with animation
+- 🎯 Debug overlay showing special mode state
+- 🎯 Controller hints for D-pad actions
+
+**Documents:**
+- Plan: `temp/M2-phase6-plan.md`
+
+---
 
 ### PHASE 5: SMALL IMPROVEMENTS ✅ COMPLETE
 **Status:** Complete (2025-10-30)
@@ -106,16 +123,23 @@
 
 ---
 
-## MILESTONE 2 COMPLETE! 🎉
+## MILESTONE 2 STATUS 🚧
 
-All 5 phases of Milestone 2 (Xbox Controller Implementation) have been successfully completed.
+**Core Implementation (Phases 1-5):** ✅ COMPLETE
+**Extended Features (Phase 6):** 🚧 IN PLANNING
 
-**Achievement Summary:**
+**Achievement Summary (Phases 1-5):**
 - Total Phases: 5/5 complete
 - Total Tasks: 42 completed (41 implemented, 1 skipped)
 - Total Commits: 58+
 - Success Rate: 97.6%
 - Status: Production Ready ✅
+
+**Phase 6 (Extended):**
+- Status: Planning
+- Goal: Special Control Modes (360 Spin Turn, Wheel Calibration)
+- Estimated Tasks: 6
+- Estimated Duration: 1-2 days
 
 **What Was Built:**
 1. Complete Xbox controller integration with Gamepad API
@@ -135,6 +159,7 @@ All 5 phases of Milestone 2 (Xbox Controller Implementation) have been successfu
 - Phase 3: `temp/M2-phase3-archive.md`, `temp/M2-PHASE-3-COMPLETE.md`
 - Phase 4: `temp/M2-phase4-archive.md`
 - Phase 5: `temp/M2-phase5-archive.md`, `temp/M2-PHASE-5-COMPLETE.md`
+- Phase 6: `temp/M2-phase6-plan.md` (in planning)
 
 ---
 
@@ -281,16 +306,26 @@ After each task, run relevant tests:
 
 ## CURRENT STATUS
 
-**Milestone 2: COMPLETE** ✅
+**Milestone 2: IN PROGRESS** 🚧
 
-**All Phases Complete:**
+**Phases 1-5: COMPLETE** ✅
 - ✅ Phase 1: Foundation (GamepadManager, events, polling)
 - ✅ Phase 2: Mode System (mode data, switching, persistence, HUD)
 - ✅ Phase 3: Control Mapping (ControlMapper, integration, actions)
 - ✅ Phase 4: Configuration UI (mode editor, add/duplicate/export/import)
 - ✅ Phase 5: Small Improvements (polish and bug fixes)
 
-**Final Metrics:**
+**Phase 6: PLANNING** 🚧
+- 🚧 Task 6.1: Add spinTurn action type
+- 🚧 Task 6.2: Add calibrateWheels action type
+- 🚧 Task 6.3: Add default mode bindings
+- 🚧 Task 6.4: Update debug overlay
+- 🚧 Task 6.5: Update controller hints
+- 🚧 Task 6.6: End-to-end testing & polish
+
+**Phase 6 Details:** See `temp/M2-phase6-plan.md`
+
+**Metrics (Phases 1-5):**
 - Total Tasks: 42 (41 completed, 1 skipped)
 - Total Commits: 58+
 - Success Rate: 97.6%
@@ -299,11 +334,7 @@ After each task, run relevant tests:
 - Production Status: READY ✅
 
 **Known Issues:**
-None - All planned tasks completed successfully.
+None
 
-**Future Enhancement Opportunities:**
-- Additional driving modes (tank steering, drift mode)
-- Haptic feedback support
-- Custom button mapping UI per mode
-- Profile sharing/community modes
-- Advanced analytics and telemetry
+**Next Up:**
+User confirmation needed for Phase 6 implementation details (see M2-phase6-plan.md questions)
