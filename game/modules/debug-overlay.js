@@ -44,6 +44,8 @@ export function createDebugOverlay() {
             </div>
             <div style="margin-top: 10px;"><strong>Steering Mode:</strong></div>
             <div id="steering-mode" style="margin-left: 10px; color: #ffff00;">--</div>
+            <div style="margin-top: 10px;"><strong>Special Mode:</strong></div>
+            <div id="special-mode" style="margin-left: 10px; color: #ff8800;">--</div>
         </div>
     `;
 
@@ -65,7 +67,7 @@ export function toggleDebugOverlay() {
     }
 }
 
-export function updateDebugOverlay(steerAngle, wheelSpeed, currentMode) {
+export function updateDebugOverlay(steerAngle, wheelSpeed, currentMode, specialMode = 'None') {
     if (!debugOverlayElement || debugOverlayElement.style.display === 'none') return;
 
     const radToDeg = (rad) => (rad * 180 / Math.PI).toFixed(1);
@@ -81,4 +83,5 @@ export function updateDebugOverlay(steerAngle, wheelSpeed, currentMode) {
     document.getElementById('speed-rr').textContent = wheelSpeed.RR.toFixed(1);
 
     document.getElementById('steering-mode').textContent = currentMode;
+    document.getElementById('special-mode').textContent = specialMode;
 }

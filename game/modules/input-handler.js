@@ -38,6 +38,24 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
     const calibrationMachine = new CalibrationStateMachine(10000);
     let calibrationPrevActive = false;
 
+    function getSpecialModeStatus() {
+        if (calibrationMachine.isActive()) {
+            const state = calibrationMachine.getState();
+            if (state === 'turningOut') {
+                return 'Calibrating (Turning Out)';
+            } else if (state === 'turningBack') {
+                return 'Calibrating (Turning Back)';
+            }
+        } else if (spinTurnState.active) {
+            if (spinTurnState.direction === 'clockwise') {
+                return 'Spin Turn Clockwise';
+            } else if (spinTurnState.direction === 'counterClockwise') {
+                return 'Spin Turn Counter-Clockwise';
+            }
+        }
+        return 'None';
+    }
+
     initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl, scene, modeManager, gamepadManager);
 
     scene.onKeyboardObservable.add(e => {
@@ -356,6 +374,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         motorJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RR);
 
         const modeName = modeManager?.getCurrentMode()?.name || getCurrentModeName();
-        updateDebugOverlay(steerAngle, wheelSpeed, modeName);
+        const specialModeStatus = getSpecialModeStatus();
+        updateDebugOverlay(steerAngle, wheelSpeed, modeName, specialModeStatus);
     });
 }
