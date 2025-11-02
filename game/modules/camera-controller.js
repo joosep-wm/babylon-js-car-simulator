@@ -39,3 +39,13 @@ export function setupCamera(scene, car) {
 
     return camera;
 }
+
+export function rotateCameraByOffset(camera, degrees) {
+    if (!camera) {
+        console.error("❌ Camera not available for rotation");
+        return;
+    }
+
+    camera.rotationOffset += degrees;
+    console.log(`📷 Camera rotated by ${degrees}° (new offset: ${camera.rotationOffset}°)`);
+}
