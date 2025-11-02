@@ -108,4 +108,12 @@ export class ModeManager {
     this.saveModes();
     console.log('🎮 Modes reordered:', this.modes.map(m => m.name));
   }
+
+  resetToDefaults() {
+    this.modes = defaultModes.map(m => new Mode(m));
+    this.currentIndex = 0;
+    this.saveModes();
+    this._syncKeyboardSteeringMode();
+    console.log('🎮 Reset to default modes');
+  }
 }

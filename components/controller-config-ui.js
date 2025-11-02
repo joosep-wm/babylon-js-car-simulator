@@ -538,6 +538,23 @@ export const ControllerConfigUI = {
         triggerImport() {
             this.$refs.fileInput.click();
         },
+        resetToDefaults() {
+            if (!confirm('Are you sure you want to reset all modes to factory defaults? This will delete all custom modes and configuration.')) {
+                return;
+            }
+
+            const manager = getModeManager();
+            if (!manager) {
+                alert('Mode manager not available');
+                return;
+            }
+
+            manager.resetToDefaults();
+            this.refreshKey++;
+
+            console.log('✅ Reset to factory defaults');
+            alert('Successfully reset to factory defaults');
+        },
         addUtilityButton() {
             if (!this.editingMode || !this.editingMode.utilityButtons) return;
 
@@ -629,6 +646,10 @@ export const ControllerConfigUI = {
                             <button class="profile-button profile-import" @click="triggerImport">
                                 <span class="profile-icon">↑</span>
                                 <span>Import Profiles</span>
+                            </button>
+                            <button class="profile-button profile-reset" @click="resetToDefaults">
+                                <span class="profile-icon">↻</span>
+                                <span>Reset to Defaults</span>
                             </button>
                             <input
                                 ref="fileInput"
