@@ -69,6 +69,7 @@ export const DesktopControls = {
             }
 
             const dpadButtons = {
+                12: { direction: 'up', arrow: '↑', label: null },
                 13: { direction: 'down', arrow: '↓', label: null },
                 14: { direction: 'left', arrow: '←', label: null },
                 15: { direction: 'right', arrow: '→', label: null }
@@ -77,7 +78,8 @@ export const DesktopControls = {
             const actionLabels = {
                 spinTurnClockwise: 'Spin Clockwise',
                 spinTurnCounterClockwise: 'Spin Counterclockwise',
-                calibrateWheels: 'Calibrate'
+                calibrateWheels: 'Calibrate',
+                switchFrontBack: 'Switch Front/Back'
             };
 
             let hasAnyDpadButton = false;
@@ -458,6 +460,11 @@ export const DesktopControls = {
                     <div class="dpad-section">
                         <span class="dpad-label">D-PAD:</span>
                         <div class="dpad-grid">
+                            <div class="dpad-button" v-if="dpadHints[12].label"
+                                 :class="{ active: dpadHints[12].active }">
+                                <span class="dpad-arrow">{{ dpadHints[12].arrow }}</span>
+                                <span class="dpad-action">{{ dpadHints[12].label }}</span>
+                            </div>
                             <div class="dpad-button" v-if="dpadHints[14].label"
                                  :class="{ active: dpadHints[14].active }">
                                 <span class="dpad-arrow">{{ dpadHints[14].arrow }}</span>
