@@ -182,11 +182,10 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 spinTurnState.direction = controllerSpinTurn.direction;
                 spinTurnState.animationComplete = false;
 
-                const steeringMult = getSteeringMultiplier();
-                spinTurnState.targetAngles.FL = currentMaxAngle * steeringMult;
-                spinTurnState.targetAngles.FR = -currentMaxAngle * steeringMult;
-                spinTurnState.targetAngles.RL = -currentMaxAngle * steeringMult;
-                spinTurnState.targetAngles.RR = currentMaxAngle * steeringMult;
+                spinTurnState.targetAngles.FL = currentMaxAngle;
+                spinTurnState.targetAngles.FR = -currentMaxAngle;
+                spinTurnState.targetAngles.RL = -currentMaxAngle;
+                spinTurnState.targetAngles.RR = currentMaxAngle;
             }
 
             ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
@@ -256,8 +255,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             const calibrationState = calibrationMachine.update(performance.now());
 
             if (calibrationState.active) {
-                const steeringMult = getSteeringMultiplier();
-                const angle = calibrationState.normalizedAngle * currentMaxAngle * steeringMult;
+                const angle = calibrationState.normalizedAngle * currentMaxAngle;
 
                 steerAngle.FL = angle;
                 steerAngle.FR = angle;
@@ -290,11 +288,10 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
         if (!manualControl.active && !spinTurnState.active && !calibrationMachine.isActive()) {
             if (controllerConnected && !controllerResetWheels) {
-                const steeringMult = getSteeringMultiplier();
-                steerAngle.FL = controllerSteering.FL * (Math.PI / 180) * steeringMult;
-                steerAngle.FR = controllerSteering.FR * (Math.PI / 180) * steeringMult;
-                steerAngle.RL = controllerSteering.RL * (Math.PI / 180) * steeringMult;
-                steerAngle.RR = controllerSteering.RR * (Math.PI / 180) * steeringMult;
+                steerAngle.FL = controllerSteering.FL * (Math.PI / 180);
+                steerAngle.FR = controllerSteering.FR * (Math.PI / 180);
+                steerAngle.RL = controllerSteering.RL * (Math.PI / 180);
+                steerAngle.RR = controllerSteering.RR * (Math.PI / 180);
 
                 if (controllerBrake) {
                     wheelSpeed.FL = 0;
@@ -312,12 +309,6 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 currentSteeringAngle = updateSteering(isLeft, isRight, currentSteeringAngle, maxSteeringAngle, steerAngle, CalculateWheelAngles);
 
                 const speedMult = getSpeedMultiplier();
-                const steeringMult = getSteeringMultiplier();
-
-                // Apply steering multiplier to all wheel angles
-                ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
-                    steerAngle[wheel] *= steeringMult;
-                });
 
                 if (isBrake) {
                     wheelSpeed.FL = 0;
