@@ -75,8 +75,8 @@ export const DesktopControls = {
             };
 
             const actionLabels = {
-                spinTurnClockwise: 'Spin Right',
-                spinTurnCounterClockwise: 'Spin Left',
+                spinTurnClockwise: 'Spin Clockwise',
+                spinTurnCounterClockwise: 'Spin Counterclockwise',
                 calibrateWheels: 'Calibrate'
             };
 
