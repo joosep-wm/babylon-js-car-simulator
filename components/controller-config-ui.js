@@ -34,7 +34,8 @@ export const ControllerConfigUI = {
                 { value: 'resetWheels', label: 'Reset Wheels to Center', defaultType: 'press' },
                 { value: 'spinTurnClockwise', label: 'Spin Clockwise', defaultType: 'hold' },
                 { value: 'spinTurnCounterClockwise', label: 'Spin Counterclockwise', defaultType: 'hold' },
-                { value: 'calibrateWheels', label: 'Calibrate Wheels', defaultType: 'hold' }
+                { value: 'calibrateWheels', label: 'Calibrate Wheels', defaultType: 'hold' },
+                { value: 'switchFrontBack', label: 'Switch Front/Back', defaultType: 'press' }
             ],
             buttonNames: ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'D-Up', 'D-Down', 'D-Left', 'D-Right']
         };
