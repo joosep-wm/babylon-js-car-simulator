@@ -5,7 +5,7 @@ import { toggleDebugOverlay, updateDebugOverlay } from './debug-overlay.js';
 import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';
 import { CalibrationStateMachine } from './wheel-calibration.js';
-import { getSpeedMultiplier, getSteeringMultiplier, toggleFrontBack } from './front-back-switcher.js';
+import { getSpeedMultiplier, getSteeringMultiplier, toggleFrontBack, getCurrentFrontSide } from './front-back-switcher.js';
 import { rotateCameraByOffset } from './camera-controller.js';
 
 export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper, modeManager) {
@@ -398,10 +398,21 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             }
         }
 
-        steeringJoints.FL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.FL);
-        steeringJoints.FR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.FR);
-        steeringJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.RL);
-        steeringJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, steerAngle.RR);
+        let finalSteerAngle = { FL: steerAngle.FL, FR: steerAngle.FR, RL: steerAngle.RL, RR: steerAngle.RR };
+
+        if (getCurrentFrontSide() === 'B') {
+            finalSteerAngle = {
+                FL: steerAngle.RL,
+                FR: steerAngle.RR,
+                RL: steerAngle.FL,
+                RR: steerAngle.FR
+            };
+        }
+
+        steeringJoints.FL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, finalSteerAngle.FL);
+        steeringJoints.FR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, finalSteerAngle.FR);
+        steeringJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, finalSteerAngle.RL);
+        steeringJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, finalSteerAngle.RR);
 
         if (isBrake || controllerBrake) {
             motorJoints.FL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 1000000);
@@ -422,6 +433,6 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
         const modeName = modeManager?.getCurrentMode()?.name || getCurrentModeName();
         const specialModeStatus = getSpecialModeStatus();
-        updateDebugOverlay(steerAngle, wheelSpeed, modeName, specialModeStatus);
+        updateDebugOverlay(finalSteerAngle, wheelSpeed, modeName, specialModeStatus);
     });
 }
