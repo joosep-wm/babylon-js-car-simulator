@@ -410,6 +410,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         }
 
         let finalSteerAngle = { FL: steerAngle.FL, FR: steerAngle.FR, RL: steerAngle.RL, RR: steerAngle.RR };
+        let finalWheelSpeed = { FL: wheelSpeed.FL, FR: wheelSpeed.FR, RL: wheelSpeed.RL, RR: wheelSpeed.RR };
 
         if (getCurrentFrontSide() === 'B') {
             finalSteerAngle = {
@@ -417,6 +418,12 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 FR: steerAngle.RR,
                 RL: steerAngle.FL,
                 RR: steerAngle.FR
+            };
+            finalWheelSpeed = {
+                FL: wheelSpeed.RL,
+                FR: wheelSpeed.RR,
+                RL: wheelSpeed.FL,
+                RR: wheelSpeed.FR
             };
         }
 
@@ -437,13 +444,13 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             motorJoints.RR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_X, 330000);
         }
 
-        motorJoints.FL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.FL);
-        motorJoints.FR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.FR);
-        motorJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RL);
-        motorJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, wheelSpeed.RR);
+        motorJoints.FL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, finalWheelSpeed.FL);
+        motorJoints.FR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, finalWheelSpeed.FR);
+        motorJoints.RL.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, finalWheelSpeed.RL);
+        motorJoints.RR.setAxisMotorTarget(BABYLON.PhysicsConstraintAxis.ANGULAR_X, finalWheelSpeed.RR);
 
         const modeName = modeManager?.getCurrentMode()?.name || getCurrentModeName();
         const specialModeStatus = getSpecialModeStatus();
-        updateDebugOverlay(finalSteerAngle, wheelSpeed, modeName, specialModeStatus);
+        updateDebugOverlay(finalSteerAngle, finalWheelSpeed, modeName, specialModeStatus);
     });
 }
