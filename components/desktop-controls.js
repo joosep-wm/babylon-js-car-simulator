@@ -79,7 +79,9 @@ export const DesktopControls = {
                 spinTurnClockwise: 'Spin Clockwise',
                 spinTurnCounterClockwise: 'Spin Counterclockwise',
                 calibrateWheels: 'Calibrate',
-                switchFrontBack: 'Switch Front/Back'
+                switchFrontBack: 'Switch Front/Back',
+                setFrontSideA: 'Set Side A Front',
+                setFrontSideB: 'Set Side B Front'
             };
 
             let hasAnyDpadButton = false;
@@ -209,7 +211,9 @@ export const DesktopControls = {
                 resetWheels: 'Reset Wheels',
                 spinTurnClockwise: 'Spin Clockwise',
                 spinTurnCounterClockwise: 'Spin Counterclockwise',
-                calibrateWheels: 'Calibrate'
+                calibrateWheels: 'Calibrate',
+                setFrontSideA: 'Set Side A Front',
+                setFrontSideB: 'Set Side B Front'
             };
 
             // Build array of hints from utilityButtons config

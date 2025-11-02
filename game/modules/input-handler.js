@@ -5,7 +5,7 @@ import { toggleDebugOverlay, updateDebugOverlay } from './debug-overlay.js';
 import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';
 import { CalibrationStateMachine } from './wheel-calibration.js';
-import { getSpeedMultiplier, getSteeringMultiplier, toggleFrontBack, getCurrentFrontSide } from './front-back-switcher.js';
+import { getSpeedMultiplier, getSteeringMultiplier, toggleFrontBack, getCurrentFrontSide, setFrontSide } from './front-back-switcher.js';
 import { rotateCameraByOffset } from './camera-controller.js';
 
 export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper, modeManager) {
@@ -165,6 +165,26 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             console.log("🔄 Switch front/back (controller) activated!");
             toggleFrontBack();
             rotateCameraByOffset(scene.activeCamera, 180);
+        }
+
+        const controllerSetFrontSideA = controllerActions.find(a => a.action === 'setFrontSideA');
+        if (controllerSetFrontSideA) {
+            const currentSide = getCurrentFrontSide();
+            if (currentSide !== 'A') {
+                console.log("🔄 Set front side A (controller) activated!");
+                setFrontSide('A');
+                rotateCameraByOffset(scene.activeCamera, 180);
+            }
+        }
+
+        const controllerSetFrontSideB = controllerActions.find(a => a.action === 'setFrontSideB');
+        if (controllerSetFrontSideB) {
+            const currentSide = getCurrentFrontSide();
+            if (currentSide !== 'B') {
+                console.log("🔄 Set front side B (controller) activated!");
+                setFrontSide('B');
+                rotateCameraByOffset(scene.activeCamera, 180);
+            }
         }
 
         const currentMode = modeManager?.getCurrentMode();

@@ -35,7 +35,9 @@ export const ControllerConfigUI = {
                 { value: 'spinTurnClockwise', label: 'Spin Clockwise', defaultType: 'hold' },
                 { value: 'spinTurnCounterClockwise', label: 'Spin Counterclockwise', defaultType: 'hold' },
                 { value: 'calibrateWheels', label: 'Calibrate Wheels', defaultType: 'hold' },
-                { value: 'switchFrontBack', label: 'Switch Front/Back', defaultType: 'press' }
+                { value: 'switchFrontBack', label: 'Switch Front/Back', defaultType: 'press' },
+                { value: 'setFrontSideA', label: 'Set Side A as Front', defaultType: 'press' },
+                { value: 'setFrontSideB', label: 'Set Side B as Front', defaultType: 'press' }
             ],
             buttonNames: ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'D-Up', 'D-Down', 'D-Left', 'D-Right']
         };
