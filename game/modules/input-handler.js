@@ -172,8 +172,8 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
                 spinTurnState.targetAngles.FL = currentMaxAngle;
                 spinTurnState.targetAngles.FR = -currentMaxAngle;
-                spinTurnState.targetAngles.RL = currentMaxAngle;
-                spinTurnState.targetAngles.RR = -currentMaxAngle;
+                spinTurnState.targetAngles.RL = -currentMaxAngle;
+                spinTurnState.targetAngles.RR = currentMaxAngle;
             }
 
             ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
