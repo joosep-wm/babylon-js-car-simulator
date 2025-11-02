@@ -29,6 +29,7 @@ export const defaultModes = [
       1: { action: 'brake', type: 'hold', holdDuration: 100, buttonIndex: 1 },
       2: { action: 'resetPosition', type: 'press', buttonIndex: 2 },
       3: { action: 'resetWheels', type: 'press', buttonIndex: 3 },
+      12: { action: 'switchFrontBack', type: 'press', buttonIndex: 12 },
       13: { action: 'calibrateWheels', type: 'hold', buttonIndex: 13 },
       14: { action: 'spinTurnClockwise', type: 'hold', buttonIndex: 14 },
       15: { action: 'spinTurnCounterClockwise', type: 'hold', buttonIndex: 15 }
@@ -58,6 +59,7 @@ export const defaultModes = [
       1: { action: 'brake', type: 'hold', holdDuration: 100, buttonIndex: 1 },
       2: { action: 'resetPosition', type: 'press', buttonIndex: 2 },
       3: { action: 'resetWheels', type: 'press', buttonIndex: 3 },
+      12: { action: 'switchFrontBack', type: 'press', buttonIndex: 12 },
       13: { action: 'calibrateWheels', type: 'hold', buttonIndex: 13 },
       14: { action: 'spinTurnClockwise', type: 'hold', buttonIndex: 14 },
       15: { action: 'spinTurnCounterClockwise', type: 'hold', buttonIndex: 15 }
@@ -87,6 +89,7 @@ export const defaultModes = [
       1: { action: 'brake', type: 'hold', holdDuration: 100, buttonIndex: 1 },
       2: { action: 'resetPosition', type: 'press', buttonIndex: 2 },
       3: { action: 'resetWheels', type: 'press', buttonIndex: 3 },
+      12: { action: 'switchFrontBack', type: 'press', buttonIndex: 12 },
       13: { action: 'calibrateWheels', type: 'hold', buttonIndex: 13 },
       14: { action: 'spinTurnClockwise', type: 'hold', buttonIndex: 14 },
       15: { action: 'spinTurnCounterClockwise', type: 'hold', buttonIndex: 15 }
@@ -117,6 +120,7 @@ export const defaultModes = [
       1: { action: 'brake', type: 'hold', holdDuration: 100, buttonIndex: 1 },
       2: { action: 'resetPosition', type: 'press', buttonIndex: 2 },
       3: { action: 'resetWheels', type: 'press', buttonIndex: 3 },
+      12: { action: 'switchFrontBack', type: 'press', buttonIndex: 12 },
       13: { action: 'calibrateWheels', type: 'hold', buttonIndex: 13 },
       14: { action: 'spinTurnClockwise', type: 'hold', buttonIndex: 14 },
       15: { action: 'spinTurnCounterClockwise', type: 'hold', buttonIndex: 15 }

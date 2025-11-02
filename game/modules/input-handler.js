@@ -6,6 +6,7 @@ import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';
 import { CalibrationStateMachine } from './wheel-calibration.js';
 import { getSpeedMultiplier, getSteeringMultiplier, toggleFrontBack } from './front-back-switcher.js';
+import { rotateCameraByOffset } from './camera-controller.js';
 
 export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper, modeManager) {
     let forwardPressed = false;
@@ -159,10 +160,11 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
         const controllerResetWheels = controllerActions.find(a => a.action === 'resetWheels');
 
-        const controllerToggleFrontBack = controllerActions.find(a => a.action === 'toggleFrontBack');
-        if (controllerToggleFrontBack) {
-            console.log("🔄 Toggle front/back (controller) activated!");
+        const controllerSwitchFrontBack = controllerActions.find(a => a.action === 'switchFrontBack');
+        if (controllerSwitchFrontBack) {
+            console.log("🔄 Switch front/back (controller) activated!");
             toggleFrontBack();
+            rotateCameraByOffset(scene.activeCamera, 180);
         }
 
         const currentMode = modeManager?.getCurrentMode();
