@@ -32,8 +32,8 @@ export const ControllerConfigUI = {
                 { value: 'brake', label: 'Brake', defaultType: 'hold' },
                 { value: 'resetPosition', label: 'Reset Car Position', defaultType: 'press' },
                 { value: 'resetWheels', label: 'Reset Wheels to Center', defaultType: 'press' },
-                { value: 'spinTurnClockwise', label: 'Spin Turn Clockwise', defaultType: 'hold' },
-                { value: 'spinTurnCounterClockwise', label: 'Spin Turn Counter-CW', defaultType: 'hold' },
+                { value: 'spinTurnClockwise', label: 'Spin Clockwise', defaultType: 'hold' },
+                { value: 'spinTurnCounterClockwise', label: 'Spin Counterclockwise', defaultType: 'hold' },
                 { value: 'calibrateWheels', label: 'Calibrate Wheels', defaultType: 'hold' }
             ],
             buttonNames: ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'D-Up', 'D-Down', 'D-Left', 'D-Right']

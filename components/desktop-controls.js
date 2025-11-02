@@ -185,14 +185,29 @@ export const DesktopControls = {
                 0: 'A',
                 1: 'B',
                 2: 'X',
-                3: 'Y'
+                3: 'Y',
+                4: 'LB',
+                5: 'RB',
+                6: 'LT',
+                7: 'RT',
+                8: 'Back',
+                9: 'Start',
+                10: 'LS',
+                11: 'RS',
+                12: 'D-Up',
+                13: 'D-Down',
+                14: 'D-Left',
+                15: 'D-Right'
             };
 
             const actionLabels = {
                 jump: 'Jump',
                 brake: 'Brake',
                 resetPosition: 'Reset Car',
-                resetWheels: 'Reset Wheels'
+                resetWheels: 'Reset Wheels',
+                spinTurnClockwise: 'Spin Clockwise',
+                spinTurnCounterClockwise: 'Spin Counterclockwise',
+                calibrateWheels: 'Calibrate'
             };
 
             // Build array of hints from utilityButtons config
@@ -204,7 +219,9 @@ export const DesktopControls = {
                 const button = buttonMap[buttonIndexNum];
                 const label = actionLabels[actionName];
 
-                if (button && label) {
+                // Only show hints for A, B, X, Y buttons (0-3), not for D-pad or other buttons
+                // D-pad buttons are handled separately in dpadHints computed property
+                if (button && label && buttonIndexNum >= 0 && buttonIndexNum <= 3) {
                     utilityHints.push({
                         button,
                         label,
