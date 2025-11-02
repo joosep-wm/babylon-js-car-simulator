@@ -1,6 +1,8 @@
 // test-helpers.js - Console testing API for manual wheel control
 
 import { engine } from '../babylon-game.js';
+import { toggleFrontBack, setFrontSide, getCurrentFrontSide } from './front-back-switcher.js';
+import { rotateCameraByOffset } from './camera-controller.js';
 
 export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualControl, scene, modeManager, gamepadManager) {
     window.testHelpers = {
@@ -347,6 +349,60 @@ export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualCo
         },
 
         // ====================================================================
+        // FRONT/BACK SWITCHING
+        // ====================================================================
+
+        toggleFrontBack: () => {
+            const previousSide = getCurrentFrontSide();
+            toggleFrontBack();
+            const newSide = getCurrentFrontSide();
+
+            const camera = scene ? scene.activeCamera : null;
+            if (camera) {
+                rotateCameraByOffset(camera, 180);
+                console.log(`🔄 Front/back toggled: ${previousSide} → ${newSide}`);
+                console.log(`   📷 Camera rotated 180°`);
+                console.log(`   Current front side: ${newSide}`);
+            } else {
+                console.log(`🔄 Front/back toggled: ${previousSide} → ${newSide}`);
+                console.log(`   ⚠️  Camera not available for rotation`);
+                console.log(`   Current front side: ${newSide}`);
+            }
+        },
+
+        setFrontSide: (side) => {
+            if (side !== 'A' && side !== 'B') {
+                console.error(`❌ Invalid side: ${side}. Must be 'A' or 'B'`);
+                return;
+            }
+
+            const previousSide = getCurrentFrontSide();
+            const needsRotation = previousSide !== side;
+
+            setFrontSide(side);
+
+            const camera = scene ? scene.activeCamera : null;
+            if (needsRotation && camera) {
+                rotateCameraByOffset(camera, 180);
+                console.log(`🔄 Front side set: ${previousSide} → ${side}`);
+                console.log(`   📷 Camera rotated 180°`);
+            } else if (needsRotation && !camera) {
+                console.log(`🔄 Front side set: ${previousSide} → ${side}`);
+                console.log(`   ⚠️  Camera not available for rotation`);
+            } else if (!needsRotation) {
+                console.log(`✅ Front side already set to ${side}`);
+            }
+
+            console.log(`   Current front side: ${getCurrentFrontSide()}`);
+        },
+
+        getFrontSide: () => {
+            const side = getCurrentFrontSide();
+            console.log(`🔄 Current front side: ${side}`);
+            return side;
+        },
+
+        // ====================================================================
         // HELP SYSTEM
         // ====================================================================
 
@@ -376,6 +432,10 @@ export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualCo
 
                 getControllerState: "Get gamepad state (buttons and axes)",
                 listControllerMapping: "Show current controller button mapping",
+
+                toggleFrontBack: "Toggle front/back sides and rotate camera 180°",
+                setFrontSide: "Set specific side as front. Usage: setFrontSide('A') or setFrontSide('B')",
+                getFrontSide: "Get current front side (returns 'A' or 'B')",
 
                 help: "Show help for all commands or specific command"
             };
@@ -419,6 +479,11 @@ export function initializeTestHelpers(steerAngle, wheelSpeed, carFrame, manualCo
                 console.log("GAMEPAD:");
                 console.log("  • getControllerState()");
                 console.log("  • listControllerMapping()");
+                console.log("");
+                console.log("FRONT/BACK SWITCHING:");
+                console.log("  • toggleFrontBack()");
+                console.log("  • setFrontSide(side)");
+                console.log("  • getFrontSide()");
                 console.log("");
                 console.log("Use testHelpers.help('functionName') for details");
             }
