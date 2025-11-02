@@ -54,11 +54,15 @@ Project-specific agents in `.claude/agents/`:
 * `temp/M2-phase4-archive.md`: M2 phase 4 archive (Configuration UI)
 * `temp/M2-phase5-archive.md`: M2 phase 5 archive (Small Improvements)
 * `temp/M2-PHASE-5-COMPLETE.md`: M2 phase 5 completion report
+* `temp/M2-phase6-plan.md`: M2 phase 6 plan (Special Control Modes)
+* `temp/M2-PHASE-6-COMPLETE.md`: M2 phase 6 completion report
+* `temp/M2-phase7-archive.md`: M2 phase 7 archive (Front/Back Switching)
+* `temp/M2-PHASE-7-COMPLETE.md`: M2 phase 7 completion report
 * `temp/testing-strategy.md`: Comprehensive incremental testing strategy for validating changes
 * `docs/prd.md`: Product Requirements Document with full specifications
 * `docs/testing-tools.md`: Debug overlay (F11) and console test helpers (`window.testHelpers`) reference
 
-**Milestone 2 Status:** ✅ COMPLETE (5/5 phases, 42 tasks, 58+ commits, production ready)
+**Milestone 2 Status:** ✅ COMPLETE (7/7 phases, 55+ tasks, 77+ commits, production ready)
 
 ### Entry Point Flow
 1. `index.html` - Loads Babylon.js, Vue.js, Havok Physics, and module scripts
