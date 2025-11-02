@@ -196,15 +196,15 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
             if (spinTurnState.animationComplete) {
                 if (controllerSpinTurn.direction === 'clockwise') {
-                    wheelSpeed.FL = spinSpeed;
-                    wheelSpeed.FR = -spinSpeed;
-                    wheelSpeed.RL = spinSpeed;
-                    wheelSpeed.RR = -spinSpeed;
-                } else if (controllerSpinTurn.direction === 'counterClockwise') {
                     wheelSpeed.FL = -spinSpeed;
                     wheelSpeed.FR = spinSpeed;
                     wheelSpeed.RL = -spinSpeed;
                     wheelSpeed.RR = spinSpeed;
+                } else if (controllerSpinTurn.direction === 'counterClockwise') {
+                    wheelSpeed.FL = spinSpeed;
+                    wheelSpeed.FR = -spinSpeed;
+                    wheelSpeed.RL = spinSpeed;
+                    wheelSpeed.RR = -spinSpeed;
                 }
             } else {
                 wheelSpeed.FL = 0;
@@ -249,6 +249,12 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 steerAngle.RL = angle;
                 steerAngle.RR = angle;
 
+                // Boost steering motor force for faster calibration movement
+                steeringJoints.FL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 1000000);
+                steeringJoints.FR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 1000000);
+                steeringJoints.RL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 1000000);
+                steeringJoints.RR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 1000000);
+
                 wheelSpeed.FL = 0;
                 wheelSpeed.FR = 0;
                 wheelSpeed.RL = 0;
@@ -257,6 +263,12 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         } else {
             if (calibrationPrevActive) {
                 calibrationMachine.stop();
+
+                // Reset steering motor force to normal after calibration
+                steeringJoints.FL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 280000);
+                steeringJoints.FR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 280000);
+                steeringJoints.RL.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 280000);
+                steeringJoints.RR.setAxisMotorMaxForce(BABYLON.PhysicsConstraintAxis.ANGULAR_Y, 280000);
             }
             calibrationPrevActive = false;
         }
