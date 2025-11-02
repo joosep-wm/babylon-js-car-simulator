@@ -5,6 +5,7 @@ import { toggleDebugOverlay, updateDebugOverlay } from './debug-overlay.js';
 import { initializeTestHelpers } from './test-helpers.js';
 import { CalculateWheelAngles } from './physics-config.js';
 import { CalibrationStateMachine } from './wheel-calibration.js';
+import { getSpeedMultiplier, getSteeringMultiplier, toggleFrontBack } from './front-back-switcher.js';
 
 export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, steerWheelB, carFrame, vueApp, steeringJoints, motorJoints, scene, gamepadManager, controlMapper, modeManager) {
     let forwardPressed = false;
@@ -158,6 +159,12 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
         const controllerResetWheels = controllerActions.find(a => a.action === 'resetWheels');
 
+        const controllerToggleFrontBack = controllerActions.find(a => a.action === 'toggleFrontBack');
+        if (controllerToggleFrontBack) {
+            console.log("🔄 Toggle front/back (controller) activated!");
+            toggleFrontBack();
+        }
+
         const currentMode = modeManager?.getCurrentMode();
         // Mode config stores maxAngle in degrees, but we need radians for physics
         const currentMaxAngle = currentMode?.steeringControl?.maxAngle
@@ -173,10 +180,11 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 spinTurnState.direction = controllerSpinTurn.direction;
                 spinTurnState.animationComplete = false;
 
-                spinTurnState.targetAngles.FL = currentMaxAngle;
-                spinTurnState.targetAngles.FR = -currentMaxAngle;
-                spinTurnState.targetAngles.RL = -currentMaxAngle;
-                spinTurnState.targetAngles.RR = currentMaxAngle;
+                const steeringMult = getSteeringMultiplier();
+                spinTurnState.targetAngles.FL = currentMaxAngle * steeringMult;
+                spinTurnState.targetAngles.FR = -currentMaxAngle * steeringMult;
+                spinTurnState.targetAngles.RL = -currentMaxAngle * steeringMult;
+                spinTurnState.targetAngles.RR = currentMaxAngle * steeringMult;
             }
 
             ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
@@ -198,16 +206,17 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             }
 
             if (spinTurnState.animationComplete) {
+                const speedMult = getSpeedMultiplier();
                 if (controllerSpinTurn.direction === 'clockwise') {
-                    wheelSpeed.FL = -spinSpeed;
-                    wheelSpeed.FR = spinSpeed;
-                    wheelSpeed.RL = -spinSpeed;
-                    wheelSpeed.RR = spinSpeed;
+                    wheelSpeed.FL = -spinSpeed * speedMult;
+                    wheelSpeed.FR = spinSpeed * speedMult;
+                    wheelSpeed.RL = -spinSpeed * speedMult;
+                    wheelSpeed.RR = spinSpeed * speedMult;
                 } else if (controllerSpinTurn.direction === 'counterClockwise') {
-                    wheelSpeed.FL = spinSpeed;
-                    wheelSpeed.FR = -spinSpeed;
-                    wheelSpeed.RL = spinSpeed;
-                    wheelSpeed.RR = -spinSpeed;
+                    wheelSpeed.FL = spinSpeed * speedMult;
+                    wheelSpeed.FR = -spinSpeed * speedMult;
+                    wheelSpeed.RL = spinSpeed * speedMult;
+                    wheelSpeed.RR = -spinSpeed * speedMult;
                 }
             } else {
                 wheelSpeed.FL = 0;
@@ -245,7 +254,8 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             const calibrationState = calibrationMachine.update(performance.now());
 
             if (calibrationState.active) {
-                const angle = calibrationState.normalizedAngle * currentMaxAngle;
+                const steeringMult = getSteeringMultiplier();
+                const angle = calibrationState.normalizedAngle * currentMaxAngle * steeringMult;
 
                 steerAngle.FL = angle;
                 steerAngle.FR = angle;
@@ -278,10 +288,11 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
         if (!manualControl.active && !spinTurnState.active && !calibrationMachine.isActive()) {
             if (controllerConnected && !controllerResetWheels) {
-                steerAngle.FL = controllerSteering.FL * (Math.PI / 180);
-                steerAngle.FR = controllerSteering.FR * (Math.PI / 180);
-                steerAngle.RL = controllerSteering.RL * (Math.PI / 180);
-                steerAngle.RR = controllerSteering.RR * (Math.PI / 180);
+                const steeringMult = getSteeringMultiplier();
+                steerAngle.FL = controllerSteering.FL * (Math.PI / 180) * steeringMult;
+                steerAngle.FR = controllerSteering.FR * (Math.PI / 180) * steeringMult;
+                steerAngle.RL = controllerSteering.RL * (Math.PI / 180) * steeringMult;
+                steerAngle.RR = controllerSteering.RR * (Math.PI / 180) * steeringMult;
 
                 if (controllerBrake) {
                     wheelSpeed.FL = 0;
@@ -289,13 +300,22 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                     wheelSpeed.RL = 0;
                     wheelSpeed.RR = 0;
                 } else {
-                    wheelSpeed.FL = controllerSpeed;
-                    wheelSpeed.FR = controllerSpeed;
-                    wheelSpeed.RL = controllerSpeed;
-                    wheelSpeed.RR = controllerSpeed;
+                    const speedMult = getSpeedMultiplier();
+                    wheelSpeed.FL = controllerSpeed * speedMult;
+                    wheelSpeed.FR = controllerSpeed * speedMult;
+                    wheelSpeed.RL = controllerSpeed * speedMult;
+                    wheelSpeed.RR = controllerSpeed * speedMult;
                 }
             } else {
                 currentSteeringAngle = updateSteering(isLeft, isRight, currentSteeringAngle, maxSteeringAngle, steerAngle, CalculateWheelAngles);
+
+                const speedMult = getSpeedMultiplier();
+                const steeringMult = getSteeringMultiplier();
+
+                // Apply steering multiplier to all wheel angles
+                ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
+                    steerAngle[wheel] *= steeringMult;
+                });
 
                 if (isBrake) {
                     wheelSpeed.FL = 0;
@@ -304,11 +324,21 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                     wheelSpeed.RR = 0;
                 } else if (isForward) {
                     ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
-                        if (wheelSpeed[wheel] < maxSpeed) wheelSpeed[wheel] += 1;
+                        const targetSpeed = maxSpeed * speedMult;
+                        if (speedMult > 0 && wheelSpeed[wheel] < targetSpeed) {
+                            wheelSpeed[wheel] += 1;
+                        } else if (speedMult < 0 && wheelSpeed[wheel] > targetSpeed) {
+                            wheelSpeed[wheel] -= 1;
+                        }
                     });
                 } else if (isBackward) {
                     ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
-                        if (wheelSpeed[wheel] > -maxSpeed * 0.5) wheelSpeed[wheel] -= 1;
+                        const targetSpeed = -maxSpeed * 0.5 * speedMult;
+                        if (speedMult > 0 && wheelSpeed[wheel] > targetSpeed) {
+                            wheelSpeed[wheel] -= 1;
+                        } else if (speedMult < 0 && wheelSpeed[wheel] < targetSpeed) {
+                            wheelSpeed[wheel] += 1;
+                        }
                     });
                 } else if (!isForward && !isBackward) {
                     ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
