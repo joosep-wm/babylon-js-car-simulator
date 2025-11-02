@@ -336,7 +336,9 @@ After each task, run relevant tests:
 - Production Status: READY ✅
 
 **Known Issues:**
-None
+1. **CRITICAL**: Spin turn rear wheel angles inverted (both should turn opposite direction)
+2. **CRITICAL**: Debug overlay shows degrees as 2000+ instead of normal values (angle conversion bug)
+3. **HIGH**: F10 mode editor missing UI for configuring spinTurn and calibrateWheels actions
 
 **Next Up:**
-User confirmation needed for Phase 6 implementation details (see M2-phase6-plan.md questions)
+Phase 6 Bug Fixes (see section below)

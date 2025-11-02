@@ -242,7 +242,7 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
             const calibrationState = calibrationMachine.update(performance.now());
 
             if (calibrationState.active) {
-                const angle = calibrationState.normalizedAngle * currentMaxAngle * (Math.PI / 180);
+                const angle = calibrationState.normalizedAngle * currentMaxAngle;
 
                 steerAngle.FL = angle;
                 steerAngle.FR = angle;
