@@ -51,7 +51,8 @@ export function createVueApp() {
                     { knocked: false },
                     { knocked: false },
                     { knocked: false }
-                ]
+                ],
+                currentFrontSide: 'A'
             }
         },
         mounted() {

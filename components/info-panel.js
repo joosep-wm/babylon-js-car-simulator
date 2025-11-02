@@ -35,6 +35,10 @@ export const InfoPanel = {
                     <div class="stat-label">Direction</div>
                     <div class="stat-value">{{ direction }}</div>
                 </div>
+                <div class="stat-box">
+                    <div class="stat-label">Front Side</div>
+                    <div class="stat-value">{{ frontSideLabel }}</div>
+                </div>
             </div>
             <div class="controls">
                 <h3>Controls</h3>
@@ -91,13 +95,24 @@ export const InfoPanel = {
         maxSpeed: Number,
         raceTime: Number,
         isRacing: Boolean,
-        isTouchDevice: Boolean
+        isTouchDevice: Boolean,
+        currentFrontSide: String
     },
     data() {
         return {
             debugVisible: false,
             isHidden: true // Start hidden with display: none
         };
+    },
+    computed: {
+        frontSideLabel() {
+            if (this.currentFrontSide === 'A') {
+                return 'Side A (Headlights)';
+            } else if (this.currentFrontSide === 'B') {
+                return 'Side B (Taillights)';
+            }
+            return 'Unknown';
+        }
     },
     mounted() {
         // Add debug toggle with F12 key

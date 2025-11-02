@@ -19,6 +19,7 @@ import {
     updateSteering
 } from './modules/steering-system.js';
 import { InitKeyboardControls } from './modules/input-handler.js';
+import { getCurrentFrontSide } from './modules/front-back-switcher.js';
 
 // ============================================================================
 // IMPORTS - Visual Systems
@@ -332,6 +333,8 @@ function setupRenderLoop(carF, vueApp) {
             vueApp.rotation = (rotationY * 180 / Math.PI) % 360;
 
             vueApp.maxSpeed = Math.max(vueApp.maxSpeed, vueApp.speed);
+
+            vueApp.currentFrontSide = getCurrentFrontSide();
 
             // Update race time
             if (vueApp.isRacing && raceStarted && !alreadyTriggered && fCounter < 1) {
