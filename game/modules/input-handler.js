@@ -159,7 +159,10 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
         const controllerResetWheels = controllerActions.find(a => a.action === 'resetWheels');
 
         const currentMode = modeManager?.getCurrentMode();
-        const currentMaxAngle = currentMode?.steeringControl?.maxAngle || maxSteeringAngle;
+        // Mode config stores maxAngle in degrees, but we need radians for physics
+        const currentMaxAngle = currentMode?.steeringControl?.maxAngle
+            ? currentMode.steeringControl.maxAngle * (Math.PI / 180)
+            : maxSteeringAngle;
 
         const hasNormalInput = controllerConnected ? (Math.abs(controllerSpeed) > 0.1 || Math.abs(controllerSteering.FL) > 0.1) : (isLeft || isRight || isForward || isBackward);
 
