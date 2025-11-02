@@ -208,9 +208,18 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 spinTurnState.targetAngles.RR = currentMaxAngle;
             }
 
+            // Apply same swap logic to targetAngles when Side B is front
+            const finalTargetAngles = { ...spinTurnState.targetAngles };
+            if (getCurrentFrontSide() === 'B') {
+                finalTargetAngles.FL = spinTurnState.targetAngles.RL;
+                finalTargetAngles.FR = spinTurnState.targetAngles.RR;
+                finalTargetAngles.RL = spinTurnState.targetAngles.FL;
+                finalTargetAngles.RR = spinTurnState.targetAngles.FR;
+            }
+
             ['FL', 'FR', 'RL', 'RR'].forEach(wheel => {
                 const currentAngle = steerAngle[wheel];
-                const targetAngle = spinTurnState.targetAngles[wheel];
+                const targetAngle = finalTargetAngles[wheel];
                 const diff = targetAngle - currentAngle;
 
                 if (Math.abs(diff) > 0.01) {
