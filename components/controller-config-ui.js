@@ -26,7 +26,17 @@ export const ControllerConfigUI = {
             dragOverIndex: null,
             editingModeIndex: null,
             editingMode: null,
-            isCreatingNewMode: false
+            isCreatingNewMode: false,
+            availableActions: [
+                { value: 'jump', label: 'Jump', defaultType: 'press' },
+                { value: 'brake', label: 'Brake', defaultType: 'hold' },
+                { value: 'resetPosition', label: 'Reset Car Position', defaultType: 'press' },
+                { value: 'resetWheels', label: 'Reset Wheels to Center', defaultType: 'press' },
+                { value: 'spinTurnClockwise', label: 'Spin Turn Clockwise', defaultType: 'hold' },
+                { value: 'spinTurnCounterClockwise', label: 'Spin Turn Counter-CW', defaultType: 'hold' },
+                { value: 'calibrateWheels', label: 'Calibrate Wheels', defaultType: 'hold' }
+            ],
+            buttonNames: ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS', 'D-Up', 'D-Down', 'D-Left', 'D-Right']
         };
     },
     computed: {
@@ -65,6 +75,22 @@ export const ControllerConfigUI = {
             }
 
             return null;
+        },
+        utilityButtonList() {
+            if (!this.editingMode || !this.editingMode.utilityButtons) return [];
+
+            const buttons = [];
+            for (const [slotIndex, config] of Object.entries(this.editingMode.utilityButtons)) {
+                const actionDef = this.availableActions.find(a => a.value === config.action);
+                buttons.push({
+                    slotIndex: parseInt(slotIndex),
+                    config: config,
+                    label: actionDef ? actionDef.label : config.action
+                });
+            }
+
+            buttons.sort((a, b) => a.slotIndex - b.slotIndex);
+            return buttons;
         }
     },
     mounted() {
@@ -511,6 +537,42 @@ export const ControllerConfigUI = {
         },
         triggerImport() {
             this.$refs.fileInput.click();
+        },
+        addUtilityButton() {
+            if (!this.editingMode || !this.editingMode.utilityButtons) return;
+
+            const usedSlots = Object.keys(this.editingMode.utilityButtons).map(k => parseInt(k));
+            let nextSlot = 0;
+            while (usedSlots.includes(nextSlot)) {
+                nextSlot++;
+            }
+
+            this.editingMode.utilityButtons[nextSlot] = {
+                action: 'jump',
+                type: 'press',
+                buttonIndex: nextSlot
+            };
+        },
+        removeUtilityButton(slotIndex) {
+            if (!this.editingMode || !this.editingMode.utilityButtons) return;
+            delete this.editingMode.utilityButtons[slotIndex];
+        },
+        updateUtilityButtonAction(slotIndex, actionValue) {
+            if (!this.editingMode || !this.editingMode.utilityButtons) return;
+
+            const actionDef = this.availableActions.find(a => a.value === actionValue);
+            if (actionDef) {
+                this.editingMode.utilityButtons[slotIndex].action = actionValue;
+                this.editingMode.utilityButtons[slotIndex].type = actionDef.defaultType;
+
+                if (actionDef.defaultType === 'hold' && !this.editingMode.utilityButtons[slotIndex].holdDuration) {
+                    this.editingMode.utilityButtons[slotIndex].holdDuration = 100;
+                }
+            }
+        },
+        getActionLabel(actionValue) {
+            const actionDef = this.availableActions.find(a => a.value === actionValue);
+            return actionDef ? actionDef.label : actionValue;
         }
     },
     template: `
@@ -804,77 +866,29 @@ export const ControllerConfigUI = {
                             <div class="editor-section">
                                 <h4>Utility Buttons</h4>
                                 <div class="utility-buttons-config">
-                                    <div class="button-mapping-row">
-                                        <span class="action-label">Jump</span>
-                                        <select v-model.number="editingMode.utilityButtons[0].buttonIndex" class="form-select button-select">
-                                            <option :value="0">A</option>
-                                            <option :value="1">B</option>
-                                            <option :value="2">X</option>
-                                            <option :value="3">Y</option>
-                                            <option :value="4">LB</option>
-                                            <option :value="5">RB</option>
-                                            <option :value="6">LT</option>
-                                            <option :value="7">RT</option>
-                                            <option :value="8">Back</option>
-                                            <option :value="9">Start</option>
-                                            <option :value="10">LS</option>
-                                            <option :value="11">RS</option>
+                                    <div v-for="button in utilityButtonList" :key="button.slotIndex" class="button-mapping-row">
+                                        <select
+                                            :value="button.config.action"
+                                            @change="updateUtilityButtonAction(button.slotIndex, $event.target.value)"
+                                            class="form-select action-select"
+                                        >
+                                            <option v-for="action in availableActions" :key="action.value" :value="action.value">
+                                                {{ action.label }}
+                                            </option>
                                         </select>
-                                        <span class="button-badge">{{ ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS'][editingMode.utilityButtons[0].buttonIndex || 0] }}</span>
+                                        <select v-model.number="button.config.buttonIndex" class="form-select button-select">
+                                            <option v-for="(name, index) in buttonNames" :key="index" :value="index">
+                                                {{ name }}
+                                            </option>
+                                        </select>
+                                        <span class="button-badge">{{ buttonNames[button.config.buttonIndex] || 'N/A' }}</span>
+                                        <button class="remove-button" @click="removeUtilityButton(button.slotIndex)" title="Remove">✕</button>
                                     </div>
-                                    <div class="button-mapping-row">
-                                        <span class="action-label">Brake</span>
-                                        <select v-model.number="editingMode.utilityButtons[1].buttonIndex" class="form-select button-select">
-                                            <option :value="0">A</option>
-                                            <option :value="1">B</option>
-                                            <option :value="2">X</option>
-                                            <option :value="3">Y</option>
-                                            <option :value="4">LB</option>
-                                            <option :value="5">RB</option>
-                                            <option :value="6">LT</option>
-                                            <option :value="7">RT</option>
-                                            <option :value="8">Back</option>
-                                            <option :value="9">Start</option>
-                                            <option :value="10">LS</option>
-                                            <option :value="11">RS</option>
-                                        </select>
-                                        <span class="button-badge">{{ ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS'][editingMode.utilityButtons[1].buttonIndex || 1] }}</span>
-                                    </div>
-                                    <div class="button-mapping-row">
-                                        <span class="action-label">Reset Position</span>
-                                        <select v-model.number="editingMode.utilityButtons[2].buttonIndex" class="form-select button-select">
-                                            <option :value="0">A</option>
-                                            <option :value="1">B</option>
-                                            <option :value="2">X</option>
-                                            <option :value="3">Y</option>
-                                            <option :value="4">LB</option>
-                                            <option :value="5">RB</option>
-                                            <option :value="6">LT</option>
-                                            <option :value="7">RT</option>
-                                            <option :value="8">Back</option>
-                                            <option :value="9">Start</option>
-                                            <option :value="10">LS</option>
-                                            <option :value="11">RS</option>
-                                        </select>
-                                        <span class="button-badge">{{ ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS'][editingMode.utilityButtons[2].buttonIndex || 2] }}</span>
-                                    </div>
-                                    <div class="button-mapping-row">
-                                        <span class="action-label">Reset Wheels</span>
-                                        <select v-model.number="editingMode.utilityButtons[3].buttonIndex" class="form-select button-select">
-                                            <option :value="0">A</option>
-                                            <option :value="1">B</option>
-                                            <option :value="2">X</option>
-                                            <option :value="3">Y</option>
-                                            <option :value="4">LB</option>
-                                            <option :value="5">RB</option>
-                                            <option :value="6">LT</option>
-                                            <option :value="7">RT</option>
-                                            <option :value="8">Back</option>
-                                            <option :value="9">Start</option>
-                                            <option :value="10">LS</option>
-                                            <option :value="11">RS</option>
-                                        </select>
-                                        <span class="button-badge">{{ ['A', 'B', 'X', 'Y', 'LB', 'RB', 'LT', 'RT', 'Back', 'Start', 'LS', 'RS'][editingMode.utilityButtons[3].buttonIndex || 3] }}</span>
+                                    <div class="add-button-row">
+                                        <button class="add-utility-button" @click="addUtilityButton">
+                                            <span class="add-icon">+</span>
+                                            <span>Add Utility Button</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

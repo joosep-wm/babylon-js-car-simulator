@@ -543,9 +543,14 @@
     font-size: 0.875rem;
 }
 
+.action-select {
+    flex: 2;
+    min-width: 200px;
+}
+
 .button-select {
     flex: 1;
-    min-width: 150px;
+    min-width: 120px;
 }
 
 .button-badge {
@@ -559,6 +564,69 @@
     font-weight: 700;
     font-size: 0.875rem;
     text-transform: uppercase;
+}
+
+.remove-button {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.7));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-button:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 1), rgba(220, 38, 38, 0.9));
+    transform: scale(1.1);
+}
+
+.remove-button:active {
+    transform: scale(0.95);
+}
+
+.add-button-row {
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.add-utility-button {
+    width: 100%;
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.7));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.add-utility-button:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 0.9));
+    border-color: rgba(59, 130, 246, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+}
+
+.add-utility-button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(59, 130, 246, 0.2);
 }
 
 .add-mode-section {
