@@ -237,17 +237,33 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
             if (spinTurnState.animationComplete) {
                 const speedMult = getSpeedMultiplier();
+
+                // Calculate base spin speeds
+                let spinSpeedFL, spinSpeedFR, spinSpeedRL, spinSpeedRR;
                 if (controllerSpinTurn.direction === 'clockwise') {
-                    wheelSpeed.FL = -spinSpeed * speedMult;
-                    wheelSpeed.FR = spinSpeed * speedMult;
-                    wheelSpeed.RL = -spinSpeed * speedMult;
-                    wheelSpeed.RR = spinSpeed * speedMult;
+                    spinSpeedFL = -spinSpeed;
+                    spinSpeedFR = spinSpeed;
+                    spinSpeedRL = -spinSpeed;
+                    spinSpeedRR = spinSpeed;
                 } else if (controllerSpinTurn.direction === 'counterClockwise') {
-                    wheelSpeed.FL = spinSpeed * speedMult;
-                    wheelSpeed.FR = -spinSpeed * speedMult;
-                    wheelSpeed.RL = spinSpeed * speedMult;
-                    wheelSpeed.RR = -spinSpeed * speedMult;
+                    spinSpeedFL = spinSpeed;
+                    spinSpeedFR = -spinSpeed;
+                    spinSpeedRL = spinSpeed;
+                    spinSpeedRR = -spinSpeed;
                 }
+
+                // Invert spin speeds when Side B is front to maintain correct rotation direction
+                if (getCurrentFrontSide() === 'B') {
+                    spinSpeedFL = -spinSpeedFL;
+                    spinSpeedFR = -spinSpeedFR;
+                    spinSpeedRL = -spinSpeedRL;
+                    spinSpeedRR = -spinSpeedRR;
+                }
+
+                wheelSpeed.FL = spinSpeedFL * speedMult;
+                wheelSpeed.FR = spinSpeedFR * speedMult;
+                wheelSpeed.RL = spinSpeedRL * speedMult;
+                wheelSpeed.RR = spinSpeedRR * speedMult;
             } else {
                 wheelSpeed.FL = 0;
                 wheelSpeed.FR = 0;
