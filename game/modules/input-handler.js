@@ -18,7 +18,8 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
 
     let currentSteeringAngle = 0;
     let maxSpeed = 20;
-    const maxSteeringAngle = Math.PI / 4;
+    const maxSteeringAngle = 22 * (Math.PI / 180);  // 22 degrees max turning angle
+    const spinTurnMaxAngle = 45 * (Math.PI / 180);  // 45 degrees for 360 spin turn
     const jumpForce = 3000;
 
     let steerAngle = { FL: 0, FR: 0, RL: 0, RR: 0 };
@@ -202,10 +203,10 @@ export function InitKeyboardControls(motorWheelA, motorWheelB, steerWheelA, stee
                 spinTurnState.direction = controllerSpinTurn.direction;
                 spinTurnState.animationComplete = false;
 
-                spinTurnState.targetAngles.FL = currentMaxAngle;
-                spinTurnState.targetAngles.FR = -currentMaxAngle;
-                spinTurnState.targetAngles.RL = -currentMaxAngle;
-                spinTurnState.targetAngles.RR = currentMaxAngle;
+                spinTurnState.targetAngles.FL = spinTurnMaxAngle;
+                spinTurnState.targetAngles.FR = -spinTurnMaxAngle;
+                spinTurnState.targetAngles.RL = -spinTurnMaxAngle;
+                spinTurnState.targetAngles.RR = spinTurnMaxAngle;
             }
 
             // Apply same swap logic to targetAngles when Side B is front

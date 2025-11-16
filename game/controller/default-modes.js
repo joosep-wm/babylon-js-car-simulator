@@ -20,7 +20,7 @@ export const defaultModes = [
       type: 'singleInput',
       input: 'LS-X',  // axis 0
       wheels: 'front',
-      maxAngle: 45,
+      maxAngle: 22,
       sensitivity: 1.0,
       deadZone: 0.15
     },
@@ -50,7 +50,7 @@ export const defaultModes = [
       type: 'singleInput',
       input: 'LS-X',  // axis 0 - Left Stick X (same as Traditional)
       wheels: 'all',  // All 4 wheels turn together
-      maxAngle: 45,
+      maxAngle: 22,
       sensitivity: 1.0,
       deadZone: 0.15
     },
@@ -79,8 +79,8 @@ export const defaultModes = [
     steeringControl: {
       type: 'opposing',
       input: 'LS-X',  // axis 0
-      frontWheelsMaxAngle: 45,
-      rearWheelsMaxAngle: 45,
+      frontWheelsMaxAngle: 22,
+      rearWheelsMaxAngle: 22,
       sensitivity: 1.0,
       deadZone: 0.15
     },
@@ -110,8 +110,8 @@ export const defaultModes = [
       type: 'multiInput',
       frontInput: 'RS-Y',  // axis 3
       rearInput: 'LS-Y',   // axis 1
-      frontMaxAngle: 45,
-      rearMaxAngle: 45,
+      frontMaxAngle: 22,
+      rearMaxAngle: 22,
       sensitivity: 1.0,
       deadZone: 0.15
     },
